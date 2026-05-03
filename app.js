@@ -1,5 +1,5 @@
+/* ================= STATE ================= */
 let lastGeneratedData = null;
-
 let isBulkRunning = false;
 let bulkAbort = false;
 
@@ -51,37 +51,35 @@ class UserEngine {
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
+}
 
-  static generateOne(){
-    return this.makeUser();
-  }
+/* ================= BULK (TOGGLE SAFE VERSION) ================= */
+async function runBulk(count){
 
-  /* ================= BULK TOGGLE CORE ================= */
-  static async generateBulk(count = 100){
+  const safeCount = Math.min(count || 100, 10000);
 
-    const safeCount = Math.min(count || 100, 10000);
+  isBulkRunning = true;
+  bulkAbort = false;
 
-    isBulkRunning = true;
-    bulkAbort = false;
+  const result = [];
 
-    const arr = [];
+  for(let i = 0; i < safeCount; i++){
 
-    for(let i = 0; i < safeCount; i++){
-
-      if(bulkAbort){
-        console.warn("⛔ Bulk stopped at:", i);
-        break;
-      }
-
-      arr.push(this.makeUser());
-
-      await new Promise(requestAnimationFrame);
+    // 🔥  STOP CHECK
+    if(bulkAbort){
+      console.warn("⛔ Bulk stopped at:", i);
+      break;
     }
 
-    isBulkRunning = false;
+    result.push(UserEngine.makeUser());
 
-    return arr;
+    // 🔥  yield control (prevents freeze + allows stop)
+    await Promise.resolve();
   }
+
+  isBulkRunning = false;
+
+  return result;
 }
 
 /* ================= RENDER ================= */
@@ -89,35 +87,35 @@ function show(data){
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
+
   el.style.color = "#ffffff";
   el.value = JSON.stringify(data, null, 2);
 }
 
-/* ================= TOGGLE BULK (KEY PART) ================= */
+/* ================= ACTIONS ================= */
+function genUser(){
+  bulkAbort = true;
+  isBulkRunning = false;
+
+  show(UserEngine.makeUser());
+}
+
+/* TOGGLE BULK */
 function genBulk(){
 
-  // 🟢  IF RUNNING → STOP
+  // STOP if running
   if(isBulkRunning){
     bulkAbort = true;
     isBulkRunning = false;
-    console.warn("🛑  BULK STOPPED");
+    console.warn("🛑  Bulk stopped");
     return;
   }
 
-  // 🟢  ELSE START
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
 
-  UserEngine.generateBulk(count).then(data => {
+  runBulk(count).then(data => {
     show(data);
   });
-}
-
-/* ================= SINGLE USER ================= */
-function genUser(){
-  bulkAbort = true; // auto-stop bulk if running
-  isBulkRunning = false;
-
-  show(UserEngine.generateOne());
 }
 
 /* ================= COPY ================= */
@@ -166,11 +164,11 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
+
   if(!window.DATA){
     console.error("❌ DATA not loaded");
     return;
   }
-
   document.getElementById("genBtn").onclick = genUser;
   document.getElementById("bulkBtn").onclick = genBulk;
   document.getElementById("copyBtn").onclick = copyUser;
