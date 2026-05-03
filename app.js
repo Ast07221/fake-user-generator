@@ -152,6 +152,8 @@ function initApp(){
     return;
   }
 
+  if(genBtn.onclick) return; // 🔥  защита от двойного bind
+
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
   copyBtn.onclick = copyUser;
