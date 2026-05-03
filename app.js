@@ -5,37 +5,33 @@ function rand(arr){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* ================= AI PRO MAX TYPEWRITER ================= */
-let typingQueue = false;
-
-function typeWriter(text, el){
-  if(typingQueue) return;
-  typingQueue = true;
+/* ================= AI SAFE TYPEWRITER ================= */
+function typeWriter(text, el, speed = 5, id){
+  const currentId = id || ++runId;
 
   el.value = "";
 
   let i = 0;
 
   function step(){
+    if(currentId !== runId) return; // cancel previous run
+
     if(i < text.length){
 
       el.value += text.charAt(i);
 
-      // 🔥  human-like pauses
-      let delay = 6;
-
       const char = text[i];
 
-      if(char === "," || char === "{") delay = 40;
-      if(char === "\n") delay = 60;
-      if(char === ":") delay = 25;
-      if(Math.random() < 0.02) delay = 120;
+      let delay = speed;
+
+      // realistic pauses
+      if(char === "," || char === "{") delay = 25;
+      if(char === "\n") delay = 45;
+      if(char === ":") delay = 20;
+      if(Math.random() < 0.02) delay = 90;
 
       i++;
       setTimeout(step, delay);
-
-    } else {
-      typingQueue = false;
     }
   }
 
@@ -61,7 +57,13 @@ function makeUser(){
 
 /* ================= SHOW ================= */
 function show(data){
-  typeWriter(JSON.stringify(data, null, 2), document.getElementById("userOut"));
+  runId++;
+  typeWriter(
+    JSON.stringify(data, null, 2),
+    document.getElementById("userOut"),
+    5,
+    runId
+  );
 }
 
 /* ================= SINGLE ================= */
@@ -78,7 +80,13 @@ function genBulk(){
     arr.push(makeUser());
   }
 
-  typeWriter(JSON.stringify(arr, null, 2), document.getElementById("userOut"));
+  runId++;
+  typeWriter(
+    JSON.stringify(arr, null, 2),
+    document.getElementById("userOut"),
+    1,
+    runId
+  );
 }
 
 /* ================= COPY ================= */
