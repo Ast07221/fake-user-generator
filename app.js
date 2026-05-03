@@ -55,7 +55,6 @@ class UserEngine {
 
 /* ================= BULK (TOGGLE SAFE VERSION) ================= */
 async function runBulk(count){
-
   const safeCount = Math.min(count || 100, 10000);
 
   isBulkRunning = true;
@@ -73,8 +72,10 @@ async function runBulk(count){
 
     result.push(UserEngine.makeUser());
 
-    // 🔥  yield control (prevents freeze + allows stop)
-    await Promise.resolve();
+    // 🔥  every 25 items give UI control (smooth + no lag)
+    if(i % 25 === 0){
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
   }
 
   isBulkRunning = false;
@@ -82,16 +83,50 @@ async function runBulk(count){
   return result;
 }
 
+/* ================= TYPEWRITER ================= */
+function typeWriter(text, el, speed = 5){
+
+  el.style.color = "#ffffff";
+  el.value = "";
+
+  let i = 0;
+
+  function step(){
+
+    // if bulk starts while typing -> instant fill
+    if(isBulkRunning){
+      el.value = text;
+      return;
+    }
+
+    if(i >= text.length) return;
+
+    el.value += text[i++];
+    setTimeout(step, speed);
+  }
+
+  step();
+}
+
 /* ================= RENDER ================= */
 function show(data){
+
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
 
-  el.style.color = "#ffffff";
-  el.value = JSON.stringify(data, null, 2);
-}
+  const text = JSON.stringify(data, null, 2);
 
+  // bulk result = instant render
+  if(Array.isArray(data)){
+    el.style.color = "#ffffff";
+    el.value = text;
+    return;
+  }
+
+  // single user = typewriter effect
+  typeWriter(text, el, 5);
+}
 /* ================= ACTIONS ================= */
 function genUser(){
   bulkAbort = true;
