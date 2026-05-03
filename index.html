@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <title>Fake User Generator Pro – Global Fake Data Tool</title>
 
 <meta name="description" content="Generate realistic fake users for API testing, SaaS development, QA and database seeding. 100+ countries, bulk export JSON & CSV." />
@@ -36,6 +35,39 @@ body{
   color:#fff;
 }
 
+/* ================= MATRIX CANVAS ================= */
+#matrixCanvas{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:-2;
+  background:#000;
+  opacity:0.35;
+}
+
+/* ================= BOOT SCREEN ================= */
+#bootScreen{
+  position:fixed;
+  inset:0;
+  background:black;
+  color:#ffb347;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: monospace;
+  z-index:9999;
+}
+
+.bootText{
+  white-space:pre;
+  font-size:14px;
+  line-height:1.6;
+  text-shadow:0 0 12px rgba(255,140,0,0.5);
+}
+
+/* ================= YOUR ORIGINAL UI ================= */
 .wrap{
   max-width:900px;
   margin:40px auto;
@@ -98,7 +130,6 @@ input{
   text-align:center;
 }
 </style>
-
 </head>
 
 <body>
@@ -121,21 +152,13 @@ input{
   <textarea id="userOut" readonly></textarea>
 
   <div class="controls">
-
     <button id="genBtn">Generate User</button>
-
     <input id="bulkCount" type="number" value="50" min="1" max="10000" />
-
     <button id="bulkBtn">Bulk Generate</button>
-
     <button id="copyBtn">Copy</button>
-
     <button onclick="exportJSON()">Export JSON</button>
-
     <button onclick="exportCSV()">Export CSV</button>
-
   </div>
-
 </div>
 
 <!-- CORE SCRIPTS -->
