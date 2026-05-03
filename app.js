@@ -5,7 +5,7 @@ function rand(arr){
   return arr[(Math.random() * arr.length) | 0];
 }
 
-/* ================= PERFORMANCE SAFE TYPEWRITER ================= */
+/* ================= TYPEWRITER (SAFE) ================= */
 function typeWriter(text, el, speed = 2, id){
   const currentId = id ?? ++runId;
   el.value = "";
@@ -32,70 +32,63 @@ function typeWriter(text, el, speed = 2, id){
   step();
 }
 
-/* ================= ENTERPRISE COUNTRY ENGINE ================= */
+/* ================= FULL ADDRESS DATABASE ================= */
 const DATA = {
   US: {
     name: "United States",
     phones: ["+1 (212)", "+1 (305)", "+1 (415)", "+1 (213)", "+1 (312)"],
-    zips: () => (10000 + (Math.random() * 89999) | 0),
-    cities: ["New York","Los Angeles","Chicago","Houston","Miami","Dallas","Seattle","Boston"],
+    cities: {
+      "New York": ["5th Avenue","Broadway","Wall Street","Madison Ave"],
+      "Los Angeles": ["Sunset Blvd","Hollywood Blvd","Venice Blvd"],
+      "Chicago": ["Lake Shore Dr","Michigan Ave","Wacker Dr"],
+      "Miami": ["Ocean Dr","Collins Ave","Brickell Ave"]
+    },
+    zip: () => (10000 + (Math.random()*89999|0)),
     emails: ["gmail.com","outlook.com","yahoo.com","icloud.com"],
-    first: [
-      "James","John","Robert","Michael","William","David","Richard","Joseph","Thomas","Charles",
-      "Emma","Olivia","Ava","Sophia","Isabella","Mia","Amelia","Harper","Evelyn","Abigail"
-    ],
-    last: [
-      "Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez",
-      "Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin"
-    ]
+    first: ["James","John","Michael","David","Robert","William","Emma","Olivia","Ava","Sophia"],
+    last: ["Smith","Johnson","Brown","Williams","Jones","Garcia","Miller","Davis","Rodriguez","Wilson"]
   },
 
   DE: {
     name: "Germany",
-    phones: ["+49 30", "+49 40", "+49 89", "+49 69", "+49 221"],
-    zips: () => (10000 + (Math.random() * 89999) | 0),
-    cities: ["Berlin","Hamburg","Munich","Cologne","Frankfurt","Stuttgart","Düsseldorf"],
+    phones: ["+49 30", "+49 40", "+49 89", "+49 69"],
+    cities: {
+      "Berlin": ["Unter den Linden","Alexanderplatz","Friedrichstrasse"],
+      "Munich": ["Leopoldstrasse","Marienplatz","Maximilianstrasse"],
+      "Hamburg": ["Reeperbahn","Jungfernstieg","Mönckebergstrasse"]
+    },
+    zip: () => (10000 + (Math.random()*89999|0)),
     emails: ["gmail.com","gmx.de","web.de","outlook.com"],
-    first: [
-      "Max","Paul","Leon","Lukas","Finn","Noah","Elias","Jonas","Ben","Felix",
-      "Emma","Hannah","Sofia","Mia","Emilia","Lina","Marie","Lea","Lena","Anna"
-    ],
-    last: [
-      "Müller","Schmidt","Schneider","Fischer","Weber","Meyer","Wagner","Becker","Hoffmann","Schäfer",
-      "Koch","Bauer","Richter","Klein","Wolf","Schröder","Neumann","Schwarz","Zimmermann","Braun"
-    ]
-  },
-
-  JP: {
-    name: "Japan",
-    phones: ["+81 3", "+81 6", "+81 45", "+81 52", "+81 92"],
-    zips: () => (1000000 + (Math.random() * 8999999) | 0),
-    cities: ["Tokyo","Osaka","Kyoto","Nagoya","Yokohama","Sapporo","Fukuoka"],
-    emails: ["gmail.com","yahoo.co.jp","icloud.com"],
-    first: [
-      "Haruto","Yuto","Sota","Yuki","Ren","Hiro","Daiki","Kaito","Riku","Shota",
-      "Aoi","Hina","Yui","Sakura","Mio","Rio","Mei","Rin","Nana","Haruka"
-    ],
-    last: [
-      "Sato","Suzuki","Takahashi","Tanaka","Watanabe","Ito","Yamamoto","Nakamura","Kobayashi","Kato",
-      "Yoshida","Yamada","Sasaki","Yamaguchi","Matsumoto","Inoue","Kimura","Hayashi","Shimizu","Saito"
-    ]
+    first: ["Max","Paul","Leon","Lukas","Finn","Emma","Hannah","Sofia","Marie","Lena"],
+    last: ["Müller","Schmidt","Schneider","Fischer","Weber","Meyer","Wagner","Becker","Hoffmann","Schäfer"]
   },
 
   NL: {
     name: "Netherlands",
-    phones: ["+31 20", "+31 10", "+31 70", "+31 40", "+31 30"],
-    zips: () => `${1000 + (Math.random()*8999|0)} AB`,
-    cities: ["Amsterdam","Rotterdam","Utrecht","Eindhoven","Haarlem","Groningen"],
+    phones: ["+31 20", "+31 10", "+31 70"],
+    cities: {
+      "Amsterdam": ["Damrak","Leidseplein","Prinsengracht","Herengracht"],
+      "Rotterdam": ["Coolsingel","Lijnbaan","Weena"],
+      "Utrecht": ["Oudegracht","Neude","Domplein"]
+    },
+    zip: () => `${1000 + (Math.random()*8999|0)} AB`,
     emails: ["gmail.com","outlook.com","ziggo.nl"],
-    first: [
-      "Daan","Lars","Sem","Finn","Bram","Tijs","Milan","Jesse","Noah","Lucas",
-      "Emma","Sophie","Julia","Mila","Tess","Lotte","Nora","Eva","Sara","Anna"
-    ],
-    last: [
-      "de Jong","Jansen","de Vries","van den Berg","Bakker","Visser","Smit","Meijer","de Boer","Mulder",
-      "van Dijk","Dekker","de Groot","Kok","Jacobs","Vermeulen","Hendriks","Bos","de Wit","van Leeuwen"
-    ]
+    first: ["Daan","Lars","Finn","Milan","Jesse","Emma","Sophie","Noor","Eva","Lotte"],
+    last: ["de Jong","Jansen","de Vries","Bakker","Visser","Smit","Meijer","de Boer","Mulder","van Dijk"]
+  },
+
+  JP: {
+    name: "Japan",
+    phones: ["+81 3", "+81 6", "+81 45"],
+    cities: {
+      "Tokyo": ["Shibuya","Shinjuku","Ginza","Akihabara"],
+      "Osaka": ["Namba","Umeda","Dotonbori"],
+      "Kyoto": ["Gion","Kawaramachi","Arashiyama"]
+    },
+    zip: () => (1000000 + (Math.random()*8999999|0)),
+    emails: ["gmail.com","yahoo.co.jp","icloud.com"],
+    first: ["Haruto","Yuto","Sota","Yuki","Ren","Hiro","Kaito","Riku","Aoi","Hina"],
+    last: ["Sato","Suzuki","Takahashi","Tanaka","Watanabe","Ito","Yamamoto","Nakamura","Kobayashi","Kato"]
   }
 };
 
@@ -109,34 +102,36 @@ function getCountry(){
 function makeUser(){
   const c = getCountry();
 
+  const city = rand(Object.keys(c.cities));
+  const street = rand(c.cities[city]);
+
   const f = rand(c.first);
   const l = rand(c.last);
-  const username = (f + l + ((Math.random() * 9999) | 0)).toLowerCase();
 
-  const city = rand(c.cities);
+  const username = (f + l + ((Math.random()*9999)|0)).toLowerCase();
 
   return {
     name: `${f} ${l}`,
     username,
     email: `${username}@${rand(c.emails)}`,
-    phone: rand(c.phones) + " " + ((Math.random() * 9999999) | 0),
+    phone: rand(c.phones) + " " + ((Math.random()*9999999)|0),
+
     country: c.name,
     city,
-    zip: typeof c.zips === "function" ? c.zips() : c.zips,
-    address: `${city}, ${c.name}`,
+    street,
+    house: ((Math.random()*200)|0) + 1,
+    zip: typeof c.zip === "function" ? c.zip() : c.zip,
+
+    address: `${street} ${((Math.random()*200)|0)+1}, ${city}, ${c.name}`,
+
     avatar: `https://i.pravatar.cc/150?u=${username}`
   };
 }
 
-/* ================= SAFE SHOW ================= */
+/* ================= SHOW ================= */
 function show(data){
   runId++;
-  typeWriter(
-    JSON.stringify(data, null, 2),
-    document.getElementById("userOut"),
-    2,
-    runId
-  );
+  typeWriter(JSON.stringify(data, null, 2), document.getElementById("userOut"), 2, runId);
 }
 
 /* ================= SINGLE ================= */
@@ -144,7 +139,7 @@ function genUser(){
   show(makeUser());
 }
 
-/* ================= BULK (OPTIMIZED) ================= */
+/* ================= BULK ================= */
 function genBulk(){
   const count = Math.min(parseInt(document.getElementById("bulkCount").value) || 50, 2000);
 
@@ -162,7 +157,7 @@ function copyUser(){
   navigator.clipboard.writeText(document.getElementById("userOut").value);
 }
 
-/* ================= EXPORT ================= */
+/* ================= EXPORT JSON ================= */
 function exportJSON(){
   const data = document.getElementById("userOut").value;
   const blob = new Blob([data], {type:"application/json"});
@@ -172,13 +167,14 @@ function exportJSON(){
   a.click();
 }
 
+/* ================= EXPORT CSV ================= */
 function exportCSV(){
   const data = JSON.parse(document.getElementById("userOut").value);
 
-  let csv = "name,username,email,phone,country,city,zip,address\n";
+  let csv = "name,username,email,phone,country,city,street,house,zip,address\n";
 
   for(let u of data){
-    csv += `${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.zip},${u.address}\n`;
+    csv += `${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.house},${u.zip},${u.address}\n`;
   }
 
   const blob = new Blob([csv], {type:"text/csv"});
