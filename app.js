@@ -109,42 +109,50 @@ function typeWriter(text, el, speed = 5){
 }
 
 /* ================= RENDER ================= */
-function show(data){
+function show(data, useTyping = false){
 
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
-
   const text = JSON.stringify(data, null, 2);
 
-  // bulk result = instant render
-  if(Array.isArray(data)){
-    el.style.color = "#ffffff";
-    el.value = text;
+  el.style.color = "#ffffff";
+
+  if(useTyping){
+    typeWriter(text, el, 5);
     return;
   }
+
+  el.value = text;
+}
 
   // single user = typewriter effect
   typeWriter(text, el, 5);
 }
 /* ================= ACTIONS ================= */
 function genUser(){
+
   bulkAbort = true;
   isBulkRunning = false;
 
-  show(UserEngine.makeUser());
+  show(UserEngine.makeUser(), true);
 }
 
 /* TOGGLE BULK */
 function genBulk(){
 
-  // STOP if running
   if(isBulkRunning){
     bulkAbort = true;
     isBulkRunning = false;
-    console.warn("🛑  Bulk stopped");
     return;
   }
+
+  const count = parseInt(document.getElementById("bulkCount").value) || 100;
+
+  runBulk(count).then(data => {
+    show(data, false);
+  });
+}
 
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
 
