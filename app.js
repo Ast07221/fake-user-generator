@@ -1,6 +1,6 @@
 let lastGeneratedData = null;
 
-/* ================= BULK CONTROL ================= */
+/* ================= BULK STATE ================= */
 let isBulkRunning = false;
 let bulkAbort = false;
 
@@ -27,8 +27,7 @@ class UserEngine {
     const cities = Object.keys(c.cities || {});
     const city = this.rand(cities);
 
-    const streetList = c.cities?.[city] || ["Main Street"];
-    const street = this.rand(streetList);
+    const street = this.rand(c.cities?.[city] || ["Main Street"]);
 
     const first = this.rand(c.first);
     const last = this.rand(c.last);
@@ -58,8 +57,9 @@ class UserEngine {
     return this.makeUser();
   }
 
-  /* ================= BULK (SAFE + STOPPABLE) ================= */
+  /* ================= BULK (FIXED STOP) ================= */
   static async generateBulk(count = 100){
+
     const safeCount = Math.min(count || 100, 10000);
 
     isBulkRunning = true;
@@ -69,17 +69,16 @@ class UserEngine {
 
     for(let i = 0; i < safeCount; i++){
 
+      // 🔥  CHECK STOP FIRST (CRITICAL FIX)
       if(bulkAbort){
-        console.warn("⛔ Bulk stopped by user");
+        console.warn("⛔ Bulk stopped at:", i);
         break;
       }
 
       arr.push(this.makeUser());
 
-      // UI breathing room (no freeze)
-      if(i % 50 === 0){
-        await new Promise(r => setTimeout(r, 0));
-      }
+      // 🔥  force async break EVERY iteration (IMPORTANT FIX)
+      await new Promise(requestAnimationFrame);
     }
 
     isBulkRunning = false;
@@ -88,13 +87,12 @@ class UserEngine {
   }
 }
 
-/* ================= RENDER ================= */
+/* ================= SHOW ================= */
 function show(data){
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
 
-  // 🔥  WHITE TEXT FIX
   el.style.color = "#ffffff";
 
   el.value = JSON.stringify(data, null, 2);
@@ -103,7 +101,6 @@ function show(data){
 /* ================= ACTIONS ================= */
 function genUser(){
   if(isBulkRunning) return;
-
   show(UserEngine.generateOne());
 }
 
@@ -119,6 +116,7 @@ function genBulk(){
 
 function stopBulk(){
   bulkAbort = true;
+  console.warn("🛑  STOP clicked");
 }
 
 function copyUser(){
@@ -129,7 +127,7 @@ function copyUser(){
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
   if(!lastGeneratedData){
-    alert("No data - generate first");
+    alert("No data");
     return;
   }
 
@@ -147,7 +145,7 @@ function exportJSON(){
 /* ================= EXPORT CSV ================= */
 function exportCSV(){
   if(!lastGeneratedData){
-    alert("No data - generate first");
+    alert("No data");
     return;
   }
 
@@ -166,7 +164,8 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
-  if(!window.DATA || Object.keys(window.DATA).length === 0){
+
+  if(!window.DATA){
     console.error("❌ DATA not loaded");
     return;
   }
@@ -174,5 +173,4 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("genBtn").onclick = genUser;
   document.getElementById("bulkBtn").onclick = genBulk;
   document.getElementById("copyBtn").onclick = copyUser;
-
 });
