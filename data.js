@@ -1,11 +1,12 @@
 const DATA = {
   US: {
     name: "United States",
-    phones: ["+1 (212)", "+1 (305)", "+1 (415)", "+1 (312)", "+1 (213)"],
+    locale: "en-US",
+    phones: ["+1 (212)", "+1 (305)", "+1 (415)", "+1 (312)"],
     zip: () => 10000 + ((Math.random() * 89999) | 0),
     cities: {
-      "New York": ["5th Ave", "Broadway", "Wall Street"],
-      "Los Angeles": ["Sunset Blvd", "Hollywood Blvd"],
+      "New York": ["5th Ave", "Broadway", "Wall Street", "Madison Ave"],
+      "Los Angeles": ["Sunset Blvd", "Hollywood Blvd", "Venice Beach"],
       "Chicago": ["Michigan Ave", "Lake Shore Dr"]
     },
     first: ["James","John","Michael","David","Robert","Emma","Olivia","Sophia","Isabella","Mason"],
@@ -15,10 +16,11 @@ const DATA = {
 
   DE: {
     name: "Germany",
+    locale: "de-DE",
     phones: ["+49 30", "+49 40", "+49 89"],
     zip: () => 10000 + ((Math.random() * 89999) | 0),
     cities: {
-      "Berlin": ["Unter den Linden", "Alexanderplatz"],
+      "Berlin": ["Unter den Linden", "Alexanderplatz", "Kurfürstendamm"],
       "Munich": ["Marienplatz", "Leopoldstrasse"],
       "Hamburg": ["Reeperbahn", "Jungfernstieg"]
     },
@@ -29,6 +31,7 @@ const DATA = {
 
   NL: {
     name: "Netherlands",
+    locale: "nl-NL",
     phones: ["+31 20", "+31 10", "+31 70"],
     zip: () => `${1000 + ((Math.random() * 8999) | 0)} AB`,
     cities: {
@@ -43,6 +46,7 @@ const DATA = {
 
   JP: {
     name: "Japan",
+    locale: "ja-JP",
     phones: ["+81 3", "+81 6", "+81 45"],
     zip: () => 1000000 + ((Math.random() * 8999999) | 0),
     cities: {
