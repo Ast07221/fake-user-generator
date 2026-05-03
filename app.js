@@ -1,6 +1,5 @@
 let lastGeneratedData = null;
 
-/* ================= BULK STATE ================= */
 let isBulkRunning = false;
 let bulkAbort = false;
 
@@ -57,7 +56,7 @@ class UserEngine {
     return this.makeUser();
   }
 
-  /* ================= BULK (FIXED STOP) ================= */
+  /* ================= BULK TOGGLE CORE ================= */
   static async generateBulk(count = 100){
 
     const safeCount = Math.min(count || 100, 10000);
@@ -69,7 +68,6 @@ class UserEngine {
 
     for(let i = 0; i < safeCount; i++){
 
-      // 🔥  CHECK STOP FIRST (CRITICAL FIX)
       if(bulkAbort){
         console.warn("⛔ Bulk stopped at:", i);
         break;
@@ -77,7 +75,6 @@ class UserEngine {
 
       arr.push(this.makeUser());
 
-      // 🔥  force async break EVERY iteration (IMPORTANT FIX)
       await new Promise(requestAnimationFrame);
     }
 
@@ -87,26 +84,27 @@ class UserEngine {
   }
 }
 
-/* ================= SHOW ================= */
+/* ================= RENDER ================= */
 function show(data){
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
-
   el.style.color = "#ffffff";
-
   el.value = JSON.stringify(data, null, 2);
 }
 
-/* ================= ACTIONS ================= */
-function genUser(){
-  if(isBulkRunning) return;
-  show(UserEngine.generateOne());
-}
-
+/* ================= TOGGLE BULK (KEY PART) ================= */
 function genBulk(){
-  if(isBulkRunning) return;
 
+  // 🟢  IF RUNNING → STOP
+  if(isBulkRunning){
+    bulkAbort = true;
+    isBulkRunning = false;
+    console.warn("🛑  BULK STOPPED");
+    return;
+  }
+
+  // 🟢  ELSE START
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
 
   UserEngine.generateBulk(count).then(data => {
@@ -114,11 +112,15 @@ function genBulk(){
   });
 }
 
-function stopBulk(){
-  bulkAbort = true;
-  console.warn("🛑  STOP clicked");
+/* ================= SINGLE USER ================= */
+function genUser(){
+  bulkAbort = true; // auto-stop bulk if running
+  isBulkRunning = false;
+
+  show(UserEngine.generateOne());
 }
 
+/* ================= COPY ================= */
 function copyUser(){
   const el = document.getElementById("userOut");
   if(el) navigator.clipboard.writeText(el.value);
@@ -164,7 +166,6 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
-
   if(!window.DATA){
     console.error("❌ DATA not loaded");
     return;
