@@ -4,10 +4,11 @@ let runId = 0;
 class UserEngine {
 
   static rand(arr){
-    return Array.isArray(arr) && arr.length
-      ? arr[(Math.random() * arr.length) | 0]
-      : "unknown";
+  if(!Array.isArray(arr) || arr.length === 0){
+    return "unknown";
   }
+  return arr[(Math.random() * arr.length) | 0];
+}
 
   static getCountry(){
     const keys = Object.keys(window.DATA || {});
