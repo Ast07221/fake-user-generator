@@ -1,4 +1,4 @@
-let lastGeneratedData = null;
+et lastGeneratedData = null;
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -52,49 +52,40 @@ class UserEngine {
   static generateBulk(count = 100){
     const safe = Math.min(count || 100, 10000);
     const arr = [];
-
     for(let i = 0; i < safe; i++){
       arr.push(this.makeUser());
     }
-
     return arr;
   }
 }
 
-/* ================= TYPEWRITER (FIXED - NO OVERLAP) ================= */
-let renderToken = 0;
-let isRendering = false;
-
-let activeRenderId = 0;
+/* ================= TYPEWRITER (STABLE) ================= */
+let typingTimer = null;
 
 function typeWriter(text, el, speed = 1){
-  const myId = ++activeRenderId;
+  clearInterval(typingTimer);
 
   el.style.color = "#ffffff";
   el.value = "";
 
   let i = 0;
 
-  function step(){
-    if(myId !== activeRenderId) return;
-
-    if(i >= text.length) return;
-
+  typingTimer = setInterval(() => {
+    if(i >= text.length){
+      clearInterval(typingTimer);
+      return;
+    }
     el.value += text[i++];
-    setTimeout(step, speed);
-  }
-
-  step();
+  }, speed);
 }
 
 /* ================= SHOW ================= */
 function show(data){
   lastGeneratedData = data;
-
   const el = document.getElementById("userOut");
-
   typeWriter(JSON.stringify(data, null, 2), el, 1);
 }
+
 /* ================= ACTIONS ================= */
 function genUser(){
   show(UserEngine.generateOne());
@@ -102,7 +93,14 @@ function genUser(){
 
 function genBulk(){
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
-  show(UserEngine.generateBulk(count));
+
+  const data = UserEngine.generateBulk(count);
+
+  lastGeneratedData = data;
+
+  const el = document.getElementById("userOut");
+  el.style.color = "#ffffff";
+  el.value = JSON.stringify(data, null, 2);
 }
 
 function copyUser(){
@@ -161,7 +159,6 @@ function initApp(){
     console.error("UI ERROR");
     return;
   }
-
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
   copyBtn.onclick = copyUser;
