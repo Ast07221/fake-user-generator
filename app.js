@@ -65,8 +65,10 @@ class UserEngine {
 let renderToken = 0;
 let isRendering = false;
 
+let activeRenderId = 0;
+
 function typeWriter(text, el, speed = 1){
-  const token = ++renderToken;
+  const myId = ++activeRenderId;
 
   el.style.color = "#ffffff";
   el.value = "";
@@ -74,12 +76,9 @@ function typeWriter(text, el, speed = 1){
   let i = 0;
 
   function step(){
-    if(token !== renderToken) return;
+    if(myId !== activeRenderId) return;
 
-    if(i >= text.length){
-      isRendering = false;
-      return;
-    }
+    if(i >= text.length) return;
 
     el.value += text[i++];
     setTimeout(step, speed);
@@ -90,20 +89,12 @@ function typeWriter(text, el, speed = 1){
 
 /* ================= SHOW ================= */
 function show(data){
-
-  // ❗ блокируем наложение
-  if(isRendering) return;
-  isRendering = true;
-
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
 
-  const text = JSON.stringify(data, null, 2);
-
-  typeWriter(text, el, 1);
+  typeWriter(JSON.stringify(data, null, 2), el, 1);
 }
-
 /* ================= ACTIONS ================= */
 function genUser(){
   show(UserEngine.generateOne());
