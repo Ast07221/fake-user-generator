@@ -1,4 +1,3 @@
-/* ================= GLOBAL STATE ================= */
 let runId = 0;
 
 /* ================= ENGINE CLASS ================= */
@@ -77,6 +76,7 @@ function typeWriter(text, el, speed = 1){
 /* ================= SHOW ================= */
 function show(data){
   runId++;
+
   typeWriter(
     JSON.stringify(data, null, 2),
     document.getElementById("userOut"),
