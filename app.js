@@ -1,5 +1,9 @@
 let lastGeneratedData = null;
 
+/* ================= BULK CONTROL ================= */
+let isBulkRunning = false;
+let bulkAbort = false;
+
 /* ================= ENGINE ================= */
 class UserEngine {
 
@@ -54,13 +58,31 @@ class UserEngine {
     return this.makeUser();
   }
 
-  static generateBulk(count = 100){
+  /* ================= BULK (SAFE + STOPPABLE) ================= */
+  static async generateBulk(count = 100){
     const safeCount = Math.min(count || 100, 10000);
+
+    isBulkRunning = true;
+    bulkAbort = false;
+
     const arr = [];
 
     for(let i = 0; i < safeCount; i++){
+
+      if(bulkAbort){
+        console.warn("⛔ Bulk stopped by user");
+        break;
+      }
+
       arr.push(this.makeUser());
+
+      // UI breathing room (no freeze)
+      if(i % 50 === 0){
+        await new Promise(r => setTimeout(r, 0));
+      }
     }
+
+    isBulkRunning = false;
 
     return arr;
   }
@@ -72,7 +94,7 @@ function show(data){
 
   const el = document.getElementById("userOut");
 
-  // 🔥  FIX: WHITE TEXT OUTPUT
+  // 🔥  WHITE TEXT FIX
   el.style.color = "#ffffff";
 
   el.value = JSON.stringify(data, null, 2);
@@ -80,12 +102,23 @@ function show(data){
 
 /* ================= ACTIONS ================= */
 function genUser(){
+  if(isBulkRunning) return;
+
   show(UserEngine.generateOne());
 }
 
 function genBulk(){
+  if(isBulkRunning) return;
+
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
-  show(UserEngine.generateBulk(count));
+
+  UserEngine.generateBulk(count).then(data => {
+    show(data);
+  });
+}
+
+function stopBulk(){
+  bulkAbort = true;
 }
 
 function copyUser(){
@@ -133,7 +166,6 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
-
   if(!window.DATA || Object.keys(window.DATA).length === 0){
     console.error("❌ DATA not loaded");
     return;
@@ -142,4 +174,5 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("genBtn").onclick = genUser;
   document.getElementById("bulkBtn").onclick = genBulk;
   document.getElementById("copyBtn").onclick = copyUser;
+
 });
