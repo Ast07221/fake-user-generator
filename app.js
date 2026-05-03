@@ -1,5 +1,10 @@
 let lastGeneratedData = null;
 
+/* ================= ENGINE STATE ================= */
+let isBusy = false;
+let bulkAbort = false;
+let taskQueue = Promise.resolve();
+
 /* ================= ENGINE ================= */
 class UserEngine {
   static rand(arr){
@@ -52,57 +57,84 @@ class UserEngine {
   static generateBulk(count = 100){
     const safe = Math.min(count || 100, 10000);
     const arr = [];
+
     for(let i = 0; i < safe; i++){
       arr.push(this.makeUser());
     }
+
     return arr;
   }
 }
 
-/* ================= TYPEWRITER (CLEAN + NO BUGS) ================= */
-let typingTimer = null;
-
-function typeWriter(text, el, speed = 1){
-  clearInterval(typingTimer);
-
-  el.style.color = "#ffffff";
-  el.value = "";
-
-  let i = 0;
-
-  typingTimer = setInterval(() => {
-    if(i >= text.length){
-      clearInterval(typingTimer);
-      return;
-    }
-    el.value += text[i++];
-  }, speed);
+/* ================= QUEUE ================= */
+function enqueue(task){
+  taskQueue = taskQueue.then(() => task());
 }
 
-/* ================= SHOW ================= */
-function show(data){
-  lastGeneratedData = data;
-  const el = document.getElementById("userOut");
-  typeWriter(JSON.stringify(data, null, 2), el, 1);
+/* ================= PROGRESS ================= */
+function setProgress(v){
+  const bar = document.getElementById("progressBar");
+  if(bar) bar.value = v;
 }
 
-/* ================= ACTIONS ================= */
+/* ================= BULK STOP ================= */
+function stopBulk(){
+  bulkAbort = true;
+  isBusy = false;
+  setProgress(0);
+}
+
+/* ================= SINGLE ================= */
 function genUser(){
-  show(UserEngine.generateOne());
+  if(isBusy) return;
+
+  enqueue(() => {
+    const data = UserEngine.generateOne();
+    lastGeneratedData = data;
+
+    const el = document.getElementById("userOut");
+    el.style.color = "#ffffff";
+    el.value = JSON.stringify(data, null, 2);
+  });
 }
 
+/* ================= BULK ================= */
 function genBulk(){
+  if(isBusy) return;
+
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
 
-  const data = UserEngine.generateBulk(count);
+  enqueue(async () => {
+    isBusy = true;
+    bulkAbort = false;
 
-  lastGeneratedData = data;
+    const result = [];
+    const el = document.getElementById("userOut");
 
-  const el = document.getElementById("userOut");
-  el.style.color = "#ffffff";
-  el.value = JSON.stringify(data, null, 2);
+    el.style.color = "#ffffff";
+
+    for(let i = 0; i < count; i++){
+
+      if(bulkAbort) break;
+
+      result.push(UserEngine.makeUser());
+
+      setProgress(Math.round((i / count) * 100));
+
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    setProgress(100);
+
+    lastGeneratedData = result;
+
+    el.value = JSON.stringify(result, null, 2);
+
+    isBusy = false;
+  });
 }
 
+/* ================= COPY ================= */
 function copyUser(){
   const el = document.getElementById("userOut");
   if(el) navigator.clipboard.writeText(el.value);
@@ -149,11 +181,10 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 function initApp(){
-  console.log("DATA LOADED OK");
-
   const genBtn = document.getElementById("genBtn");
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
+  const stopBtn = document.getElementById("stopBtn");
 
   if(!genBtn || !bulkBtn || !copyBtn){
     console.error("UI ERROR");
@@ -163,6 +194,10 @@ function initApp(){
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
   copyBtn.onclick = copyUser;
+
+  if(stopBtn){
+    stopBtn.onclick = stopBulk;
+  }
 }
 
 /* ================= WAIT DATA ================= */
