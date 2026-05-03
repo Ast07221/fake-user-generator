@@ -4,21 +4,21 @@ let runId = 0;
 class UserEngine {
 
   static rand(arr){
-    return arr?.length
+    return Array.isArray(arr) && arr.length
       ? arr[(Math.random() * arr.length) | 0]
       : "unknown";
   }
 
   static getCountry(){
-    const keys = Object.keys(DATA || {});
+    const keys = Object.keys(window.DATA || {});
     if(!keys.length) return null;
-    return DATA[this.rand(keys)];
+    return window.DATA[this.rand(keys)];
   }
 
   static makeUser(){
     const c = this.getCountry();
 
-    if(!c) {
+    if(!c){
       return { error: "NO DATA LOADED" };
     }
 
@@ -33,10 +33,11 @@ class UserEngine {
 
     const username = (first + last + ((Math.random() * 9999) | 0)).toLowerCase();
 
-    const zip = typeof c.zip === 
-    "function"
+    const zip = typeof c.zip === "function"
       ? c.zip()
       : (c.zip || "00000");
+
+    const houseNumber = (Math.random() * 200 | 0) + 1;
 
     return {
       id: crypto.randomUUID(),
@@ -44,16 +45,11 @@ class UserEngine {
       username,
       email: `${username}@${this.rand(c.emails)}`,
       phone: `${this.rand(c.phones)} ${(Math.random() * 9999999) | 0}`,
-
       country: c.name || "Unknown",
       city,
       street,
       zip,
-
-      address: `${street} $
-      {(Math.random() * 200 | 0) + 1}, 
-      ${city}, ${c.name || ""}`,
-
+      address: `${street} ${houseNumber}, ${city}, ${c.name || ""}`,
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
@@ -69,6 +65,7 @@ class UserEngine {
     for(let i = 0; i < safeCount; i++){
       arr[i] = this.makeUser();
     }
+
     return arr;
   }
 }
@@ -90,11 +87,12 @@ function typeWriter(text, el, speed = 1){
 /* ================= SHOW ================= */
 function show(data){
   runId++;
-  typeWriter(
-    JSON.stringify(data, null, 2),
-    document.getElementById("userOut"),
-    1
-  );
+
+  const el = document.getElementById("userOut");
+
+  const text = JSON.stringify(data, null, 2);
+
+  typeWriter(text, el, 1);
 }
 
 /* ================= ACTIONS ================= */
@@ -116,7 +114,7 @@ function exportJSON(){
   const el = document.getElementById("userOut");
   const data = el.value;
 
-  if(!data || data.trim() === "") {
+  if(!data || data.trim() === ""){
     alert("No data - generate first");
     return;
   }
@@ -139,15 +137,16 @@ function exportCSV(){
     return;
   }
 
+  const arr = Array.isArray(data) ? data : [data];
+
   let csv = "id,name,username,email,phone,country,city,street,zip,address\n";
 
-  for(const u of data){
+  for(const u of arr){
     csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
   }
 
   const blob = new Blob([csv], {type:"text/csv"});
   const a = document.createElement("a");
-
   a.href = URL.createObjectURL(blob);
   a.download = "users.csv";
   a.click();
@@ -156,7 +155,7 @@ function exportCSV(){
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
 
-  if (!window.DATA) {
+  if(!window.DATA){
     console.error("❌ DATA not loaded");
     return;
   }
@@ -165,20 +164,19 @@ window.addEventListener("DOMContentLoaded", () => {
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
 
-  if (!genBtn || !bulkBtn || !copyBtn) {
+  if(!genBtn || !bulkBtn || !copyBtn){
     console.error("❌ UI elements missing");
     return;
   }
-
   genBtn.onclick = () => show(UserEngine.generateOne());
 
   bulkBtn.onclick = () => {
     const count = parseInt(document.getElementById("bulkCount").value) || 100;
     show(UserEngine.generateBulk(count));
   };
+
   copyBtn.onclick = () => {
     const el = document.getElementById("userOut");
     if(el) navigator.clipboard.writeText(el.value);
   };
-
 });
