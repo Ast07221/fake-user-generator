@@ -1,14 +1,15 @@
 let runId = 0;
+let lastGeneratedData = null;
 
-/* ================= ENGINE CLASS ================= */
+/* ================= ENGINE ================= */
 class UserEngine {
 
   static rand(arr){
-  if(!Array.isArray(arr) || arr.length === 0){
-    return "unknown";
+    if(!Array.isArray(arr) || arr.length === 0){
+      return "unknown";
+    }
+    return arr[(Math.random() * arr.length) | 0];
   }
-  return arr[(Math.random() * arr.length) | 0];
-}
 
   static getCountry(){
     const keys = Object.keys(window.DATA || {});
@@ -18,10 +19,7 @@ class UserEngine {
 
   static makeUser(){
     const c = this.getCountry();
-
-    if(!c){
-      return { error: "NO DATA LOADED" };
-    }
+    if(!c) return { error: "NO DATA LOADED" };
 
     const cities = Object.keys(c.cities || {});
     const city = this.rand(cities);
@@ -38,8 +36,6 @@ class UserEngine {
       ? c.zip()
       : (c.zip || "00000");
 
-    const houseNumber = (Math.random() * 200 | 0) + 1;
-
     return {
       id: crypto.randomUUID(),
       name: `${first} ${last}`,
@@ -50,7 +46,7 @@ class UserEngine {
       city,
       street,
       zip,
-      address: `${street} ${houseNumber}, ${city}, ${c.name || ""}`,
+      address: `${street} ${(Math.floor(Math.random() * 200)) + 1}, ${city}, ${c.name || ""}`,
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
@@ -61,8 +57,8 @@ class UserEngine {
 
   static generateBulk(count = 100){
     const safeCount = Math.min(count || 100, 10000);
-
     const arr = new Array(safeCount);
+
     for(let i = 0; i < safeCount; i++){
       arr[i] = this.makeUser();
     }
@@ -87,13 +83,14 @@ function typeWriter(text, el, speed = 1){
 
 /* ================= SHOW ================= */
 function show(data){
+  lastGeneratedData = data;
+
   runId++;
-
-  const el = document.getElementById("userOut");
-
-  const text = JSON.stringify(data, null, 2);
-
-  typeWriter(text, el, 1);
+  typeWriter(
+    JSON.stringify(data, null, 2),
+    document.getElementById("userOut"),
+    1
+  );
 }
 
 /* ================= ACTIONS ================= */
@@ -111,38 +108,34 @@ function copyUser(){
   if(el) navigator.clipboard.writeText(el.value);
 }
 
+/* ================= EXPORT JSON ================= */
 function exportJSON(){
-  const el = document.getElementById("userOut");
-  const data = el.value;
-
-  if(!data || data.trim() === ""){
+  if(!lastGeneratedData){
     alert("No data - generate first");
     return;
   }
 
-  const blob = new Blob([data], {type:"application/json"});
+  const blob = new Blob(
+    [JSON.stringify(lastGeneratedData, null, 2)],
+    {type:"application/json"}
+  );
+
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "users.json";
   a.click();
 }
 
+/* ================= EXPORT CSV ================= */
 function exportCSV(){
-  const raw = document.getElementById("userOut").value;
-
-  let data;
-  try {
-    data = JSON.parse(raw);
-  } catch(e){
-    alert("Invalid JSON data");
+  if(!lastGeneratedData){
+    alert("No data - generate first");
     return;
   }
 
-  const arr = Array.isArray(data) ? data : [data];
-
   let csv = "id,name,username,email,phone,country,city,street,zip,address\n";
 
-  for(const u of arr){
+  for(const u of lastGeneratedData){
     csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
   }
 
@@ -156,7 +149,7 @@ function exportCSV(){
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
 
-  if(!window.DATA){
+  if(!window.DATA || Object.keys(window.DATA).length === 0){
     console.error("❌ DATA not loaded");
     return;
   }
@@ -169,15 +162,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("❌ UI elements missing");
     return;
   }
-  genBtn.onclick = () => show(UserEngine.generateOne());
-
-  bulkBtn.onclick = () => {
-    const count = parseInt(document.getElementById("bulkCount").value) || 100;
-    show(UserEngine.generateBulk(count));
-  };
-
-  copyBtn.onclick = () => {
-    const el = document.getElementById("userOut");
-    if(el) navigator.clipboard.writeText(el.value);
-  };
+  genBtn.onclick = genUser;
+  bulkBtn.onclick = genBulk;
+  copyBtn.onclick = copyUser;
 });
