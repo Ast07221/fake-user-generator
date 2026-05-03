@@ -131,7 +131,41 @@ function exportCSV(){
 
 /* ================= EVENTS ================= */
 window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("genBtn").onclick = genUser;
-  document.getElementById("bulkBtn").onclick = genBulk;
-  document.getElementById("copyBtn").onclick = copyUser;
+
+  if (!window.DATA) {
+    console.error("❌ DATA not loaded");
+    return;
+  }
+
+  const genBtn = document.getElementById("genBtn");
+  const bulkBtn = document.getElementById("bulkBtn");
+  const copyBtn = document.getElementById("copyBtn");
+
+  if (!genBtn || !bulkBtn || !copyBtn) {
+    console.error("❌ UI elements missing");
+    return;
+  }
+
+  genBtn.onclick = () => {
+    try {
+      show(UserEngine.generateOne());
+    } catch(e) {
+      console.error("GEN ERROR:", e);
+    }
+  };
+
+  bulkBtn.onclick = () => {
+    try {
+      const count = parseInt(document.getElementById("bulkCount").value) || 100;
+      show(UserEngine.generateBulk(count));
+    } catch(e) {
+      console.error("BULK ERROR:", e);
+    }
+  };
+
+  copyBtn.onclick = () => {
+    const el = document.getElementById("userOut");
+    if(el) navigator.clipboard.writeText(el.value);
+  };
+
 });
