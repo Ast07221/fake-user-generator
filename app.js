@@ -183,9 +183,10 @@ function copyUser(){
   if(el) navigator.clipboard.writeText(el.value);
 }
 
+let lastGeneratedData = null;
+
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
-
   if(!lastGeneratedData){
     alert("No data");
     return;
@@ -204,7 +205,6 @@ function exportJSON(){
 
 /* ================= EXPORT CSV ================= */
 function exportCSV(){
-
   if(!lastGeneratedData){
     alert("No data");
     return;
@@ -224,13 +224,33 @@ function exportCSV(){
   a.click();
 }
 
-/* ================= INIT ================= */
-window.addEventListener("DOMContentLoaded", () => {
+/* ================= INIT APP ================= */
+function initApp(){
+  console.log("DATA LOADED OK");
 
-  if(!window.DATA){
-    console.error("❌ DATA not loaded");
+  const genBtn = document.getElementById("genBtn");
+  const bulkBtn = document.getElementById("bulkBtn");
+  const copyBtn = document.getElementById("copyBtn");
+
+  if(!genBtn || !bulkBtn || !copyBtn){
+    console.error("❌ Buttons not found");
     return;
   }
+
+  genBtn.onclick = genUser;
+  bulkBtn.onclick = genBulk;
+  copyBtn.onclick = copyUser;
+}
+
+/* ================= WAIT FOR DATA ================= */
+window.addEventListener("DOMContentLoaded", () => {
+  const wait = setInterval(() => {
+    if(window.DATA){
+      clearInterval(wait);
+      initApp();
+    }
+  }, 50);
+});
 
   document.getElementById("genBtn").onclick = genUser;
   document.getElementById("bulkBtn").onclick = genBulk;
