@@ -33,7 +33,8 @@ class UserEngine {
 
     const username = (first + last + ((Math.random() * 9999) | 0)).toLowerCase();
 
-    const zip = typeof c.zip === "function"
+    const zip = typeof c.zip === 
+    "function"
       ? c.zip()
       : (c.zip || "00000");
 
@@ -49,7 +50,9 @@ class UserEngine {
       street,
       zip,
 
-      address: `${street} ${(Math.random() * 200 | 0) + 1}, ${city}, ${c.name || ""}`,
+      address: `${street} $
+      {(Math.random() * 200 | 0) + 1}, 
+      ${city}, ${c.name || ""}`,
 
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
