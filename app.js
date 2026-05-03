@@ -132,8 +132,6 @@ function show(data, useTyping = false){
   const el = document.getElementById("userOut");
   const text = JSON.stringify(data, null, 2);
 
-  el.style.color = "#ffffff";
-
   if(useTyping){
     typeWriter(text, el, 5);
     return;
