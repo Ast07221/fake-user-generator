@@ -1,11 +1,11 @@
 let runId = 0;
 
-/* ================= FAST RNG ================= */
+/* ================= FAST RANDOM ================= */
 function rand(arr){
   return arr[(Math.random() * arr.length) | 0];
 }
 
-/* ================= TYPEWRITER (SAFE) ================= */
+/* ================= SAFE TYPEWRITER ================= */
 function typeWriter(text, el, speed = 2, id){
   const currentId = id ?? ++runId;
   el.value = "";
@@ -21,10 +21,10 @@ function typeWriter(text, el, speed = 2, id){
     const c = text[i - 1];
     let delay = speed;
 
-    if(c === "\n") delay = 10;
-    else if(c === "," || c === "{") delay = 5;
-    else if(c === ":") delay = 4;
-    else if(Math.random() < 0.008) delay = 25;
+    if(c === "\n") delay = 8;
+    else if(c === "," || c === "{") delay = 4;
+    else if(c === ":") delay = 3;
+    else if(Math.random() < 0.01) delay = 20;
 
     setTimeout(step, delay);
   }
@@ -32,33 +32,33 @@ function typeWriter(text, el, speed = 2, id){
   step();
 }
 
-/* ================= FULL ADDRESS DATABASE ================= */
+/* ================= DATA ================= */
 const DATA = {
   US: {
     name: "United States",
     phones: ["+1 (212)", "+1 (305)", "+1 (415)", "+1 (213)", "+1 (312)"],
     cities: {
-      "New York": ["5th Avenue","Broadway","Wall Street","Madison Ave"],
+      "New York": ["5th Avenue","Broadway","Wall Street"],
       "Los Angeles": ["Sunset Blvd","Hollywood Blvd","Venice Blvd"],
-      "Chicago": ["Lake Shore Dr","Michigan Ave","Wacker Dr"],
-      "Miami": ["Ocean Dr","Collins Ave","Brickell Ave"]
+      "Chicago": ["Lake Shore Dr","Michigan Ave"],
+      "Miami": ["Ocean Dr","Brickell Ave"]
     },
     zip: () => (10000 + (Math.random()*89999|0)),
-    emails: ["gmail.com","outlook.com","yahoo.com","icloud.com"],
-    first: ["James","John","Michael","David","Robert","William","Emma","Olivia","Ava","Sophia"],
-    last: ["Smith","Johnson","Brown","Williams","Jones","Garcia","Miller","Davis","Rodriguez","Wilson"]
+    emails: ["gmail.com","outlook.com","yahoo.com"],
+    first: ["James","John","Michael","David","Robert","Emma","Olivia","Ava","Sophia","Isabella"],
+    last: ["Smith","Johnson","Brown","Williams","Jones","Miller","Davis","Wilson","Moore","Taylor"]
   },
 
   DE: {
     name: "Germany",
-    phones: ["+49 30", "+49 40", "+49 89", "+49 69"],
+    phones: ["+49 30", "+49 40", "+49 89"],
     cities: {
       "Berlin": ["Unter den Linden","Alexanderplatz","Friedrichstrasse"],
-      "Munich": ["Leopoldstrasse","Marienplatz","Maximilianstrasse"],
-      "Hamburg": ["Reeperbahn","Jungfernstieg","Mönckebergstrasse"]
+      "Munich": ["Marienplatz","Leopoldstrasse"],
+      "Hamburg": ["Reeperbahn","Jungfernstieg"]
     },
     zip: () => (10000 + (Math.random()*89999|0)),
-    emails: ["gmail.com","gmx.de","web.de","outlook.com"],
+    emails: ["gmail.com","gmx.de","web.de"],
     first: ["Max","Paul","Leon","Lukas","Finn","Emma","Hannah","Sofia","Marie","Lena"],
     last: ["Müller","Schmidt","Schneider","Fischer","Weber","Meyer","Wagner","Becker","Hoffmann","Schäfer"]
   },
@@ -67,9 +67,9 @@ const DATA = {
     name: "Netherlands",
     phones: ["+31 20", "+31 10", "+31 70"],
     cities: {
-      "Amsterdam": ["Damrak","Leidseplein","Prinsengracht","Herengracht"],
-      "Rotterdam": ["Coolsingel","Lijnbaan","Weena"],
-      "Utrecht": ["Oudegracht","Neude","Domplein"]
+      "Amsterdam": ["Damrak","Leidseplein","Herengracht"],
+      "Rotterdam": ["Coolsingel","Weena"],
+      "Utrecht": ["Oudegracht","Neude"]
     },
     zip: () => `${1000 + (Math.random()*8999|0)} AB`,
     emails: ["gmail.com","outlook.com","ziggo.nl"],
@@ -81,9 +81,9 @@ const DATA = {
     name: "Japan",
     phones: ["+81 3", "+81 6", "+81 45"],
     cities: {
-      "Tokyo": ["Shibuya","Shinjuku","Ginza","Akihabara"],
-      "Osaka": ["Namba","Umeda","Dotonbori"],
-      "Kyoto": ["Gion","Kawaramachi","Arashiyama"]
+      "Tokyo": ["Shibuya","Shinjuku","Ginza"],
+      "Osaka": ["Namba","Umeda"],
+      "Kyoto": ["Gion","Arashiyama"]
     },
     zip: () => (1000000 + (Math.random()*8999999|0)),
     emails: ["gmail.com","yahoo.co.jp","icloud.com"],
@@ -92,13 +92,13 @@ const DATA = {
   }
 };
 
-/* ================= COUNTRY PICK ================= */
+/* ================= PICK COUNTRY ================= */
 function getCountry(){
   const keys = Object.keys(DATA);
   return DATA[keys[(Math.random() * keys.length) | 0]];
 }
 
-/* ================= USER ENGINE ================= */
+/* ================= USER ================= */
 function makeUser(){
   const c = getCountry();
 
@@ -110,6 +110,8 @@ function makeUser(){
 
   const username = (f + l + ((Math.random()*9999)|0)).toLowerCase();
 
+  const house = (Math.random()*200|0) + 1;
+
   return {
     name: `${f} ${l}`,
     username,
@@ -119,10 +121,10 @@ function makeUser(){
     country: c.name,
     city,
     street,
-    house: ((Math.random()*200)|0) + 1,
+    house,
     zip: typeof c.zip === "function" ? c.zip() : c.zip,
 
-    address: `${street} ${((Math.random()*200)|0)+1}, ${city}, ${c.name}`,
+    address: `${street} ${house}, ${city}, ${c.name}`,
 
     avatar: `https://i.pravatar.cc/150?u=${username}`
   };
