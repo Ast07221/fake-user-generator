@@ -19,9 +19,7 @@ class UserEngine {
     const c = this.getCountry();
 
     if(!c) {
-      return {
-        error: "NO DATA LOADED"
-      };
+      return { error: "NO DATA LOADED" };
     }
 
     const cities = Object.keys(c.cities || {});
@@ -41,7 +39,6 @@ class UserEngine {
 
     return {
       id: crypto.randomUUID(),
-
       name: `${first} ${last}`,
       username,
       email: `${username}@${this.rand(c.emails)}`,
@@ -90,7 +87,6 @@ function typeWriter(text, el, speed = 1){
 /* ================= SHOW ================= */
 function show(data){
   runId++;
-
   typeWriter(
     JSON.stringify(data, null, 2),
     document.getElementById("userOut"),
@@ -110,13 +106,11 @@ function genBulk(){
 
 function copyUser(){
   const el = document.getElementById("userOut");
-  navigator.clipboard.writeText(el.value);
+  if(el) navigator.clipboard.writeText(el.value);
 }
 
-/* ================= EXPORT JSON ================= */
 function exportJSON(){
   const data = document.getElementById("userOut").value;
-
   if(!data) return alert("No data");
 
   const blob = new Blob([data], {type:"application/json"});
@@ -127,7 +121,6 @@ function exportJSON(){
   a.click();
 }
 
-/* ================= EXPORT CSV ================= */
 function exportCSV(){
   const raw = document.getElementById("userOut").value;
 
@@ -153,8 +146,9 @@ function exportCSV(){
   a.click();
 }
 
-/* ================= EVENTS ================= */
+/* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
+
   if (!window.DATA) {
     console.error("❌ DATA not loaded");
     return;
@@ -170,81 +164,11 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   genBtn.onclick = () => show(UserEngine.generateOne());
+
   bulkBtn.onclick = () => {
     const count = parseInt(document.getElementById("bulkCount").value) || 100;
     show(UserEngine.generateBulk(count));
   };
-
-  copyBtn.onclick = () => {
-    const el = document.getElementById("userOut");
-    if(el) navigator.clipboard.writeText(el.value);
-  };
-});
-
-/* ================= EXPORT JSON ================= */
-function exportJSON(){
-  const data = document.getElementById("userOut").value;
-
-  const blob = new Blob([data], {type:"application/json"});
-  const a = document.createElement("a");
-
-  a.href = URL.createObjectURL(blob);
-  a.download = "users.json";
-  a.click();
-}
-
-/* ================= EXPORT CSV ================= */
-function exportCSV(){
-  const data = JSON.parse(document.getElementById("userOut").value);
-
-  let csv = "id,name,username,email,phone,country,city,street,zip,address\n";
-
-  for(const u of data){
-    csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
-  }
-
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
-
-  a.href = URL.createObjectURL(blob);
-  a.download = "users.csv";
-  a.click();
-}
-
-/* ================= EVENTS ================= */
-window.addEventListener("DOMContentLoaded", () => {
-
-  if (!window.DATA) {
-    console.error("❌ DATA not loaded");
-    return;
-  }
-
-  const genBtn = document.getElementById("genBtn");
-  const bulkBtn = document.getElementById("bulkBtn");
-  const copyBtn = document.getElementById("copyBtn");
-
-  if (!genBtn || !bulkBtn || !copyBtn) {
-    console.error("❌ UI elements missing");
-    return;
-  }
-
-  genBtn.onclick = () => {
-    try {
-      show(UserEngine.generateOne());
-    } catch(e) {
-      console.error("GEN ERROR:", e);
-    }
-  };
-
-  bulkBtn.onclick = () => {
-    try {
-      const count = parseInt(document.getElementById("bulkCount").value) || 100;
-      show(UserEngine.generateBulk(count));
-    } catch(e) {
-      console.error("BULK ERROR:", e);
-    }
-  };
-
   copyBtn.onclick = () => {
     const el = document.getElementById("userOut");
     if(el) navigator.clipboard.writeText(el.value);
