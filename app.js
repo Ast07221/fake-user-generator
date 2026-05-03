@@ -61,15 +61,26 @@ class UserEngine {
   }
 }
 
-/* ================= TYPEWRITER ================= */
-function typeWriter(text, el, speed = 5){
+/* ================= TYPEWRITER (FIXED - NO OVERLAP) ================= */
+let renderToken = 0;
+let isRendering = false;
+
+function typeWriter(text, el, speed = 1){
+  const token = ++renderToken;
+
   el.style.color = "#ffffff";
   el.value = "";
 
   let i = 0;
 
   function step(){
-    if(i >= text.length) return;
+    if(token !== renderToken) return;
+
+    if(i >= text.length){
+      isRendering = false;
+      return;
+    }
+
     el.value += text[i++];
     setTimeout(step, speed);
   }
@@ -79,10 +90,18 @@ function typeWriter(text, el, speed = 5){
 
 /* ================= SHOW ================= */
 function show(data){
+
+  // ❗ блокируем наложение
+  if(isRendering) return;
+  isRendering = true;
+
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
-  typeWriter(JSON.stringify(data, null, 2), el, 1);
+
+  const text = JSON.stringify(data, null, 2);
+
+  typeWriter(text, el, 1);
 }
 
 /* ================= ACTIONS ================= */
@@ -151,8 +170,6 @@ function initApp(){
     console.error("UI ERROR");
     return;
   }
-
-  if(genBtn.onclick) return; // 🔥  защита от двойного bind
 
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
