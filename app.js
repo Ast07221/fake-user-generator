@@ -227,7 +227,6 @@ function exportCSV(){
 /* ================= INIT APP ================= */
 function initApp(){
   console.log("DATA LOADED OK");
-
   const genBtn = document.getElementById("genBtn");
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
