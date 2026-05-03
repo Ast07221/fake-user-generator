@@ -125,8 +125,7 @@ function typeWriter(text, el, speed = 5){
 }
 
 /* ================= RENDER ================= */
-function show(data, useTyping = false){
-
+function show(data, useTyping = false) {
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
@@ -134,19 +133,20 @@ function show(data, useTyping = false){
 
   el.style.color = "#ffffff";
 
-  // single generate with typing effect
-  if(useTyping){
+  if (useTyping) {
     typeWriter(text, el, 5);
-    return;
+  } else {
+    el.value = text;
   }
+}
+
 
   // bulk / instant render
   el.value = text;
 }
 /* ================= ACTIONS ================= */
-function genUser(){
-
-  if(isTyping) return; // уже печатает — игнор
+function genUser() {
+  if (isTyping) return;
 
   bulkAbort = true;
   isBulkRunning = false;
