@@ -87,14 +87,14 @@ async function runBulk(count){
 /* ================= TYPEWRITER ================= */
 function typeWriter(text, el, speed = 5){
 
-  const genBtn = document.getElementById("genBtn");
+  const btn = document.getElementById("genBtn");
 
   isTyping = true;
 
-  if(genBtn){
-    genBtn.disabled = true;
-    genBtn.style.opacity = "0.6";
-    genBtn.style.cursor = "not-allowed";
+  if(btn){
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    btn.style.pointerEvents = "none";
   }
 
   el.style.color = "#ffffff";
@@ -108,10 +108,10 @@ function typeWriter(text, el, speed = 5){
 
       isTyping = false;
 
-      if(genBtn){
-        genBtn.disabled = false;
-        genBtn.style.opacity = "1";
-        genBtn.style.cursor = "pointer";
+      if(btn){
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
       }
 
       return;
@@ -148,7 +148,7 @@ function show(data, useTyping = false){
 /* ================= ACTIONS ================= */
 function genUser(){
 
-  if(isTyping) return; // защита от спама
+  if(isTyping) return; // уже печатает — игнор
 
   bulkAbort = true;
   isBulkRunning = false;
