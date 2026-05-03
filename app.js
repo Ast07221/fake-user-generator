@@ -1,5 +1,6 @@
 let runId = 0;
 let lastGeneratedData = null;
+let isRendering = false;
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -73,7 +74,10 @@ function typeWriter(text, el, speed = 1){
   let i = 0;
 
   function step(){
-    if(i >= text.length) return;
+    if(i >= text.length){
+      isRendering = false;
+      return;
+    }
     el.value += text[i++];
     setTimeout(step, speed);
   }
@@ -84,21 +88,31 @@ function typeWriter(text, el, speed = 1){
 /* ================= SHOW ================= */
 function show(data){
   lastGeneratedData = data;
+  isRendering = true;
 
   runId++;
+
+  const el = document.getElementById("userOut");
+
+  // 🔥  WHITE TEXT FIX
+  el.style.color = "#ffffff";
+
   typeWriter(
     JSON.stringify(data, null, 2),
-    document.getElementById("userOut"),
+    el,
     1
   );
 }
 
 /* ================= ACTIONS ================= */
 function genUser(){
+  if(isRendering) return;
   show(UserEngine.generateOne());
 }
 
 function genBulk(){
+  if(isRendering) return;
+
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
   show(UserEngine.generateBulk(count));
 }
@@ -110,6 +124,11 @@ function copyUser(){
 
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
+  if(isRendering){
+    alert("Wait generation finish");
+    return;
+  }
+
   if(!lastGeneratedData){
     alert("No data - generate first");
     return;
@@ -128,6 +147,11 @@ function exportJSON(){
 
 /* ================= EXPORT CSV ================= */
 function exportCSV(){
+  if(isRendering){
+    alert("Wait generation finish");
+    return;
+  }
+
   if(!lastGeneratedData){
     alert("No data - generate first");
     return;
@@ -148,7 +172,6 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
-
   if(!window.DATA || Object.keys(window.DATA).length === 0){
     console.error("❌ DATA not loaded");
     return;
@@ -158,10 +181,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
 
-  if(!genBtn || !bulkBtn || !copyBtn){
-    console.error("❌ UI elements missing");
-    return;
-  }
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
   copyBtn.onclick = copyUser;
