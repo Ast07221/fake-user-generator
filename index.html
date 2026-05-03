@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Fake User Generator Pro – Global Fake Data Tool</title>
+
+<meta name="description" content="Generate realistic fake users for API testing, SaaS development, QA and database seeding. 50+ countries, bulk export JSON & CSV." />
+<meta name="keywords" content="fake user generator, fake data generator, random user API, test data tool, QA tool, developer generator" />
+
+<link rel="stylesheet" href="style.css" />
+
+<!-- SEO Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Fake User Generator Pro",
+  "applicationCategory": "DeveloperTool",
+  "operatingSystem": "All",
+  "description": "Global fake user generator for developers and QA testing",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <h1>Fake User Generator Pro</h1>
+
+  <p class="subtitle">
+    Generate realistic global fake users for API testing, SaaS, QA automation and database seeding.
+  </p>
+
+  <textarea id="userOut" readonly></textarea>
+
+  <div class="controls">
+
+    <button id="genBtn">Generate User</button>
+
+    <input id="bulkCount" type="number" value="50" min="1" max="1000"/>
+
+    <button id="bulkBtn">Bulk Generate</button>
+
+    <button id="copyBtn">Copy</button>
+
+    <button onclick="exportJSON()">Export JSON</button>
+
+    <button onclick="exportCSV()">Export CSV</button>
+
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
