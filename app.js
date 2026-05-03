@@ -1,16 +1,9 @@
-/* ================= STATE ================= */
 let lastGeneratedData = null;
-let isBulkRunning = false;
-let bulkAbort = false;
-let isTyping = false;
 
 /* ================= ENGINE ================= */
 class UserEngine {
-
   static rand(arr){
-    if(!Array.isArray(arr) || arr.length === 0){
-      return "unknown";
-    }
+    if(!Array.isArray(arr) || arr.length === 0) return "unknown";
     return arr[(Math.random() * arr.length) | 0];
   }
 
@@ -26,7 +19,6 @@ class UserEngine {
 
     const cities = Object.keys(c.cities || {});
     const city = this.rand(cities);
-
     const street = this.rand(c.cities?.[city] || ["Main Street"]);
 
     const first = this.rand(c.first);
@@ -43,80 +35,41 @@ class UserEngine {
       name: `${first} ${last}`,
       username,
       email: `${username}@${this.rand(c.emails)}`,
-      phone: `${this.rand(c.phones)} ${(Math.floor(Math.random() * 9999999))}`,
+      phone: `${this.rand(c.phones)} ${(Math.random() * 9999999) | 0}`,
       country: c.name || "Unknown",
       city,
       street,
       zip,
-      address: `${street} ${Math.floor(Math.random() * 200) + 1}, ${city}, ${c.name || ""}`,
+      address: `${street} ${(Math.random() * 200 | 0) + 1}, ${city}, ${c.name || ""}`,
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
-}
 
-/* ================= BULK (TOGGLE SAFE VERSION) ================= */
-async function runBulk(count){
-  const safeCount = Math.min(count || 100, 10000);
-
-  isBulkRunning = true;
-  bulkAbort = false;
-
-  const result = [];
-
-  for(let i = 0; i < safeCount; i++){
-
-    // 🔥  STOP CHECK
-    if(bulkAbort){
-      console.warn("⛔ Bulk stopped at:", i);
-      break;
-    }
-
-    result.push(UserEngine.makeUser());
-
-    // 🔥  every 25 items give UI control (smooth + no lag)
-    if(i % 25 === 0){
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
+  static generateOne(){
+    return this.makeUser();
   }
 
-  isBulkRunning = false;
+  static generateBulk(count = 100){
+    const safe = Math.min(count || 100, 10000);
+    const arr = [];
 
-  return result;
+    for(let i = 0; i < safe; i++){
+      arr.push(this.makeUser());
+    }
+
+    return arr;
+  }
 }
 
 /* ================= TYPEWRITER ================= */
 function typeWriter(text, el, speed = 5){
-
-  const btn = document.getElementById("genBtn");
-
-  isTyping = true;
-
-  if(btn){
-    btn.disabled = true;
-    btn.style.opacity = "0.6";
-    btn.style.pointerEvents = "none";
-  }
-
   el.style.color = "#ffffff";
   el.value = "";
 
   let i = 0;
 
   function step(){
-
-    if(i >= text.length){
-
-      isTyping = false;
-
-      if(btn){
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.pointerEvents = "auto";
-      }
-
-      return;
-    }
-
+    if(i >= text.length) return;
     el.value += text[i++];
     setTimeout(step, speed);
   }
@@ -124,66 +77,28 @@ function typeWriter(text, el, speed = 5){
   step();
 }
 
-/* ================= RENDER ================= */
-function show(data, useTyping = false) {
+/* ================= SHOW ================= */
+function show(data){
   lastGeneratedData = data;
 
   const el = document.getElementById("userOut");
-  const text = JSON.stringify(data, null, 2);
-
-  el.style.color = "#ffffff";
-
-  if (useTyping) {
-    typeWriter(text, el, 5);
-  } else {
-    el.value = text;
-  }
+  typeWriter(JSON.stringify(data, null, 2), el, 1);
 }
 
-
-  // bulk / instant render
-  el.value = text;
-}
 /* ================= ACTIONS ================= */
-function genUser() {
-  if (isTyping) return;
-
-  bulkAbort = true;
-  isBulkRunning = false;
-
-  show(UserEngine.makeUser(), true);
+function genUser(){
+  show(UserEngine.generateOne());
 }
 
-/* TOGGLE BULK */
 function genBulk(){
-
-  if(isBulkRunning){
-    bulkAbort = true;
-    isBulkRunning = false;
-    return;
-  }
-
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
-
-  runBulk(count).then(data => {
-    show(data, false);
-  });
+  show(UserEngine.generateBulk(count));
 }
 
-  const count = parseInt(document.getElementById("bulkCount").value) || 100;
-
-  runBulk(count).then(data => {
-    show(data);
-  });
-}
-
-/* ================= COPY ================= */
 function copyUser(){
   const el = document.getElementById("userOut");
   if(el) navigator.clipboard.writeText(el.value);
 }
-
-let lastGeneratedData = null;
 
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
@@ -224,15 +139,16 @@ function exportCSV(){
   a.click();
 }
 
-/* ================= INIT APP ================= */
+/* ================= INIT ================= */
 function initApp(){
   console.log("DATA LOADED OK");
+
   const genBtn = document.getElementById("genBtn");
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
 
   if(!genBtn || !bulkBtn || !copyBtn){
-    console.error("❌ Buttons not found");
+    console.error("UI ERROR");
     return;
   }
 
@@ -241,7 +157,7 @@ function initApp(){
   copyBtn.onclick = copyUser;
 }
 
-/* ================= WAIT FOR DATA ================= */
+/* ================= WAIT DATA ================= */
 window.addEventListener("DOMContentLoaded", () => {
   const wait = setInterval(() => {
     if(window.DATA){
@@ -249,9 +165,4 @@ window.addEventListener("DOMContentLoaded", () => {
       initApp();
     }
   }, 50);
-});
-
-  document.getElementById("genBtn").onclick = genUser;
-  document.getElementById("bulkBtn").onclick = genBulk;
-  document.getElementById("copyBtn").onclick = copyUser;
 });
