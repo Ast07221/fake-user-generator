@@ -11,7 +11,7 @@ window.DATA = {
     },
     first: ["James","John","Michael","David","Robert","Emma","Olivia","Sophia","Mason"],
     last: ["Smith","Johnson","Brown","Williams","Jones","Taylor","Anderson","Thomas"],
-    emails: ["gmail.com","yahoo.com","outlook.com"]
+    emails: ["gmail.com", "yahoo.com", "outlook.com"]
   },
 
   DE: {
@@ -25,6 +25,6 @@ window.DATA = {
     },
     first: ["Max","Paul","Leon","Finn","Lukas","Emma","Lena","Marie"],
     last: ["Müller","Schmidt","Fischer","Weber","Becker","Wagner"],
-    emails: ["gmail.com","gmx.de","web.de"]
+    emails: ["gmail.com", "gmx.de", "web.de"]
   }
 };
