@@ -185,6 +185,7 @@ function copyUser(){
 
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
+
   if(!lastGeneratedData){
     alert("No data");
     return;
@@ -192,7 +193,7 @@ function exportJSON(){
 
   const blob = new Blob(
     [JSON.stringify(lastGeneratedData, null, 2)],
-    {type:"application/json"}
+    { type: "application/json" }
   );
 
   const a = document.createElement("a");
@@ -203,6 +204,7 @@ function exportJSON(){
 
 /* ================= EXPORT CSV ================= */
 function exportCSV(){
+
   if(!lastGeneratedData){
     alert("No data");
     return;
@@ -214,7 +216,8 @@ function exportCSV(){
     csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
   }
 
-  const blob = new Blob([csv], {type:"text/csv"});
+  const blob = new Blob([csv], { type: "text/csv" });
+
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "users.csv";
@@ -228,6 +231,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("❌ DATA not loaded");
     return;
   }
+
   document.getElementById("genBtn").onclick = genUser;
   document.getElementById("bulkBtn").onclick = genBulk;
   document.getElementById("copyBtn").onclick = copyUser;
