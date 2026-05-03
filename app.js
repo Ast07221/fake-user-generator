@@ -113,12 +113,16 @@ function copyUser(){
 }
 
 function exportJSON(){
-  const data = document.getElementById("userOut").value;
-  if(!data) return alert("No data");
+  const el = document.getElementById("userOut");
+  const data = el.value;
+
+  if(!data || data.trim() === "") {
+    alert("No data - generate first");
+    return;
+  }
 
   const blob = new Blob([data], {type:"application/json"});
   const a = document.createElement("a");
-
   a.href = URL.createObjectURL(blob);
   a.download = "users.json";
   a.click();
