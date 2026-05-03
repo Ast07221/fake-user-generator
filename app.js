@@ -2,6 +2,7 @@
 let lastGeneratedData = null;
 let isBulkRunning = false;
 let bulkAbort = false;
+let isTyping = false;
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -86,6 +87,16 @@ async function runBulk(count){
 /* ================= TYPEWRITER ================= */
 function typeWriter(text, el, speed = 5){
 
+  const genBtn = document.getElementById("genBtn");
+
+  isTyping = true;
+
+  if(genBtn){
+    genBtn.disabled = true;
+    genBtn.style.opacity = "0.6";
+    genBtn.style.cursor = "not-allowed";
+  }
+
   el.style.color = "#ffffff";
   el.value = "";
 
@@ -93,13 +104,18 @@ function typeWriter(text, el, speed = 5){
 
   function step(){
 
-    // if bulk starts while typing -> instant fill
-    if(isBulkRunning){
-      el.value = text;
+    if(i >= text.length){
+
+      isTyping = false;
+
+      if(genBtn){
+        genBtn.disabled = false;
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "pointer";
+      }
+
       return;
     }
-
-    if(i >= text.length) return;
 
     el.value += text[i++];
     setTimeout(step, speed);
@@ -131,6 +147,8 @@ function show(data, useTyping = false){
 }
 /* ================= ACTIONS ================= */
 function genUser(){
+
+  if(isTyping) return; // защита от спама
 
   bulkAbort = true;
   isBulkRunning = false;
