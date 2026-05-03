@@ -1,4 +1,4 @@
-et lastGeneratedData = null;
+let lastGeneratedData = null;
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -59,7 +59,7 @@ class UserEngine {
   }
 }
 
-/* ================= TYPEWRITER (STABLE) ================= */
+/* ================= TYPEWRITER (CLEAN + NO BUGS) ================= */
 let typingTimer = null;
 
 function typeWriter(text, el, speed = 1){
@@ -159,6 +159,7 @@ function initApp(){
     console.error("UI ERROR");
     return;
   }
+
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
   copyBtn.onclick = copyUser;
