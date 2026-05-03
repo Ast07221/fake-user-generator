@@ -1,6 +1,4 @@
-let runId = 0;
 let lastGeneratedData = null;
-let isRendering = false;
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -42,12 +40,12 @@ class UserEngine {
       name: `${first} ${last}`,
       username,
       email: `${username}@${this.rand(c.emails)}`,
-      phone: `${this.rand(c.phones)} ${(Math.random() * 9999999) | 0}`,
+      phone: `${this.rand(c.phones)} ${(Math.floor(Math.random() * 9999999))}`,
       country: c.name || "Unknown",
       city,
       street,
       zip,
-      address: `${street} ${(Math.floor(Math.random() * 200)) + 1}, ${city}, ${c.name || ""}`,
+      address: `${street} ${Math.floor(Math.random() * 200) + 1}, ${city}, ${c.name || ""}`,
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
@@ -58,61 +56,34 @@ class UserEngine {
 
   static generateBulk(count = 100){
     const safeCount = Math.min(count || 100, 10000);
-    const arr = new Array(safeCount);
+    const arr = [];
 
     for(let i = 0; i < safeCount; i++){
-      arr[i] = this.makeUser();
+      arr.push(this.makeUser());
     }
 
     return arr;
   }
 }
 
-/* ================= TYPEWRITER ================= */
-function typeWriter(text, el, speed = 1){
-  el.value = "";
-  let i = 0;
-
-  function step(){
-    if(i >= text.length){
-      isRendering = false;
-      return;
-    }
-    el.value += text[i++];
-    setTimeout(step, speed);
-  }
-
-  step();
-}
-
-/* ================= SHOW ================= */
+/* ================= RENDER ================= */
 function show(data){
   lastGeneratedData = data;
-  isRendering = true;
-
-  runId++;
 
   const el = document.getElementById("userOut");
 
-  // 🔥  WHITE TEXT FIX
+  // 🔥  FIX: WHITE TEXT OUTPUT
   el.style.color = "#ffffff";
 
-  typeWriter(
-    JSON.stringify(data, null, 2),
-    el,
-    1
-  );
+  el.value = JSON.stringify(data, null, 2);
 }
 
 /* ================= ACTIONS ================= */
 function genUser(){
-  if(isRendering) return;
   show(UserEngine.generateOne());
 }
 
 function genBulk(){
-  if(isRendering) return;
-
   const count = parseInt(document.getElementById("bulkCount").value) || 100;
   show(UserEngine.generateBulk(count));
 }
@@ -124,11 +95,6 @@ function copyUser(){
 
 /* ================= EXPORT JSON ================= */
 function exportJSON(){
-  if(isRendering){
-    alert("Wait generation finish");
-    return;
-  }
-
   if(!lastGeneratedData){
     alert("No data - generate first");
     return;
@@ -147,11 +113,6 @@ function exportJSON(){
 
 /* ================= EXPORT CSV ================= */
 function exportCSV(){
-  if(isRendering){
-    alert("Wait generation finish");
-    return;
-  }
-
   if(!lastGeneratedData){
     alert("No data - generate first");
     return;
@@ -172,16 +133,13 @@ function exportCSV(){
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", () => {
+
   if(!window.DATA || Object.keys(window.DATA).length === 0){
     console.error("❌ DATA not loaded");
     return;
   }
 
-  const genBtn = document.getElementById("genBtn");
-  const bulkBtn = document.getElementById("bulkBtn");
-  const copyBtn = document.getElementById("copyBtn");
-
-  genBtn.onclick = genUser;
-  bulkBtn.onclick = genBulk;
-  copyBtn.onclick = copyUser;
+  document.getElementById("genBtn").onclick = genUser;
+  document.getElementById("bulkBtn").onclick = genBulk;
+  document.getElementById("copyBtn").onclick = copyUser;
 });
