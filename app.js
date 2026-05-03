@@ -1,9 +1,11 @@
 let lastGeneratedData = null;
 
-/* ================= ENGINE STATE ================= */
-let isBusy = false;
-let bulkAbort = false;
-let taskQueue = Promise.resolve();
+/* ================= BULK CONTROLLER ================= */
+const BulkController = {
+  running: false,
+  abort: false,
+  progress: 0
+};
 
 /* ================= ENGINE ================= */
 class UserEngine {
@@ -66,72 +68,76 @@ class UserEngine {
   }
 }
 
-/* ================= QUEUE ================= */
-function enqueue(task){
-  taskQueue = taskQueue.then(() => task());
+/* ================= RENDER ================= */
+function render(data){
+  const el = document.getElementById("userOut");
+  el.style.color = "#ffffff";
+  el.value = JSON.stringify(data, null, 2);
+}
+
+/* ================= SINGLE ================= */
+function genUser(){
+  if(BulkController.running) return;
+
+  const data = UserEngine.generateOne();
+  lastGeneratedData = data;
+  render(data);
+}
+
+/* ================= BULK (PRO MAX SAFE LOOP) ================= */
+function genBulk(){
+  if(BulkController.running) return;
+
+  const count = parseInt(document.getElementById("bulkCount").value) || 100;
+
+  BulkController.running = true;
+  BulkController.abort = false;
+  BulkController.progress = 0;
+
+  const result = [];
+  const el = document.getElementById("userOut");
+
+  el.style.color = "#ffffff";
+
+  let i = 0;
+
+  function step(){
+    if(BulkController.abort){
+      BulkController.running = false;
+      return;
+    }
+
+    if(i >= count){
+      BulkController.running = false;
+      lastGeneratedData = result;
+      render(result);
+      return;
+    }
+
+    result.push(UserEngine.makeUser());
+
+    i++;
+    BulkController.progress = Math.floor((i / count) * 100);
+
+    setProgress(BulkController.progress);
+
+    setTimeout(step, 0); // даём UI дышать
+  }
+
+  step();
+}
+
+/* ================= STOP BULK ================= */
+function stopBulk(){
+  BulkController.abort = true;
+  BulkController.running = false;
+  setProgress(0);
 }
 
 /* ================= PROGRESS ================= */
 function setProgress(v){
   const bar = document.getElementById("progressBar");
   if(bar) bar.value = v;
-}
-
-/* ================= BULK STOP ================= */
-function stopBulk(){
-  bulkAbort = true;
-  isBusy = false;
-  setProgress(0);
-}
-
-/* ================= SINGLE ================= */
-function genUser(){
-  if(isBusy) return;
-
-  enqueue(() => {
-    const data = UserEngine.generateOne();
-    lastGeneratedData = data;
-
-    const el = document.getElementById("userOut");
-    el.style.color = "#ffffff";
-    el.value = JSON.stringify(data, null, 2);
-  });
-}
-
-/* ================= BULK ================= */
-function genBulk(){
-  if(isBusy) return;
-
-  const count = parseInt(document.getElementById("bulkCount").value) || 100;
-
-  enqueue(async () => {
-    isBusy = true;
-    bulkAbort = false;
-
-    const result = [];
-    const el = document.getElementById("userOut");
-
-    el.style.color = "#ffffff";
-
-    for(let i = 0; i < count; i++){
-
-      if(bulkAbort) break;
-
-      result.push(UserEngine.makeUser());
-
-      setProgress(Math.round((i / count) * 100));
-
-      await new Promise(r => setTimeout(r, 0));
-    }
-
-    setProgress(100);
-
-    lastGeneratedData = result;
-
-    el.value = JSON.stringify(result, null, 2);
-
-    isBusy = false;
-  });
 }
 
 /* ================= COPY ================= */
@@ -185,11 +191,6 @@ function initApp(){
   const bulkBtn = document.getElementById("bulkBtn");
   const copyBtn = document.getElementById("copyBtn");
   const stopBtn = document.getElementById("stopBtn");
-
-  if(!genBtn || !bulkBtn || !copyBtn){
-    console.error("UI ERROR");
-    return;
-  }
 
   genBtn.onclick = genUser;
   bulkBtn.onclick = genBulk;
