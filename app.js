@@ -5,16 +5,37 @@ function rand(arr){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* ================= TYPEWRITER AI ================= */
-function typeWriter(text, el, speed = 6){
+/* ================= AI PRO MAX TYPEWRITER ================= */
+let typingQueue = false;
+
+function typeWriter(text, el){
+  if(typingQueue) return;
+  typingQueue = true;
+
   el.value = "";
+
   let i = 0;
 
   function step(){
     if(i < text.length){
+
       el.value += text.charAt(i);
+
+      // 🔥  human-like pauses
+      let delay = 6;
+
+      const char = text[i];
+
+      if(char === "," || char === "{") delay = 40;
+      if(char === "\n") delay = 60;
+      if(char === ":") delay = 25;
+      if(Math.random() < 0.02) delay = 120;
+
       i++;
-      setTimeout(step, speed);
+      setTimeout(step, delay);
+
+    } else {
+      typingQueue = false;
     }
   }
 
@@ -38,17 +59,17 @@ function makeUser(){
   };
 }
 
-/* ================= SHOW (ANIMATED) ================= */
+/* ================= SHOW ================= */
 function show(data){
-  typeWriter(JSON.stringify(data, null, 2), document.getElementById("userOut"), 5);
+  typeWriter(JSON.stringify(data, null, 2), document.getElementById("userOut"));
 }
 
-/* ================= SINGLE GENERATE ================= */
+/* ================= SINGLE ================= */
 function genUser(){
   show(makeUser());
 }
 
-/* ================= BULK GENERATE ================= */
+/* ================= BULK ================= */
 function genBulk(){
   const count = parseInt(document.getElementById("bulkCount").value) || 50;
 
@@ -57,7 +78,7 @@ function genBulk(){
     arr.push(makeUser());
   }
 
-  typeWriter(JSON.stringify(arr, null, 2), document.getElementById("userOut"), 1);
+  typeWriter(JSON.stringify(arr, null, 2), document.getElementById("userOut"));
 }
 
 /* ================= COPY ================= */
