@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FakeUserGeneratorPro</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -28,9 +28,15 @@ body {
 #output {
     white-space: pre-line;
     min-height: 200px;
-    font-size: 15px; /* 🔼  увеличил */
+    font-size: 15px;
     line-height: 1.75;
     font-weight: 300;
+}
+
+/* 🔥  выделение меток */
+.label {
+    color: #888;
+    font-weight: 500;
 }
 
 /* loader */
@@ -57,13 +63,12 @@ body {
     50% { opacity: 1; }
 }
 
-/* actions */
+/* actions — 🔽  СПУСТИЛ НИЖЕ */
 .actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 28px;
+    margin-top: 45px; /* ↑ было меньше */
     gap: 18px;
-    flex-wrap: wrap;
 }
 
 .actions span {
@@ -83,12 +88,6 @@ body {
     outline: none;
     text-align: center;
     margin-left: 6px;
-}
-
-/* cursor */
-.cursor::after {
-    content: "|";
-    animation: blink 1s infinite;
 }
 </style>
 </head>
@@ -127,12 +126,10 @@ const loader = document.getElementById("loader");
 const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
-
-/* 🔥  КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — защита от наслоения */
 let renderToken = 0;
 let isRunning = false;
 
-/* база */
+/* data */
 const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis","Noah Wilson","Ava Martinez"];
 const cities = ["New York","Berlin","Paris","Toronto","London","Rome","Madrid","Warsaw","Amsterdam","Stockholm"];
 const countries = ["USA","Germany","France","Canada","UK","Italy","Spain","Poland","Netherlands","Sweden"];
@@ -157,22 +154,21 @@ function createUser() {
     };
 }
 
-/* format */
+/* format — 🔥  выделяем label */
 function format(u) {
-    return `Username: ${u.username}
-Name: ${u.name}
-Email: ${u.email}
-Phone: ${u.phone}
-Country: ${u.country}
-City: ${u.city}
-Address: ${u.address}
-ZIP: ${u.zip}`;
+    return `<span class="label">Username:</span> ${u.username}
+<span class="label">Name:</span> ${u.name}
+<span class="label">Email:</span> ${u.email}
+<span class="label">Phone:</span> ${u.phone}
+<span class="label">Country:</span> ${u.country}
+<span class="label">City:</span> ${u.city}
+<span class="label">Address:</span> ${u.address}
+<span class="label">ZIP:</span> ${u.zip}`;
 }
 
-/* 🔥  УБИРАЕТ НАСЛОЕНИЕ НА 100% */
+/* print safe */
 function print(text) {
     const myToken = ++renderToken;
-
     output.classList.remove("cursor");
     output.innerHTML = "";
 
@@ -180,7 +176,7 @@ function print(text) {
     output.classList.add("cursor");
 
     function type() {
-        if (myToken !== renderToken) return; // ❌ убить старую печать
+        if (myToken !== renderToken) return;
 
         if (i < text.length) {
             output.innerHTML += text[i++];
@@ -253,7 +249,6 @@ function downloadJSON() {
 /* csv */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
-
     lastData.forEach(u =>
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`)
     );
