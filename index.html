@@ -8,8 +8,8 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f0f0f;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0a0a0a;
     color: #fff;
     height: 100vh;
     display: flex;
@@ -17,58 +17,74 @@ body {
     justify-content: center;
 }
 
-/* Заголовок */
+/* Title */
 #app-title {
     position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 26px;
     opacity: 0;
-    transition: opacity 0.6s ease-in-out;
-    pointer-events: none;
-    z-index: 10;
+    transition: opacity 0.8s ease;
 }
 
 #app-title.visible {
     opacity: 1;
 }
 
-/* Генератор */
+/* Layout */
 #generator {
+    width: 340px;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.actions span {
+    cursor: pointer;
+    color: #fff;
+}
+
+.actions span:hover {
+    opacity: 0.5;
+}
+
+/* Select */
+select {
+    width: 100%;
     background: transparent;
     border: none;
-    box-shadow: none;
-    text-align: center;
+    color: #888;
+    margin-bottom: 15px;
+    outline: none;
 }
 
-/* Кнопка — только текст */
-button {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 18px;
-    color: #fff;
-    cursor: pointer;
-}
-
-button:hover {
-    opacity: 0.6;
-}
-
-/* Вывод */
+/* Output */
 #output {
-    margin-top: 20px;
     white-space: pre-line;
-    min-height: 60px;
+    min-height: 160px;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
-/* Точки */
+/* Cursor */
+.cursor::after {
+    content: "|";
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* Dots */
 #dots {
-    margin-top: 20px;
-    font-size: 22px;
     opacity: 0;
+    margin-bottom: 10px;
 }
 
 #dots.active {
@@ -80,9 +96,17 @@ button:hover {
     animation: blink 1.2s infinite;
 }
 
-@keyframes blink {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 1; }
+/* Status */
+#status {
+    font-size: 12px;
+    color: #777;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#status.show {
+    opacity: 1;
 }
 </style>
 </head>
@@ -91,55 +115,140 @@ button:hover {
 <div id="app-title">FakeUserGeneratorPro</div>
 
 <div id="generator">
-    <button onclick="generateUser()">Generate User</button>
+
+    <div class="actions">
+        <span onclick="generateUser()">Generate</span>
+        <span onclick="generateBulk()">Bulk</span>
+        <span onclick="copyText()">Copy</span>
+        <span onclick="exportCSV()">Export</span>
+    </div>
+
+    <select id="country">
+        <option value="">Random Country</option>
+        <option value="us">USA</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+        <option value="ca">Canada</option>
+    </select>
+
     <div id="dots"></div>
     <div id="output"></div>
+    <div id="status">Done</div>
+
 </div>
 
 <script>
 const title = document.getElementById("app-title");
 const output = document.getElementById("output");
 const dots = document.getElementById("dots");
+const status = document.getElementById("status");
+const country = document.getElementById("country");
 
-/* Плавное появление заголовка */
-setTimeout(() => {
-    title.classList.add("visible");
-}, 500);
+let lastData = [];
 
-/* Печать текста */
-function typeText(element, text, speed = 25) {
-    element.innerHTML = "";
+setTimeout(() => title.classList.add("visible"), 500);
+
+/* Fetch user */
+async function fetchUsers(count = 1) {
+    const nat = country.value;
+    const url = `https://randomuser.me/api/?results=${count}${nat ? "&nat=" + nat : ""}`;
+    
+    const res = await fetch(url);
+    const data = await res.json();
+
+    return data.results.map(u => ({
+        name: u.name.first + " " + u.name.last,
+        email: u.email,
+        phone: u.phone,
+        country: u.location.country,
+        city: u.location.city,
+        zip: u.location.postcode
+    }));
+}
+
+/* Format */
+function formatUser(u) {
+    return `Name: ${u.name}
+Email: ${u.email}
+Phone: ${u.phone}
+Country: ${u.country}
+City: ${u.city}
+ZIP: ${u.zip}`;
+}
+
+/* Typing */
+function typeText(text, speed = 8) {
+    output.innerHTML = "";
+    output.classList.add("cursor");
+
     let i = 0;
-
     function typing() {
         if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
+            output.innerHTML += text[i++];
             setTimeout(typing, speed);
+        } else {
+            output.classList.remove("cursor");
         }
     }
-
     typing();
 }
 
-/* Генерация */
-function generateUser() {
+/* Generate one */
+async function generateUser() {
     dots.classList.add("active");
     output.innerHTML = "";
 
-    setTimeout(() => {
-        dots.classList.remove("active");
+    const users = await fetchUsers(1);
+    lastData = users;
 
-        const users = [
-            "Name: John Doe\nEmail: john@example.com",
-            "Name: Alice Smith\nEmail: alice@example.com",
-            "Name: Mark Johnson\nEmail: mark@example.com"
-        ];
+    dots.classList.remove("active");
+    typeText(formatUser(users[0]));
+}
 
-        const randomUser = users[Math.floor(Math.random() * users.length)];
+/* Bulk */
+async function generateBulk() {
+    dots.classList.add("active");
+    output.innerHTML = "";
 
-        typeText(output, randomUser);
-    }, 1500);
+    const users = await fetchUsers(5);
+    lastData = users;
+
+    dots.classList.remove("active");
+
+    const text = users.map(formatUser).join("\\n\\n");
+    typeText(text, 4);
+}
+
+/* Copy */
+function copyText() {
+    navigator.clipboard.writeText(output.innerText);
+    showStatus("Copied");
+}
+
+/* Export CSV */
+function exportCSV() {
+    if (!lastData.length) return;
+
+    const rows = ["Name,Email,Phone,Country,City,ZIP"];
+    lastData.forEach(u => {
+        rows.push(`${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
+    });
+
+    const blob = new Blob([rows.join("\\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.csv";
+    a.click();
+
+    showStatus("Exported");
+}
+
+/* Status */
+function showStatus(text) {
+    status.innerText = text;
+    status.classList.add("show");
+
+    setTimeout(() => status.classList.remove("show"), 1200);
 }
 </script>
 
