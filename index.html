@@ -1,61 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cyber User Generator Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FakeUserGeneratorPro</title>
 
-<link rel="stylesheet" href="style.css"/>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
+/* Заголовок */
+#app-title {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#app-title.visible {
+    opacity: 1;
+}
+
+/* Генератор */
+#generator {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    text-align: center;
+}
+
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+}
+
+/* Вывод */
+#output {
+    margin-top: 20px;
+    white-space: pre-line;
+    min-height: 60px;
+}
+
+/* Точки */
+#dots {
+    margin-top: 20px;
+    font-size: 22px;
+    opacity: 0;
+}
+
+#dots.active {
+    opacity: 1;
+}
+
+#dots::after {
+    content: '...';
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+}
+</style>
 </head>
-
 <body>
 
-<div class="app">
+<div id="app-title">FakeUserGeneratorPro</div>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">CYBER USER GENERATOR</div>
-    <div class="status">● ONLINE SYSTEM</div>
-  </header>
-
-  <!-- MAIN PANEL -->
-  <section class="panel">
-
-    <div class="title">
-      Fake Data Engine v3
-    </div>
-
-    <div class="subtitle">
-      High-performance user generator for testing, APIs, QA systems
-    </div>
-
-    <!-- OUTPUT -->
-    <textarea id="userOut" readonly></textarea>
-
-    <!-- CONTROLS -->
-    <div class="controls">
-
-      <button id="genBtn">Generate</button>
-
-      <input id="bulkCount" type="number" value="50" min="1" max="10000"/>
-
-      <button id="bulkBtn">Bulk</button>
-
-      <button id="copyBtn">Copy</button>
-
-      <button onclick="exportJSON()">JSON</button>
-
-      <button onclick="exportCSV()">CSV</button>
-
-    </div>
-
-  </section>
-
+<div id="generator">
+    <button onclick="generateUser()">Generate User</button>
+    <div id="dots"></div>
+    <div id="output"></div>
 </div>
 
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script>
+const title = document.getElementById("app-title");
+const output = document.getElementById("output");
+const dots = document.getElementById("dots");
+
+/* Плавное появление заголовка */
+setTimeout(() => {
+    title.classList.add("visible");
+}, 500);
+
+/* Печать текста */
+function typeText(element, text, speed = 25) {
+    element.innerHTML = "";
+    let i = 0;
+
+    function typing() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typing, speed);
+        }
+    }
+
+    typing();
+}
+
+/* Генерация */
+function generateUser() {
+    dots.classList.add("active");
+    output.innerHTML = "";
+
+    setTimeout(() => {
+        dots.classList.remove("active");
+
+        const users = [
+            "Name: John Doe\nEmail: john@example.com",
+            "Name: Alice Smith\nEmail: alice@example.com",
+            "Name: Mark Johnson\nEmail: mark@example.com"
+        ];
+
+        const randomUser = users[Math.floor(Math.random() * users.length)];
+
+        typeText(output, randomUser);
+    }, 1500);
+}
+</script>
 
 </body>
 </html>
