@@ -41,13 +41,13 @@ class UserEngine {
       id: crypto.randomUUID(),
       name: `${first} ${last}`,
       username,
-      email: `${username}@${this.rand(c.emails)}`,
+      email: `${username}@${this.rand(c.emails).trim()}`, // FIX переносов
       phone: `${this.rand(c.phones)} ${(Math.random() * 9999999) | 0}`,
       country: c.name || "Unknown",
       city,
       street,
       zip,
-      address: `${street} ${(Math.random() * 200 | 0) + 1}, ${city}, ${c.name || ""}`,
+      address: `${street} ${((Math.random() * 200) | 0) + 1}, ${city}, ${c.name || ""}`,
       avatar: `https://i.pravatar.cc/150?u=${username}`
     };
   }
@@ -59,11 +59,9 @@ class UserEngine {
   static generateBulk(count = 100){
     const safe = Math.min(count || 100, 10000);
     const arr = [];
-
     for(let i = 0; i < safe; i++){
       arr.push(this.makeUser());
     }
-
     return arr;
   }
 }
@@ -84,7 +82,7 @@ function genUser(){
   render(data);
 }
 
-/* ================= BULK (PRO MAX SAFE LOOP) ================= */
+/* ================= BULK (REAL STOP WORKING) ================= */
 function genBulk(){
   if(BulkController.running) return;
 
@@ -95,15 +93,15 @@ function genBulk(){
   BulkController.progress = 0;
 
   const result = [];
-  const el = document.getElementById("userOut");
-
-  el.style.color = "#ffffff";
-
   let i = 0;
+
+  const el = document.getElementById("userOut");
+  el.value = "Generating...\n";
 
   function step(){
     if(BulkController.abort){
       BulkController.running = false;
+      el.value += "\n⛔ Stopped";
       return;
     }
 
@@ -115,29 +113,22 @@ function genBulk(){
     }
 
     result.push(UserEngine.makeUser());
-
     i++;
-    BulkController.progress = Math.floor((i / count) * 100);
 
-    setProgress(BulkController.progress);
+    // каждые 50 обновляем UI (чтобы не лагало)
+    if(i % 50 === 0){
+      el.value = `Generating... ${i}/${count}`;
+    }
 
-    setTimeout(step, 0); // даём UI дышать
+    setTimeout(step, 0);
   }
 
   step();
 }
 
-/* ================= STOP BULK ================= */
+/* ================= STOP ================= */
 function stopBulk(){
   BulkController.abort = true;
-  BulkController.running = false;
-  setProgress(0);
-}
-
-/* ================= PROGRESS ================= */
-function setProgress(v){
-  const bar = document.getElementById("progressBar");
-  if(bar) bar.value = v;
 }
 
 /* ================= COPY ================= */
@@ -174,7 +165,8 @@ function exportCSV(){
   let csv = "id,name,username,email,phone,country,city,street,zip,address\n";
 
   for(const u of lastGeneratedData){
-    csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
+09:41
+csv += `${u.id},${u.name},${u.username},${u.email},${u.phone},${u.country},${u.city},${u.street},${u.zip},${u.address}\n`;
   }
 
   const blob = new Blob([csv], { type: "text/csv" });
@@ -192,13 +184,10 @@ function initApp(){
   const copyBtn = document.getElementById("copyBtn");
   const stopBtn = document.getElementById("stopBtn");
 
-  genBtn.onclick = genUser;
-  bulkBtn.onclick = genBulk;
-  copyBtn.onclick = copyUser;
-
-  if(stopBtn){
-    stopBtn.onclick = stopBulk;
-  }
+  if(genBtn) genBtn.onclick = genUser;
+  if(bulkBtn) bulkBtn.onclick = genBulk;
+  if(copyBtn) copyBtn.onclick = copyUser;
+  if(stopBtn) stopBtn.onclick = stopBulk;
 }
 
 /* ================= WAIT DATA ================= */
