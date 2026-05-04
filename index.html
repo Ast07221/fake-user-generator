@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FakeUserGeneratorPro</title>
 
-<!-- изящный шрифт -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
@@ -17,7 +16,6 @@ body {
     height: 100vh;
 }
 
-/* центр */
 .wrapper {
     position: absolute;
     top: 50%;
@@ -40,14 +38,12 @@ body {
     height: 20px;
     margin-bottom: 10px;
     opacity: 1;
-    transition: 0.2s;
 }
 
 #loader.hidden {
     opacity: 0;
 }
 
-/* точки */
 .dot {
     display: inline-block;
     animation: blink 1.8s infinite;
@@ -62,7 +58,20 @@ body {
     50% { opacity: 1; }
 }
 
-/* кнопки */
+/* bulk input */
+#bulkInput {
+    width: 60px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #333;
+    color: #fff;
+    outline: none;
+    font-size: 13px;
+    margin-left: 8px;
+    text-align: center;
+}
+
+/* actions */
 .actions {
     display: flex;
     justify-content: space-between;
@@ -75,14 +84,13 @@ body {
     letter-spacing: 1.2px;
     text-transform: lowercase;
     transition: 0.2s;
-    font-weight: 400;
 }
 
 .actions span:hover {
     opacity: 0.5;
 }
 
-/* курсор */
+/* cursor */
 .cursor::after {
     content: "|";
     animation: blink 1s infinite;
@@ -94,7 +102,6 @@ body {
 
 <div class="wrapper">
 
-    <!-- idle loader -->
     <div id="loader">
         <span class="dot">.</span>
         <span class="dot">.</span>
@@ -105,7 +112,13 @@ body {
 
     <div class="actions">
         <span onclick="generate()">generate</span>
-        <span onclick="bulk()">bulk</span>
+
+        <span>
+            bulk
+            <input id="bulkInput" type="number" min="1" max="50" value="5">
+        </span>
+
+        <span onclick="bulk()">run bulk</span>
         <span onclick="copy()">copy</span>
         <span onclick="downloadJSON()">json</span>
         <span onclick="downloadCSV()">csv</span>
@@ -116,15 +129,16 @@ body {
 <script>
 const output = document.getElementById("output");
 const loader = document.getElementById("loader");
+const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
 let isRunning = false;
 
 /* база */
 const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis","Noah Wilson","Ava Martinez"];
-const streets = ["Main St","Oak Avenue","River Road","Sunset Blvd","Maple Street"];
 const cities = ["New York","Berlin","Paris","Toronto","London","Rome","Madrid","Warsaw","Amsterdam","Stockholm"];
 const countries = ["USA","Germany","France","Canada","UK","Italy","Spain","Poland","Netherlands","Sweden"];
+const streets = ["Main St","Oak Ave","River Rd","Sunset Blvd","Maple St"];
 
 /* user */
 function createUser() {
@@ -148,7 +162,7 @@ function createUser() {
     };
 }
 
-/* формат */
+/* format */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -160,11 +174,10 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* печать */
+/* SAFE PRINT (полный reset → нет каши) */
 function print(text) {
     output.classList.remove("cursor");
     output.innerHTML = "";
-
     let i = 0;
     output.classList.add("cursor");
 
@@ -180,12 +193,12 @@ function print(text) {
     type();
 }
 
-/* generate */
+/* GENERATE */
 function generate() {
-    if (isRunning) return;
+    if (isRunning) return;   // 🔒 защита от спама
     isRunning = true;
 
-    loader.classList.add("hidden"); // точки исчезают во время генерации
+    loader.classList.add("hidden");
 
     setTimeout(() => {
         const u = createUser();
@@ -193,21 +206,26 @@ function generate() {
 
         print(format(u));
 
-        loader.classList.remove("hidden"); // возвращаются после
+        loader.classList.remove("hidden");
         isRunning = false;
-    }, 700);
+    }, 600);
 }
 
-/* bulk */
+/* BULK (с количеством) */
 function bulk() {
-    if (isRunning) return;
+    if (isRunning) return;   // 🔒 защита
     isRunning = true;
 
     loader.classList.add("hidden");
 
+    const count = Math.min(50, Math.max(1, parseInt(bulkInput.value || 5)));
+
     setTimeout(() => {
         const arr = [];
-        for (let i = 0; i < 5; i++) arr.push(createUser());
+
+        for (let i = 0; i < count; i++) {
+            arr.push(createUser());
+        }
 
         lastData = arr;
 
@@ -215,7 +233,7 @@ function bulk() {
 
         loader.classList.remove("hidden");
         isRunning = false;
-    }, 700);
+    }, 600);
 }
 
 /* copy */
@@ -235,6 +253,7 @@ function downloadJSON() {
 /* csv */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
+
     lastData.forEach(u =>
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`)
     );
