@@ -26,20 +26,13 @@ body {
 
 /* OUTPUT */
 #output {
-    white-space: pre-line;
     min-height: 200px;
     font-size: 15px;
     line-height: 1.75;
     font-weight: 300;
 }
 
-/* 🔥  визуальное выделение ключей */
-.line-key {
-    color: #9a9a9a;
-    font-weight: 500;
-}
-
-/* LOADER */
+/* loader */
 #loader {
     height: 20px;
     margin-bottom: 10px;
@@ -63,7 +56,7 @@ body {
     50% { opacity: 1; }
 }
 
-/* BUTTONS */
+/* buttons */
 .actions {
     display: flex;
     justify-content: space-between;
@@ -79,7 +72,7 @@ body {
     text-transform: lowercase;
 }
 
-/* BULK INPUT */
+/* bulk input */
 #bulkInput {
     width: 60px;
     background: transparent;
@@ -91,7 +84,7 @@ body {
     margin-left: 6px;
 }
 
-/* CURSOR */
+/* cursor */
 .cursor::after {
     content: "|";
     animation: blink 1s infinite;
@@ -162,7 +155,7 @@ function createUser() {
     };
 }
 
-/* FORMAT (ЧИСТЫЙ ТЕКСТ) */
+/* FORMAT (чистый текст) */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -174,43 +167,51 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* 🔥  ТОЛЬКО ВИЗУАЛЬНОЕ ВЫДЕЛЕНИЕ (без span в данных) */
-function highlight(text) {
-    return text
-        .replaceAll("Username:", "<span class='line-key'>Username:</span>")
-    .replaceAll("Name:", "<span class='line-key'>Name:</span>")
-        .replaceAll("Email:", "<span class='line-key'>Email:</span>")
-        .replaceAll("Phone:", "<span class='line-key'>Phone:</span>")
-        .replaceAll("Country:", "<span class='line-key'>Country:</span>")
-        .replaceAll("City:", "<span class='line-key'>City:</span>")
-        .replaceAll("Address:", "<span class='line-key'>Address:</span>")
-        .replaceAll("ZIP:", "<span class='line-key'>ZIP:</span>");
-}
-
-/* SAFE PRINT (без наложений) */
+/* РЕНДЕР БЕЗ SPAN И БЕЗ HTML В СТРОКАХ */
 function print(text) {
     const myToken = ++renderToken;
 
-    text = highlight(text);
-
-    output.classList.remove("cursor");
     output.innerHTML = "";
+    output.classList.remove("cursor");
 
+    const lines = text.split("\n");
     let i = 0;
-    output.classList.add("cursor");
 
-    function type() {
+    function renderLine() {
         if (myToken !== renderToken) return;
 
-        if (i < text.length) {
-            output.innerHTML += text[i++];
-            setTimeout(type, 5);
-        } else {
+        if (i >= lines.length) {
             output.classList.remove("cursor");
+            return;
         }
+
+        const line = lines[i++];
+        const [key, ...rest] = line.split(":");
+
+        const row = document.createElement("div");
+
+        if (rest.length) {
+            const keyEl = document.createElement("span");
+            keyEl.textContent = key + ": ";
+            keyEl.style.color = "#9a9a9a";
+            keyEl.style.fontWeight = "500";
+
+            const valueEl = document.createElement("span");
+            valueEl.textContent = rest.join(":");
+
+            row.appendChild(keyEl);
+            row.appendChild(valueEl);
+        } else {
+            row.textContent = line;
+        }
+
+        output.appendChild(row);
+
+        setTimeout(renderLine, 8);
     }
 
-    type();
+    output.classList.add("cursor");
+    renderLine();
 }
 
 /* GENERATE */
