@@ -21,7 +21,6 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 380px;
-    text-align: center;
 }
 
 /* output */
@@ -30,23 +29,24 @@ body {
     min-height: 180px;
     font-size: 14px;
     line-height: 1.6;
-    text-align: left;
 }
 
-/* loader */
+/* loader всегда есть */
 #loader {
-    opacity: 0;
     height: 20px;
     margin-bottom: 10px;
-}
-
-#loader.active {
     opacity: 1;
 }
 
+/* скрытие во время генерации */
+#loader.hidden {
+    opacity: 0;
+}
+
+/* точки */
 .dot {
     display: inline-block;
-    animation: blink 1.4s infinite;
+    animation: blink 1.6s infinite;
     font-size: 20px;
 }
 
@@ -54,26 +54,30 @@ body {
 .dot:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes blink {
-    0%, 100% { opacity: 0.2; }
+    0%,100% { opacity: 0.2; }
     50% { opacity: 1; }
 }
 
-/* кнопки снизу */
+/* кнопки */
 .actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 30px;
-    gap: 20px;
+    margin-top: 28px;
+    gap: 18px;
 }
 
 .actions span {
     cursor: pointer;
     color: #fff;
-    font-size: 14px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: 0.2s;
 }
 
 .actions span:hover {
     opacity: 0.5;
+    transform: translateY(-1px);
 }
 
 /* курсор */
@@ -97,11 +101,11 @@ body {
     <div id="output"></div>
 
     <div class="actions">
-        <span onclick="generate()">Generate</span>
-        <span onclick="bulk()">Bulk</span>
-        <span onclick="copy()">Copy</span>
-        <span onclick="downloadJSON()">JSON</span>
-        <span onclick="downloadCSV()">CSV</span>
+        <span onclick="generate()">generate</span>
+        <span onclick="bulk()">bulk</span>
+        <span onclick="copy()">copy</span>
+        <span onclick="downloadJSON()">json</span>
+        <span onclick="downloadCSV()">csv</span>
     </div>
 
 </div>
@@ -144,7 +148,7 @@ City: ${u.city}
 ZIP: ${u.zip}`;
 }
 
-/* печать (жёсткий reset чтобы не накладывалось) */
+/* печать без наложений */
 function print(text) {
     output.classList.remove("cursor");
     output.innerHTML = "";
@@ -164,28 +168,22 @@ function print(text) {
     type();
 }
 
-/* loader */
-function showLoader(state) {
-    loader.classList.toggle("active", state);
-}
-
 /* generate */
 function generate() {
-    if (isRunning) return;
+    if (isRunning) return; // 🔒 блокировка
     isRunning = true;
 
-    showLoader(true);
-    output.innerHTML = "";
+    loader.classList.add("hidden"); // точки пропадают
 
     setTimeout(() => {
         const u = createUser();
         lastData = [u];
 
-        showLoader(false);
         print(format(u));
 
+        loader.classList.remove("hidden"); // точки возвращаются
         isRunning = false;
-    }, 900);
+    }, 800);
 }
 
 /* bulk */
@@ -193,8 +191,7 @@ function bulk() {
     if (isRunning) return;
     isRunning = true;
 
-    showLoader(true);
-    output.innerHTML = "";
+    loader.classList.add("hidden");
 
     setTimeout(() => {
         const arr = [];
@@ -202,11 +199,11 @@ function bulk() {
 
         lastData = arr;
 
-        showLoader(false);
         print(arr.map(format).join("\n\n"));
 
+        loader.classList.remove("hidden");
         isRunning = false;
-    }, 900);
+    }, 800);
 }
 
 /* copy */
@@ -214,7 +211,7 @@ function copy() {
     navigator.clipboard.writeText(output.innerText);
 }
 
-/* JSON */
+/* json */
 function downloadJSON() {
     const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
     const a = document.createElement("a");
@@ -223,7 +220,7 @@ function downloadJSON() {
     a.click();
 }
 
-/* CSV */
+/* csv */
 function downloadCSV() {
     const rows = ["Name,Email,Phone,Country,City,ZIP"];
     lastData.forEach(u =>
