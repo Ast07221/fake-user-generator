@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FakeUserGeneratorPro</title>
+<title>FakeUserGeneratorPro SaaS</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: Inter, system-ui;
     background: #0b0b0b;
     color: #fff;
     height: 100vh;
@@ -21,69 +21,54 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
+    width: 420px;
 }
 
-/* OUTPUT */
+/* output */
 #output {
-    min-height: 200px;
+    min-height: 220px;
     font-size: 15px;
     line-height: 1.75;
     font-weight: 300;
 }
 
-/* KEY STYLE */
+/* key */
 .key {
-    color: #9a9a9a;
+    color: #8f8f8f;
     font-weight: 500;
 }
 
-/* LOADER */
-#loader {
-    height: 20px;
+/* loader */
+#status {
+    font-size: 12px;
+    opacity: 0.7;
     margin-bottom: 10px;
 }
 
-.dot {
-    display: inline-block;
-    animation: blink 1.8s infinite;
-    font-size: 20px;
-}
-
-.dot:nth-child(2) { animation-delay: 0.25s; }
-.dot:nth-child(3) { animation-delay: 0.5s; }
-
-@keyframes blink {
-    0%,100% { opacity: 0.2; }
-    50% { opacity: 1; }
-}
-
-/* BUTTONS */
+/* actions */
 .actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 45px;
-    gap: 18px;
+    margin-top: 40px;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
 .actions span {
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 1.2px;
-    text-transform: lowercase;
 }
 
-/* INPUT */
+/* input */
 #bulkInput {
-    width: 60px;
+    width: 55px;
     background: transparent;
     border: none;
     border-bottom: 1px solid #333;
     color: #fff;
     outline: none;
     text-align: center;
-    margin-left: 6px;
 }
 </style>
 </head>
@@ -92,11 +77,7 @@ body {
 
 <div class="wrapper">
 
-    <div id="loader">
-        <span class="dot">.</span>
-        <span class="dot">.</span>
-        <span class="dot">.</span>
-    </div>
+    <div id="status">idle</div>
 
     <div id="output"></div>
 
@@ -105,10 +86,10 @@ body {
 
         <span>
             bulk
-            <input id="bulkInput" type="number" min="1" max="50" value="5">
+            <input id="bulkInput" type="number" value="5" min="1" max="100">
         </span>
 
-        <span onclick="bulk()">run</span>
+        <span onclick="runBulk()">run</span>
         <span onclick="copy()">copy</span>
         <span onclick="downloadJSON()">json</span>
         <span onclick="downloadCSV()">csv</span>
@@ -119,37 +100,32 @@ body {
 <script>
 
 const output = document.getElementById("output");
-const loader = document.getElementById("loader");
+const statusEl = document.getElementById("status");
 const bulkInput = document.getElementById("bulkInput");
 
+let queueRunning = false;
 let lastData = [];
-let isRunning = false;
-let renderToken = 0;
 
-/* REALISTIC DATA */
+/* REAL DATA (linked structure) */
 const data = {
-    USA: ["New York", "Los Angeles", "Chicago", "Miami"],
-    Germany: ["Berlin", "Munich", "Hamburg", "Frankfurt"],
-    France: ["Paris", "Lyon", "Marseille", "Nice"],
-    Canada: ["Toronto", "Vancouver", "Montreal", "Ottawa"],
-    UK: ["London", "Manchester", "Liverpool", "Birmingham"],
-    Italy: ["Rome", "Milan", "Naples", "Florence"],
-    Spain: ["Madrid", "Barcelona", "Valencia", "Seville"],
-    Poland: ["Warsaw", "Krakow", "Gdansk", "Wroclaw"],
-    Netherlands: ["Amsterdam", "Rotterdam", "Utrecht", "Hague"],
-    Sweden: ["Stockholm", "Gothenburg", "Malmö", "Uppsala"]
+    USA: ["New York","Los Angeles","Chicago","Miami"],
+    Germany: ["Berlin","Munich","Hamburg"],
+    France: ["Paris","Lyon","Marseille"],
+    UK: ["London","Manchester","Liverpool"],
+    Italy: ["Rome","Milan","Naples"],
+    Spain: ["Madrid","Barcelona","Valencia"]
 };
 
 const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis","Noah Wilson","Ava Martinez"];
 
 /* USER */
 function createUser() {
-    const countryList = Object.keys(data);
-    const country = countryList[Math.floor(Math.random() * countryList.length)];
-    const city = data[country][Math.floor(Math.random() * data[country].length)];
+    const countries = Object.keys(data);
+    const country = countries[Math.floor(Math.random()*countries.length)];
+    const city = data[country][Math.floor(Math.random()*data[country].length)];
 
     const name = names[Math.floor(Math.random()*names.length)];
-    const username = name.toLowerCase().replace(" ","") + Math.floor(Math.random()*99);
+    const username = name.toLowerCase().replace(" ","") + Math.floor(Math.random()*999);
 
     return {
         username,
@@ -158,7 +134,7 @@ function createUser() {
         phone: "+" + Math.floor(1000000000 + Math.random()*9000000000),
         country,
         city,
-        address: "Street " + Math.floor(1 + Math.random()*200),
+        address: "Street " + Math.floor(Math.random()*300),
         zip: Math.floor(10000 + Math.random()*90000)
     };
 }
@@ -175,20 +151,14 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* PRINT (speed = 52) */
-function print(text) {
-    const myToken = ++renderToken;
+/* SaaS renderer (no flicker, batch safe) */
+async function render(text) {
     output.innerHTML = "";
 
     const lines = text.split("\n");
-    let lineIndex = 0;
 
-    function renderLine() {
-        if (myToken !== renderToken) return;
-
-        if (lineIndex >= lines.length) return;
-
-        const line = lines[lineIndex++];
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
         const parts = line.split(":");
 
         const row = document.createElement("div");
@@ -205,48 +175,41 @@ function print(text) {
             row.appendChild(value);
         } else {
             row.textContent = line;
-        }
+            }
 
         output.appendChild(row);
 
-        // 🔥  ВАЖНО: динамическая задержка (делает рендер “живым”)
-        const delay = 30 + Math.random() * 40;
-setTimeout(renderLine, delay);
-
-        setTimeout(renderLine, delay);
+        await new Promise(r => setTimeout(r, 18)); // SaaS smooth pacing
     }
-
-    renderLine();
 }
 
-/* GENERATE */
+/* QUEUE SYSTEM (важно для SaaS) */
+async function runTask(fn) {
+    if (queueRunning) return;
+    queueRunning = true;
+
+    statusEl.textContent = "processing...";
+
+    await fn();
+
+    statusEl.textContent = "idle";
+    queueRunning = false;
+}
+
+/* generate */
 function generate() {
-    if (isRunning) return;
-    isRunning = true;
-
-    loader.classList.add("hidden");
-
-    setTimeout(() => {
+    runTask(async () => {
         const u = createUser();
         lastData = [u];
-
-        print(format(u));
-
-        loader.classList.remove("hidden");
-        isRunning = false;
-    }, 500);
+        await render(format(u));
+    });
 }
 
-/* BULK */
-function bulk() {
-    if (isRunning) return;
-    isRunning = true;
+/* bulk */
+function runBulk() {
+    runTask(async () => {
+        const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
 
-    loader.classList.add("hidden");
-
-    const count = Math.min(50, Math.max(1, parseInt(bulkInput.value || 5)));
-
-    setTimeout(() => {
         const arr = [];
 
         for (let i = 0; i < count; i++) {
@@ -255,14 +218,11 @@ function bulk() {
 
         lastData = arr;
 
-        print(arr.map(format).join("\n\n"));
-
-        loader.classList.remove("hidden");
-        isRunning = false;
-    }, 500);
+        await render(arr.map(format).join("\n\n"));
+    });
 }
 
-/* COPY */
+/* copy */
 function copy() {
     navigator.clipboard.writeText(output.innerText);
 }
