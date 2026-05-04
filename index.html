@@ -58,30 +58,18 @@ body {
     50% { opacity: 1; }
 }
 
-/* bulk input */
-#bulkInput {
-    width: 60px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #333;
-    color: #fff;
-    outline: none;
-    font-size: 13px;
-    margin-left: 8px;
-    text-align: center;
-}
-
 /* actions */
 .actions {
     display: flex;
     justify-content: space-between;
     margin-top: 30px;
+    gap: 26px; /* 🔥  раздвинул кнопки */
 }
 
 .actions span {
     cursor: pointer;
     font-size: 13px;
-    letter-spacing: 1.2px;
+    letter-spacing: 1.4px;
     text-transform: lowercase;
     transition: 0.2s;
 }
@@ -112,13 +100,7 @@ body {
 
     <div class="actions">
         <span onclick="generate()">generate</span>
-
-        <span>
-            bulk
-            <input id="bulkInput" type="number" min="1" max="50" value="5">
-        </span>
-
-        <span onclick="bulk()">run bulk</span>
+        <span onclick="bulk()">bulk</span>
         <span onclick="copy()">copy</span>
         <span onclick="downloadJSON()">json</span>
         <span onclick="downloadCSV()">csv</span>
@@ -129,7 +111,6 @@ body {
 <script>
 const output = document.getElementById("output");
 const loader = document.getElementById("loader");
-const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
 let isRunning = false;
@@ -148,7 +129,6 @@ function createUser() {
     const street = streets[Math.floor(Math.random()*streets.length)];
 
     const username = name.toLowerCase().replace(" ","") + Math.floor(Math.random()*99);
-    const address = street + " " + Math.floor(1 + Math.random()*200);
 
     return {
         username,
@@ -157,7 +137,7 @@ function createUser() {
         phone: "+" + Math.floor(1000000000 + Math.random()*9000000000),
         country,
         city,
-        address,
+        address: street + " " + Math.floor(1 + Math.random()*200),
         zip: Math.floor(10000 + Math.random()*90000)
     };
 }
@@ -174,10 +154,11 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* SAFE PRINT (полный reset → нет каши) */
+/* safe print */
 function print(text) {
     output.classList.remove("cursor");
     output.innerHTML = "";
+
     let i = 0;
     output.classList.add("cursor");
 
@@ -193,13 +174,12 @@ function print(text) {
     type();
 }
 
-/* GENERATE */
+/* LOCKED GENERATE */
 function generate() {
-    if (isRunning) return;   // 🔒 защита от спама
+    if (isRunning) return; // 🔒 блокировка
     isRunning = true;
 
     loader.classList.add("hidden");
-
     setTimeout(() => {
         const u = createUser();
         lastData = [u];
@@ -211,19 +191,17 @@ function generate() {
     }, 600);
 }
 
-/* BULK (с количеством) */
+/* LOCKED BULK */
 function bulk() {
-    if (isRunning) return;   // 🔒 защита
+    if (isRunning) return; // 🔒 блокировка
     isRunning = true;
 
     loader.classList.add("hidden");
 
-    const count = Math.min(50, Math.max(1, parseInt(bulkInput.value || 5)));
-
     setTimeout(() => {
         const arr = [];
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < 5; i++) {
             arr.push(createUser());
         }
 
@@ -253,7 +231,6 @@ function downloadJSON() {
 /* csv */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
-
     lastData.forEach(u =>
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`)
     );
