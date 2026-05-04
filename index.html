@@ -16,15 +16,16 @@ body {
     height: 100vh;
 }
 
+/* CENTER AREA */
 .wrapper {
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 420px;
 }
 
-/* output */
+/* OUTPUT */
 #output {
     min-height: 220px;
     font-size: 15px;
@@ -32,43 +33,55 @@ body {
     font-weight: 300;
 }
 
-/* key */
+/* KEY */
 .key {
     color: #8f8f8f;
     font-weight: 500;
 }
 
-/* loader */
+/* DOTS */
 #status {
     font-size: 12px;
     opacity: 0.7;
     margin-bottom: 10px;
 }
 
-/* actions */
+/* BOTTOM CONTROLS */
 .actions {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+
     display: flex;
-    justify-content: space-between;
-    margin-top: 40px;
-    gap: 14px;
-    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
 .actions span {
     cursor: pointer;
-    font-size: 12px;
-    letter-spacing: 1.2px;
 }
 
-/* input */
+/* INPUT */
 #bulkInput {
     width: 55px;
     background: transparent;
     border: none;
     border-bottom: 1px solid #333;
     color: #fff;
-    outline: none;
     text-align: center;
+}
+
+/* DOTS ANIMATION */
+.dots::after {
+    content: "...";
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0%,100% { opacity: 0.2; }
+    50% { opacity: 1; }
 }
 </style>
 </head>
@@ -77,24 +90,26 @@ body {
 
 <div class="wrapper">
 
-    <div id="status">idle</div>
+    <!-- 🔵  STATUS (три точки) -->
+    <div id="status"><span class="dots">idle</span></div>
 
     <div id="output"></div>
 
-    <div class="actions">
-        <span onclick="generate()">generate</span>
+</div>
 
-        <span>
-            bulk
-            <input id="bulkInput" type="number" value="5" min="1" max="100">
-        </span>
+<!-- BOTTOM BUTTONS -->
+<div class="actions">
+    <span onclick="generate()">generate</span>
 
-        <span onclick="runBulk()">run</span>
-        <span onclick="copy()">copy</span>
-        <span onclick="downloadJSON()">json</span>
-        <span onclick="downloadCSV()">csv</span>
-    </div>
+    <span>
+        bulk
+        <input id="bulkInput" type="number" value="5" min="1" max="100">
+    </span>
 
+    <span onclick="runBulk()">run</span>
+    <span onclick="copy()">copy</span>
+    <span onclick="downloadJSON()">json</span>
+    <span onclick="downloadCSV()">csv</span>
 </div>
 
 <script>
@@ -103,10 +118,10 @@ const output = document.getElementById("output");
 const statusEl = document.getElementById("status");
 const bulkInput = document.getElementById("bulkInput");
 
-let queueRunning = false;
+let running = false;
 let lastData = [];
 
-/* REAL DATA (linked structure) */
+/* DATA */
 const data = {
     USA: ["New York","Los Angeles","Chicago","Miami"],
     Germany: ["Berlin","Munich","Hamburg"],
@@ -151,13 +166,14 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* SaaS renderer (no flicker, batch safe) */
+/* 🔥  SLOW SaaS RENDER */
 async function render(text) {
     output.innerHTML = "";
 
     const lines = text.split("\n");
 
     for (let i = 0; i < lines.length; i++) {
+
         const line = lines[i];
         const parts = line.split(":");
 
@@ -175,54 +191,60 @@ async function render(text) {
             row.appendChild(value);
         } else {
             row.textContent = line;
-            }
+        }
 
         output.appendChild(row);
 
-        await new Promise(r => setTimeout(r, 18)); // SaaS smooth pacing
+        // 🐢  медленнее теперь (фикс “слишком быстро”)
+        await new Promise(r => setTimeout(r, 45));
     }
 }
 
-/* QUEUE SYSTEM (важно для SaaS) */
-async function runTask(fn) {
-    if (queueRunning) return;
-    queueRunning = true;
-
-    statusEl.textContent = "processing...";
-
-    await fn();
-
-    statusEl.textContent = "idle";
-    queueRunning = false;
+/* STATUS DOTS */
+function setStatus(text) {
+    statusEl.innerHTML = `<span class="dots">${text}</span>`;
 }
 
-/* generate */
-function generate() {
-    runTask(async () => {
-        const u = createUser();
-        lastData = [u];
-        await render(format(u));
-    });
+/* GENERATE */
+async function generate() {
+    if (running) return;
+    running = true;
+
+    setStatus("processing");
+
+    const u = createUser();
+    lastData = [u];
+
+    await render(format(u));
+
+    setStatus("idle");
+    running = false;
 }
 
-/* bulk */
-function runBulk() {
-    runTask(async () => {
-        const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
+/* BULK */
+async function runBulk() {
+    if (running) return;
+    running = true;
 
-        const arr = [];
+    setStatus("processing");
 
-        for (let i = 0; i < count; i++) {
-            arr.push(createUser());
-        }
+    const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
 
-        lastData = arr;
+    const arr = [];
 
-        await render(arr.map(format).join("\n\n"));
-    });
+    for (let i = 0; i < count; i++) {
+        arr.push(createUser());
+    }
+
+    lastData = arr;
+
+    await render(arr.map(format).join("\n\n"));
+
+    setStatus("idle");
+    running = false;
 }
 
-/* copy */
+/* COPY */
 function copy() {
     navigator.clipboard.writeText(output.innerText);
 }
