@@ -33,8 +33,8 @@ body {
     font-weight: 300;
 }
 
-/* LABEL STYLE */
-.label {
+/* 🔥  визуальное выделение ключей */
+.line-key {
     color: #9a9a9a;
     font-weight: 500;
 }
@@ -162,7 +162,7 @@ function createUser() {
     };
 }
 
-/* FORMAT */
+/* FORMAT (ЧИСТЫЙ ТЕКСТ) */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -174,24 +174,24 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* LABEL STYLE (без span в данных) */
-function styleLabels(text) {
+/* 🔥  ТОЛЬКО ВИЗУАЛЬНОЕ ВЫДЕЛЕНИЕ (без span в данных) */
+function highlight(text) {
     return text
-        .replaceAll("Username:", "<span class='label'>Username:</span>")
-        .replaceAll("Name:", "<span class='label'>Name:</span>")
-    .replaceAll("Email:", "<span class='label'>Email:</span>")
-        .replaceAll("Phone:", "<span class='label'>Phone:</span>")
-        .replaceAll("Country:", "<span class='label'>Country:</span>")
-        .replaceAll("City:", "<span class='label'>City:</span>")
-        .replaceAll("Address:", "<span class='label'>Address:</span>")
-        .replaceAll("ZIP:", "<span class='label'>ZIP:</span>");
+        .replaceAll("Username:", "<span class='line-key'>Username:</span>")
+    .replaceAll("Name:", "<span class='line-key'>Name:</span>")
+        .replaceAll("Email:", "<span class='line-key'>Email:</span>")
+        .replaceAll("Phone:", "<span class='line-key'>Phone:</span>")
+        .replaceAll("Country:", "<span class='line-key'>Country:</span>")
+        .replaceAll("City:", "<span class='line-key'>City:</span>")
+        .replaceAll("Address:", "<span class='line-key'>Address:</span>")
+        .replaceAll("ZIP:", "<span class='line-key'>ZIP:</span>");
 }
 
 /* SAFE PRINT (без наложений) */
 function print(text) {
     const myToken = ++renderToken;
 
-    text = styleLabels(text);
+    text = highlight(text);
 
     output.classList.remove("cursor");
     output.innerHTML = "";
