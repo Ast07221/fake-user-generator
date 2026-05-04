@@ -210,7 +210,8 @@ function print(text) {
         output.appendChild(row);
 
         // 🔥  ВАЖНО: динамическая задержка (делает рендер “живым”)
-        const delay = 25 + Math.random() * 35;
+        const delay = 30 + Math.random() * 40;
+setTimeout(renderLine, delay);
 
         setTimeout(renderLine, delay);
     }
