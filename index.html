@@ -178,18 +178,17 @@ ZIP: ${u.zip}`;
 /* PRINT (speed = 52) */
 function print(text) {
     const myToken = ++renderToken;
-
     output.innerHTML = "";
 
     const lines = text.split("\n");
-    let i = 0;
+    let lineIndex = 0;
 
     function renderLine() {
         if (myToken !== renderToken) return;
 
-        if (i >= lines.length) return;
+        if (lineIndex >= lines.length) return;
 
-        const line = lines[i++];
+        const line = lines[lineIndex++];
         const parts = line.split(":");
 
         const row = document.createElement("div");
@@ -210,7 +209,10 @@ function print(text) {
 
         output.appendChild(row);
 
-        setTimeout(renderLine, 12); // ⚡ скорость
+        // 🔥  ВАЖНО: динамическая задержка (делает рендер “живым”)
+        const delay = 25 + Math.random() * 35;
+
+        setTimeout(renderLine, delay);
     }
 
     renderLine();
