@@ -32,14 +32,16 @@ body {
     font-weight: 300;
 }
 
-/* loader */
+/* KEY STYLE */
+.key {
+    color: #9a9a9a;
+    font-weight: 500;
+}
+
+/* LOADER */
 #loader {
     height: 20px;
     margin-bottom: 10px;
-}
-
-#loader.hidden {
-    opacity: 0;
 }
 
 .dot {
@@ -56,7 +58,7 @@ body {
     50% { opacity: 1; }
 }
 
-/* buttons */
+/* BUTTONS */
 .actions {
     display: flex;
     justify-content: space-between;
@@ -72,7 +74,7 @@ body {
     text-transform: lowercase;
 }
 
-/* bulk input */
+/* INPUT */
 #bulkInput {
     width: 60px;
     background: transparent;
@@ -82,12 +84,6 @@ body {
     outline: none;
     text-align: center;
     margin-left: 6px;
-}
-
-/* cursor */
-.cursor::after {
-    content: "|";
-    animation: blink 1s infinite;
 }
 </style>
 </head>
@@ -130,17 +126,29 @@ let lastData = [];
 let isRunning = false;
 let renderToken = 0;
 
-/* DATA */
+/* REALISTIC DATA */
+const data = {
+    USA: ["New York", "Los Angeles", "Chicago", "Miami"],
+    Germany: ["Berlin", "Munich", "Hamburg", "Frankfurt"],
+    France: ["Paris", "Lyon", "Marseille", "Nice"],
+    Canada: ["Toronto", "Vancouver", "Montreal", "Ottawa"],
+    UK: ["London", "Manchester", "Liverpool", "Birmingham"],
+    Italy: ["Rome", "Milan", "Naples", "Florence"],
+    Spain: ["Madrid", "Barcelona", "Valencia", "Seville"],
+    Poland: ["Warsaw", "Krakow", "Gdansk", "Wroclaw"],
+    Netherlands: ["Amsterdam", "Rotterdam", "Utrecht", "Hague"],
+    Sweden: ["Stockholm", "Gothenburg", "Malmö", "Uppsala"]
+};
+
 const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis","Noah Wilson","Ava Martinez"];
-const cities = ["New York","Berlin","Paris","Toronto","London","Rome","Madrid","Warsaw","Amsterdam","Stockholm"];
-const countries = ["USA","Germany","France","Canada","UK","Italy","Spain","Poland","Netherlands","Sweden"];
 
 /* USER */
 function createUser() {
-    const name = names[Math.floor(Math.random()*names.length)];
-    const country = countries[Math.floor(Math.random()*countries.length)];
-    const city = cities[Math.floor(Math.random()*cities.length)];
+    const countryList = Object.keys(data);
+    const country = countryList[Math.floor(Math.random() * countryList.length)];
+    const city = data[country][Math.floor(Math.random() * data[country].length)];
 
+    const name = names[Math.floor(Math.random()*names.length)];
     const username = name.toLowerCase().replace(" ","") + Math.floor(Math.random()*99);
 
     return {
@@ -155,7 +163,7 @@ function createUser() {
     };
 }
 
-/* FORMAT (чистый текст) */
+/* FORMAT */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -167,12 +175,11 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* РЕНДЕР БЕЗ SPAN И БЕЗ HTML В СТРОКАХ */
+/* PRINT (speed = 52) */
 function print(text) {
     const myToken = ++renderToken;
 
     output.innerHTML = "";
-    output.classList.remove("cursor");
 
     const lines = text.split("\n");
     let i = 0;
@@ -180,37 +187,32 @@ function print(text) {
     function renderLine() {
         if (myToken !== renderToken) return;
 
-        if (i >= lines.length) {
-            output.classList.remove("cursor");
-            return;
-        }
+        if (i >= lines.length) return;
 
         const line = lines[i++];
-        const [key, ...rest] = line.split(":");
+        const parts = line.split(":");
 
         const row = document.createElement("div");
 
-        if (rest.length) {
-            const keyEl = document.createElement("span");
-            keyEl.textContent = key + ": ";
-            keyEl.style.color = "#9a9a9a";
-            keyEl.style.fontWeight = "500";
+        if (parts.length > 1) {
+            const key = document.createElement("span");
+            key.className = "key";
+            key.textContent = parts[0] + ": ";
 
-            const valueEl = document.createElement("span");
-            valueEl.textContent = rest.join(":");
+            const value = document.createElement("span");
+            value.textContent = parts.slice(1).join(":");
 
-            row.appendChild(keyEl);
-            row.appendChild(valueEl);
+            row.appendChild(key);
+            row.appendChild(value);
         } else {
             row.textContent = line;
         }
 
         output.appendChild(row);
 
-        setTimeout(renderLine, 8);
+        setTimeout(renderLine, 52); // ⚡ скорость
     }
 
-    output.classList.add("cursor");
     renderLine();
 }
 
@@ -229,7 +231,7 @@ function generate() {
 
         loader.classList.remove("hidden");
         isRunning = false;
-    }, 63);
+    }, 500);
 }
 
 /* BULK */
@@ -254,7 +256,7 @@ function bulk() {
 
         loader.classList.remove("hidden");
         isRunning = false;
-    }, 52);
+    }, 500);
 }
 
 /* COPY */
