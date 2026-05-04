@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FakeUserGeneratorPro</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -24,7 +24,7 @@ body {
     width: 400px;
 }
 
-/* output */
+/* OUTPUT */
 #output {
     white-space: pre-line;
     min-height: 200px;
@@ -33,13 +33,13 @@ body {
     font-weight: 300;
 }
 
-/* 🔥  выделение меток */
+/* LABEL STYLE */
 .label {
-    color: #888;
+    color: #9a9a9a;
     font-weight: 500;
 }
 
-/* loader */
+/* LOADER */
 #loader {
     height: 20px;
     margin-bottom: 10px;
@@ -63,12 +63,13 @@ body {
     50% { opacity: 1; }
 }
 
-/* actions — 🔽  СПУСТИЛ НИЖЕ */
+/* BUTTONS */
 .actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 45px; /* ↑ было меньше */
+    margin-top: 45px;
     gap: 18px;
+    flex-wrap: wrap;
 }
 
 .actions span {
@@ -78,7 +79,7 @@ body {
     text-transform: lowercase;
 }
 
-/* bulk input */
+/* BULK INPUT */
 #bulkInput {
     width: 60px;
     background: transparent;
@@ -88,6 +89,12 @@ body {
     outline: none;
     text-align: center;
     margin-left: 6px;
+}
+
+/* CURSOR */
+.cursor::after {
+    content: "|";
+    animation: blink 1s infinite;
 }
 </style>
 </head>
@@ -121,20 +128,21 @@ body {
 </div>
 
 <script>
+
 const output = document.getElementById("output");
 const loader = document.getElementById("loader");
 const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
-let renderToken = 0;
 let isRunning = false;
+let renderToken = 0;
 
-/* data */
+/* DATA */
 const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis","Noah Wilson","Ava Martinez"];
 const cities = ["New York","Berlin","Paris","Toronto","London","Rome","Madrid","Warsaw","Amsterdam","Stockholm"];
 const countries = ["USA","Germany","France","Canada","UK","Italy","Spain","Poland","Netherlands","Sweden"];
 
-/* user */
+/* USER */
 function createUser() {
     const name = names[Math.floor(Math.random()*names.length)];
     const country = countries[Math.floor(Math.random()*countries.length)];
@@ -154,21 +162,37 @@ function createUser() {
     };
 }
 
-/* format — 🔥  выделяем label */
+/* FORMAT */
 function format(u) {
-    return `<span class="label">Username:</span> ${u.username}
-<span class="label">Name:</span> ${u.name}
-<span class="label">Email:</span> ${u.email}
-<span class="label">Phone:</span> ${u.phone}
-<span class="label">Country:</span> ${u.country}
-<span class="label">City:</span> ${u.city}
-<span class="label">Address:</span> ${u.address}
-<span class="label">ZIP:</span> ${u.zip}`;
+    return `Username: ${u.username}
+Name: ${u.name}
+Email: ${u.email}
+Phone: ${u.phone}
+Country: ${u.country}
+City: ${u.city}
+Address: ${u.address}
+ZIP: ${u.zip}`;
 }
 
-/* print safe */
+/* LABEL STYLE (без span в данных) */
+function styleLabels(text) {
+    return text
+        .replaceAll("Username:", "<span class='label'>Username:</span>")
+        .replaceAll("Name:", "<span class='label'>Name:</span>")
+    .replaceAll("Email:", "<span class='label'>Email:</span>")
+        .replaceAll("Phone:", "<span class='label'>Phone:</span>")
+        .replaceAll("Country:", "<span class='label'>Country:</span>")
+        .replaceAll("City:", "<span class='label'>City:</span>")
+        .replaceAll("Address:", "<span class='label'>Address:</span>")
+        .replaceAll("ZIP:", "<span class='label'>ZIP:</span>");
+}
+
+/* SAFE PRINT (без наложений) */
 function print(text) {
     const myToken = ++renderToken;
+
+    text = styleLabels(text);
+
     output.classList.remove("cursor");
     output.innerHTML = "";
 
@@ -189,7 +213,7 @@ function print(text) {
     type();
 }
 
-/* generate */
+/* GENERATE */
 function generate() {
     if (isRunning) return;
     isRunning = true;
@@ -207,7 +231,7 @@ function generate() {
     }, 500);
 }
 
-/* bulk */
+/* BULK */
 function bulk() {
     if (isRunning) return;
     isRunning = true;
@@ -232,12 +256,12 @@ function bulk() {
     }, 500);
 }
 
-/* copy */
+/* COPY */
 function copy() {
     navigator.clipboard.writeText(output.innerText);
 }
 
-/* json */
+/* JSON */
 function downloadJSON() {
     const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
     const a = document.createElement("a");
@@ -246,9 +270,10 @@ function downloadJSON() {
     a.click();
 }
 
-/* csv */
+/* CSV */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
+
     lastData.forEach(u =>
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`)
     );
@@ -259,6 +284,7 @@ function downloadCSV() {
     a.download = "users.csv";
     a.click();
 }
+
 </script>
 
 </body>
