@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake Identity Generator Pro</title>
+<title>Fake Identity Generator V2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -21,41 +21,30 @@ body {
     min-height: 100vh;
 }
 
-/* CENTER CORE */
+/* CENTER LAYOUT */
 .wrapper {
-    width: 520px;
+    width: 540px;
     text-align: center;
 }
 
-/* GRID OUTPUT */
-#output {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 20px;
+#status {
+    font-size: 12px;
+    opacity: 0.6;
 }
 
-/* CARD */
+/* OUTPUT */
+#output {
+    margin-top: 20px;
+    display: grid;
+    gap: 12px;
+}
+
 .card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px;
-
     padding: 14px;
     text-align: left;
-
-    backdrop-filter: blur(10px);
-}
-
-.key {
-    color: #888;
-    font-size: 12px;
-}
-
-/* STATUS */
-#status {
-    font-size: 12px;
-    opacity: 0.6;
 }
 
 /* DOCK */
@@ -66,33 +55,28 @@ body {
     transform: translateX(-50%);
 
     display: flex;
-    align-items: center;
     gap: 10px;
+    align-items: center;
 
     padding: 10px 14px;
 
-    background: rgba(20,20,20,0.55);
+    background: rgba(20,20,20,0.6);
     border: 1px solid rgba(255,255,255,0.08);
-
     border-radius: 16px;
 
     backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-
     box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 
-/* BUTTONS PREMIUM */
+/* BUTTONS */
 button {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
 
     color: #eaeaea;
-
     padding: 9px 14px;
     border-radius: 12px;
 
-    font-family: Inter;
     font-size: 13px;
     font-weight: 500;
 
@@ -101,7 +85,7 @@ button {
 }
 
 button:hover {
-    background: rgba(255,255,255,0.09);
+    background: rgba(255,255,255,0.1);
     transform: translateY(-1px);
 }
 
@@ -114,20 +98,21 @@ input {
     text-align: center;
     padding: 6px;
 }
+
+.key {
+    color: #888;
+    font-size: 12px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="wrapper">
-
     <div id="status">ready</div>
-
     <div id="output"></div>
-
 </div>
 
-<!-- CONTROL DOCK -->
 <div class="bottomBar">
     <button onclick="generate()">Generate</button>
     <button onclick="more()">More</button>
@@ -138,79 +123,72 @@ input {
 <script>
 
 /* =========================
-   REALISTIC ENGINE (50+ LOCATIONS EXPANDABLE)
+   REALISTIC GLOBAL DATA (50+ COUNTRIES READY STRUCTURE)
 ========================= */
 
 const data = [
 {
 country:"USA",code:"+1",
-first:["James","John","Robert","Michael","Emma","Olivia","Sophia"],
-last:["Smith","Johnson","Brown","Williams"],
-city:["New York","Los Angeles","Chicago","Miami"],
+first:["James","John","Robert","Michael","Emma","Olivia","Sophia","David","Daniel"],
+last:["Smith","Johnson","Brown","Williams","Jones","Miller"],
+city:["New York","Los Angeles","Chicago","Miami","Dallas"],
 zip:()=>Math.floor(10000+Math.random()*89999)
 },
 {
 country:"UK",code:"+44",
-first:["Oliver","Harry","George","Jack","Emily","Amelia"],
-last:["Smith","Taylor","Brown","Wilson"],
-city:["London","Manchester","Liverpool"],
+first:["Oliver","Harry","George","Jack","Emily","Amelia","Isla"],
+last:["Smith","Taylor","Brown","Wilson","Evans"],
+city:["London","Manchester","Liverpool","Birmingham"],
 zip:()=> "SW"+Math.floor(10+Math.random()*90)
 },
 {
 country:"Germany",code:"+49",
-first:["Lukas","Leon","Finn","Paul","Anna","Emma"],
-last:["Müller","Schmidt","Weber","Fischer"],
-city:["Berlin","Munich","Hamburg"],
+first:["Lukas","Leon","Finn","Paul","Anna","Marie","Sophia"],
+last:["Müller","Schmidt","Weber","Fischer","Klein"],
+city:["Berlin","Munich","Hamburg","Cologne"],
 zip:()=>Math.floor(10000+Math.random()*89999)
 },
 {
 country:"France",code:"+33",
-first:["Louis","Lucas","Hugo","Emma","Chloe"],
-last:["Martin","Bernard","Dubois"],
-city:["Paris","Lyon","Marseille"],
-zip:()=>Math.floor(10000+Math.random()*89999)
-},
-{
-country:"Italy",code:"+39",
-first:["Luca","Marco","Giulia","Sofia"],
-last:["Rossi","Ferrari","Bianchi"],
-city:["Rome","Milan","Naples"],
+first:["Louis","Lucas","Hugo","Emma","Chloe","Léa"],
+last:["Martin","Bernard","Dubois","Moreau"],
+city:["Paris","Lyon","Marseille","Nice"],
 zip:()=>Math.floor(10000+Math.random()*89999)
 },
 {
 country:"Spain",code:"+34",
-first:["Mateo","Leo","Lucia","Sofia"],
-last:["Garcia","Lopez","Martinez"],
-city:["Madrid","Barcelona","Valencia"],
+first:["Mateo","Leo","Hugo","Lucia","Sofia","Martina"],
+last:["Garcia","Lopez","Martinez","Sanchez"],
+city:["Madrid","Barcelona","Valencia","Seville"],
+zip:()=>Math.floor(10000+Math.random()*89999)
+},
+{
+country:"Italy",code:"+39",
+first:["Luca","Marco","Giulia","Sofia","Matteo"],
+last:["Rossi","Ferrari","Bianchi","Romano"],
+city:["Rome","Milan","Naples","Turin"],
 zip:()=>Math.floor(10000+Math.random()*89999)
 },
 {
 country:"Netherlands",code:"+31",
-first:["Daan","Lars","Sophie","Emma"],
-last:["de Jong","Jansen","Visser"],
+first:["Daan","Lars","Sophie","Emma","Noah"],
+last:["de Jong","Jansen","Visser","Bakker"],
 city:["Amsterdam","Rotterdam","Utrecht"],
 zip:()=>Math.floor(1000+Math.random()*8999)
 },
 {
-country:"Canada",code:"+1",
-    first:["Liam","Noah","Emma","Ava"],
-last:["Brown","Martin","Lee"],
+    country:"Canada",code:"+1",
+first:["Liam","Noah","Emma","Ava","Mason"],
+last:["Brown","Martin","Lee","Wilson"],
 city:["Toronto","Vancouver","Montreal"],
 zip:()=> "M"+Math.floor(1+Math.random()*9)
 },
 {
 country:"Japan",code:"+81",
-first:["Haruto","Yuto","Sota","Yui"],
-last:["Sato","Suzuki","Tanaka"],
+first:["Haruto","Yuto","Sota","Yui","Aoi"],
+last:["Sato","Suzuki","Tanaka","Kobayashi"],
 city:["Tokyo","Osaka","Kyoto"],
 zip:()=>Math.floor(1000000+Math.random()*8999999)
-},
-{
-country:"Poland",code:"+48",
-first:["Jan","Piotr","Julia","Zofia"],
-last:["Nowak","Kowalski","Wójcik"],
-city:["Warsaw","Krakow","Gdansk"],
-zip:()=>Math.floor(10000+Math.random()*89999)
 }
 ];
 
@@ -221,18 +199,17 @@ const count = document.getElementById("count");
 
 let last = [];
 
-/* ========================= */
-
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
+/* CORE GENERATOR */
 function gen(){
+
     const loc = pick(data);
 
     const first = pick(loc.first);
     const lastName = pick(loc.last);
-
     const city = pick(loc.city);
 
     const username = (first + lastName + Math.floor(Math.random()*999)).toLowerCase();
@@ -249,8 +226,7 @@ function gen(){
     };
 }
 
-/* ========================= */
-
+/* RENDER */
 function render(arr){
     output.innerHTML = "";
 
@@ -271,8 +247,7 @@ function render(arr){
     });
 }
 
-/* ========================= */
-
+/* ACTIONS */
 function generate(){
     const arr = [];
     const n = parseInt(count.value);
