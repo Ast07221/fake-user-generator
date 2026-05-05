@@ -1,96 +1,81 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 /* =========================
-   SIMPLE DATA ENGINE
+   CORE ENGINE
 ========================= */
 
 const countries = {
-  USA: ["New York", "Los Angeles", "Chicago", "Miami"],
-  Germany: ["Berlin", "Munich", "Hamburg"],
-  France: ["Paris", "Lyon", "Marseille"],
-  UK: ["London", "Manchester", "Liverpool"],
-  Italy: ["Rome", "Milan", "Naples"],
-  Spain: ["Madrid", "Barcelona", "Valencia"]
+  USA: ["New York", "Los Angeles", "Chicago"],
+  Germany: ["Berlin", "Munich"],
+  France: ["Paris", "Lyon"]
 };
 
-const names = [
-  "John Smith",
-  "Emma Brown",
-  "Liam Johnson",
-  "Olivia Davis",
-  "Noah Wilson",
-  "Ava Martinez"
-];
+const names = ["John Smith", "Emma Brown", "Liam Johnson"];
 
-function rand(arr) {
+function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function num(min, max) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
+function generateUser() {
+  const country = pick(Object.keys(countries));
+  const city = pick(countries[country]);
+  const name = pick(names);
 
-/* =========================
-   USER GENERATOR
-========================= */
-
-function createUser() {
-  const country = rand(Object.keys(countries));
-  const city = rand(countries[country]);
-
-  const name = rand(names);
-  const username =
-    name.toLowerCase().replace(" ", "") + num(100, 9999);
+  const username = name.toLowerCase().replace(" ", "") + Math.floor(Math.random()*999);
 
   return {
+    id: Date.now(),
     username,
     name,
     email: username + "@mail.com",
-    phone: "+" + num(1000000000, 9999999999),
+    phone: "+" + (Math.floor(Math.random()*9000000000)+1000000000),
     country,
     city,
-    address: "Street " + num(1, 300),
-    zip: num(10000, 99999)
+    address: "Street " + Math.floor(Math.random()*300),
+    zip: Math.floor(10000 + Math.random()*90000),
+    version: "v7"
   };
 }
 
 /* =========================
-   API ROUTES
+   API LAYER
 ========================= */
 
-// health check
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+app.get("/api/generate", (req, res) => {
+  const type = req.query.type || "user";
+
+  if (type === "user") {
+    return res.json(generateUser());
+  }
+
+  return res.status(400).json({ error: "unknown generator type" });
 });
 
-// single user
-app.get("/api/user", (req, res) => {
-  res.json(createUser());
-});
-
-// bulk users
-app.get("/api/bulk", (req, res) => {
-  const count = Math.min(100, parseInt(req.query.count || 5));
+app.post("/api/bulk", (req, res) => {
+  const count = Math.min(req.body.count || 5, 100);
 
   const result = [];
+
   for (let i = 0; i < count; i++) {
-    result.push(createUser());
+    result.push(generateUser());
   }
 
   res.json(result);
 });
 
 /* =========================
-   START SERVER
+   HEALTH
 ========================= */
 
-const PORT = process.env.PORT || 3000;
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", version: "v7" });
+});
 
-app.listen(PORT, () => {
-  console.log("SaaS API running on port " + PORT);
+app.listen(10000, () => {
+  console.log("v7 SaaS platform running on 10000");
 });
