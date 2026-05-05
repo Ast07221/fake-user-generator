@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FakeUserGenerator SaaS</title>
+<title>Fake User Generator Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -13,29 +13,19 @@ body {
     font-family: Inter, system-ui;
     background: #0b0b0b;
     color: #fff;
-    height: 100vh;
 }
 .wrapper {
     position: absolute;
     top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 420px;
+    width: 460px;
 }
 #output {
     min-height: 220px;
-    font-size: 15px;
-    line-height: 1.75;
-    font-weight: 300;
-}
-.key {
-    color: #8f8f8f;
-    font-weight: 500;
-}
-#status {
-    font-size: 12px;
-    opacity: 0.7;
-    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }
 .actions {
     position: fixed;
@@ -43,27 +33,16 @@ body {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 18px;
+    gap: 14px;
     font-size: 12px;
 }
-.actions span {
-    cursor: pointer;
-}
-#bulkInput {
-    width: 55px;
+.actions span { cursor: pointer; }
+select, input {
     background: transparent;
     border: none;
     border-bottom: 1px solid #333;
     color: #fff;
     text-align: center;
-}
-.dots::after {
-    content: "...";
-    animation: blink 1.2s infinite;
-}
-@keyframes blink {
-    0%,100% { opacity: 0.2; }
-    50% { opacity: 1; }
 }
 </style>
 </head>
@@ -71,73 +50,132 @@ body {
 <body>
 
 <div class="wrapper">
-    <div id="status"><span class="dots">idle</span></div>
     <div id="output"></div>
 </div>
 
 <div class="actions">
     <span onclick="generate()">generate</span>
-    <span>
-        bulk
-        <input id="bulkInput" type="number" value="5" min="1" max="100">
-    </span>
+
+    <select id="countrySelect"></select>
+
+    <span>bulk <input id="bulkInput" type="number" value="5" min="1" max="2000"></span>
+
     <span onclick="runBulk()">run</span>
     <span onclick="copy()">copy</span>
+    <span onclick="downloadJSON()">json</span>
+    <span onclick="downloadCSV()">csv</span>
 </div>
 
 <script>
 
-const API_BASE = "https://fake-user-generator-l0m7.onrender.com/api";
-const API_KEY = "123456";
+/* =========================
+   COUNTRY ENGINE
+========================= */
 
-const output = document.getElementById("output");
-const statusEl = document.getElementById("status");
-const bulkInput = document.getElementById("bulkInput");
+const BASE_COUNTRIES = [
+{ name:"USA", code:"+1", cities:["New York","Los Angeles","Chicago","Houston","Miami"] },
+{ name:"UK", code:"+44", cities:["London","Manchester","Liverpool","Birmingham"] },
+{ name:"Germany", code:"+49", cities:["Berlin","Munich","Hamburg","Frankfurt"] },
+{ name:"France", code:"+33", cities:["Paris","Lyon","Marseille","Nice"] },
+{ name:"Spain", code:"+34", cities:["Madrid","Barcelona","Valencia"] },
+{ name:"Italy", code:"+39", cities:["Rome","Milan","Naples"] },
+{ name:"Netherlands", code:"+31", cities:["Amsterdam","Rotterdam","Utrecht"] },
+{ name:"Canada", code:"+1", cities:["Toronto","Vancouver","Montreal"] },
+{ name:"Australia", code:"+61", cities:["Sydney","Melbourne","Brisbane"] },
+{ name:"Japan", code:"+81", cities:["Tokyo","Osaka","Kyoto"] }
+];
 
-let running = false;
-let lastData = [];
+const EXTRA = [
+"Brazil","Argentina","Mexico","Poland","Sweden","Norway","Finland","Denmark",
+"Portugal","Greece","Turkey","Ukraine","Romania","Hungary","Czech Republic",
+"Austria","Switzerland","Belgium","Ireland","India","China","South Korea",
+"Indonesia","Thailand","Vietnam","Philippines","Malaysia","Singapore",
+"Pakistan","Bangladesh","South Africa","Egypt","Nigeria","Kenya",
+"Saudi Arabia","UAE","Israel","Chile","Peru","Colombia"
+];
 
-function setStatus(t) {
-    statusEl.innerHTML = `<span class="dots">${t}</span>`;
+const COUNTRIES = [...BASE_COUNTRIES];
+
+EXTRA.forEach(c=>{
+    COUNTRIES.push({
+        name: c,
+        code: "+" + Math.floor(1 + Math.random()*99),
+        cities: ["Capital","Metro","City Center"]
+    });
+});
+
+/* =========================
+   NAMES (100+)
+========================= */
+
+const FIRST = [
+"James","John","Robert","Michael","William","David","Richard","Joseph","Thomas","Charles",
+"Emma","Olivia","Sophia","Isabella","Mia","Charlotte","Amelia","Harper","Evelyn","Abigail"
+];
+
+const LAST = [
+"Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin",
+"Thompson","Garcia","Martinez","Robinson","Clark","Rodriguez","Lewis","Lee","Walker","Hall"
+];
+
+for(let i=0;i<80;i++){
+    FIRST.push("Name"+i);
+    LAST.push("Surname"+i);
 }
 
 /* =========================
-   API CALL (FIXED)
+   INIT DROPDOWN
 ========================= */
 
-async function createUser() {
-    try {
-        const res = await fetch(API_BASE + "/generate", {
-    headers: {
-        "x-api-key": API_KEY
-    }
-});
-        if (!res.ok) throw new Error("API error");
+const select = document.getElementById("countrySelect");
 
-        return await res.json();
+select.innerHTML = `<option value="all">all</option>` +
+    COUNTRIES.map(c=>`<option>${c.name}</option>`).join("");
 
-    } catch (e) {
-        console.log("API fallback");
+/* =========================
+   CORE
+========================= */
 
-        return {
-            username: "offline_user",
-            name: "Offline User",
-            email: "offline@mail.com",
-            phone: "+0000000000",
-            country: "Offline",
-            city: "Offline",
-            address: "N/A",
-            zip: "00000"
-        };
-    }
+function pick(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function randomZip(){
+    return Math.floor(10000 + Math.random()*90000);
+}
+function createUser(){
+
+    const selected = select.value;
+
+    const pool = selected === "all"
+        ? COUNTRIES
+        : COUNTRIES.filter(c => c.name === selected);
+
+    const country = pick(pool);
+
+    const first = pick(FIRST);
+    const last = pick(LAST);
+
+    const username = (first + last + Math.floor(Math.random()*9999)).toLowerCase();
+
+    return {
+        username,
+        name: first + " " + last,
+        email: username + "@gmail.com",
+        phone: country.code + Math.floor(100000000 + Math.random()*900000000),
+        country: country.name,
+        city: pick(country.cities),
+        address: "Street " + Math.floor(Math.random()*300),
+        zip: randomZip()
+    };
 }
 
 /* =========================
    FORMAT
 ========================= */
 
-function format(u) {
-    return `Username: ${u.username}
+function format(u){
+return `Username: ${u.username}
 Name: ${u.name}
 Email: ${u.email}
 Phone: ${u.phone}
@@ -151,100 +189,61 @@ ZIP: ${u.zip}`;
    RENDER
 ========================= */
 
-async function render(text) {
-    output.innerHTML = "";
+const output = document.getElementById("output");
+let lastData = [];
 
-    const lines = text.split("\n");
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const parts = line.split(":");
-
-        const row = document.createElement("div");
-
-        if (parts.length > 1) {
-            const key = document.createElement("span");
-            key.className = "key";
-            key.textContent = parts[0] + ": ";
-
-            const value = document.createElement("span");
-            value.textContent = parts.slice(1).join(":");
-
-            row.appendChild(key);
-            row.appendChild(value);
-        } else {
-            row.textContent = line;
-        }
-
-        output.appendChild(row);
-        await new Promise(r => setTimeout(r, 30));
-    }
+function render(text){
+    output.textContent = text;
 }
 
 /* =========================
-   SINGLE
+   ACTIONS
 ========================= */
 
-async function generate() {
-    if (running) return;
-    running = true;
-
-    setStatus("processing");
-
-    const u = await createUser();
+function generate(){
+    const u = createUser();
     lastData = [u];
-
-    await render(format(u));
-
-    setStatus("idle");
-    running = false;
+    render(format(u));
 }
 
-/* =========================
-   BULK
-========================= */
+function runBulk(){
+    const count = Math.min(2000, parseInt(document.getElementById("bulkInput").value || 5));
 
-async function runBulk() {
-    if (running) return;
-    running = true;
+    const arr = new Array(count);
 
-    setStatus("processing");
-
-    const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
-
-    const arr = [];
-
-    output.innerHTML = "";
-
-    for (let i = 0; i < count; i++) {
-        const u = await createUser();
-        arr.push(u);
-
-        const block = document.createElement("div");
-        block.style.marginBottom = "10px";
-        block.innerHTML = `
-            <div><span class="key">Name:</span> ${u.name}</div>
-            <div><span class="key">Country:</span> ${u.country}</div>
-            <div><span class="key">City:</span> ${u.city}</div>
-        `;
-
-        output.appendChild(block);
-
-        await new Promise(r => setTimeout(r, 20));
+    for(let i=0;i<count;i++){
+        arr[i] = createUser();
     }
 
     lastData = arr;
 
-    setStatus("idle");
-    running = false;
+    render(arr.map(format).join("\n\n"));
 }
 
-/* =========================
-   COPY
-========================= */
+function copy(){
+    navigator.clipboard.writeText(output.textContent);
+}
 
-function copy() {
-    navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
+function downloadJSON(){
+    const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.json";
+    a.click();
+}
+
+function downloadCSV(){
+    const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
+
+    lastData.forEach(u=>{
+        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
+    });
+
+    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.csv";
+    a.click();
 }
 
 </script>
