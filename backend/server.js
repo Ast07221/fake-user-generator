@@ -1,55 +1,72 @@
-import express from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
+const crypto = require("crypto");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEYS = new Set();
+/* =========================
+   CONFIG
+========================= */
+const PORT = process.env.PORT || 10000;
+const API_KEY = process.env.API_KEY || "dev-key";
 
-/* demo key */
-const DEFAULT_KEY = "demo-key-123";
-API_KEYS.add(DEFAULT_KEY);
+/* =========================
+   DATA
+========================= */
+const countries = {
+    USA: ["New York", "Los Angeles", "Chicago"],
+    Germany: ["Berlin", "Munich"],
+    France: ["Paris", "Lyon"],
+    UK: ["London", "Manchester"]
+};
 
-console.log("API KEY:", DEFAULT_KEY);
+const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis"];
+
+function pick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateUser() {
+    const country = pick(Object.keys(countries));
+    const city = pick(countries[country]);
+    const name = pick(names);
+
+    const username = name.toLowerCase().replace(" ", "") + Math.floor(Math.random()*999);
+
+    return {
+        id: Date.now(),
+        username,
+        name,
+        email: username + "@mail.com",
+        phone: "+" + (Math.floor(Math.random()*9000000000)+1000000000),
+        country,
+        city,
+        address: "Street " + Math.floor(Math.random()*300),
+        zip: Math.floor(10000 + Math.random()*90000),
+        version: "stable"
+    };
+}
 
 /* =========================
    AUTH
 ========================= */
-
 function auth(req, res, next) {
     const key = req.headers["x-api-key"];
-
-    if (!key || !API_KEYS.has(key)) {
+    if (key !== API_KEY) {
         return res.status(401).json({ error: "Invalid API key" });
     }
-
     next();
-}
-
-/* =========================
-   GENERATOR
-========================= */
-
-function generateUser() {
-    const id = Date.now();
-
-    return {
-        id,
-        username: "user_" + Math.floor(Math.random() * 9999),
-        name: "Demo User",
-        email: "demo@mail.com",
-        phone: "+1000000000",
-        country: "USA",
-        city: "NYC",
-        address: "Street 1",
-        zip: "10001"
-    };
 }
 
 /* =========================
    ROUTES
 ========================= */
+
+app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
+});
 
 app.get("/api/generate", auth, (req, res) => {
     res.json(generateUser());
@@ -57,20 +74,18 @@ app.get("/api/generate", auth, (req, res) => {
 
 app.post("/api/bulk", auth, (req, res) => {
     const count = Math.min(req.body.count || 5, 100);
-
-    const result = [];
+    const arr = [];
 
     for (let i = 0; i < count; i++) {
-        result.push(generateUser());
+        arr.push(generateUser());
     }
 
-    res.json(result);
+    res.json(arr);
 });
 
-app.get("/health", (req, res) => {
-    res.json({ status: "ok", version: "v10" });
-});
-
-app.listen(10000, () => {
-    console.log("server running on 10000");
+/* =========================
+   START
+========================= */
+app.listen(PORT, () => {
+    console.log("SaaS backend running on port", PORT);
 });
