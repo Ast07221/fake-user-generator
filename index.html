@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FakeUserGenerator SaaS v7</title>
+<title>FakeUserGenerator SaaS</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -15,7 +15,6 @@ body {
     color: #fff;
     height: 100vh;
 }
-
 .wrapper {
     position: absolute;
     top: 45%;
@@ -23,25 +22,21 @@ body {
     transform: translate(-50%, -50%);
     width: 420px;
 }
-
 #output {
     min-height: 220px;
     font-size: 15px;
     line-height: 1.75;
     font-weight: 300;
 }
-
 .key {
     color: #8f8f8f;
     font-weight: 500;
 }
-
 #status {
     font-size: 12px;
     opacity: 0.7;
     margin-bottom: 10px;
 }
-
 .actions {
     position: fixed;
     bottom: 25px;
@@ -50,13 +45,10 @@ body {
     display: flex;
     gap: 18px;
     font-size: 12px;
-    letter-spacing: 1px;
 }
-
 .actions span {
     cursor: pointer;
 }
-
 #bulkInput {
     width: 55px;
     background: transparent;
@@ -65,12 +57,10 @@ body {
     color: #fff;
     text-align: center;
 }
-
 .dots::after {
     content: "...";
     animation: blink 1.2s infinite;
 }
-
 @keyframes blink {
     0%,100% { opacity: 0.2; }
     50% { opacity: 1; }
@@ -87,25 +77,18 @@ body {
 
 <div class="actions">
     <span onclick="generate()">generate</span>
-
     <span>
         bulk
         <input id="bulkInput" type="number" value="5" min="1" max="100">
     </span>
-
     <span onclick="runBulk()">run</span>
     <span onclick="copy()">copy</span>
-    <span onclick="downloadJSON()">json</span>
-    <span onclick="downloadCSV()">csv</span>
 </div>
 
 <script>
 
-/* =========================
-   CONFIG
-========================= */
-
 const API_BASE = "https://fake-user-generator-l0m7.onrender.com/api";
+const API_KEY = "PASTE_YOUR_RENDER_API_KEY_HERE";
 
 const output = document.getElementById("output");
 const statusEl = document.getElementById("status");
@@ -114,23 +97,28 @@ const bulkInput = document.getElementById("bulkInput");
 let running = false;
 let lastData = [];
 
-/* =========================
-   STATUS
-========================= */
 function setStatus(t) {
     statusEl.innerHTML = `<span class="dots">${t}</span>`;
 }
 
 /* =========================
-   API CALL
+   API CALL (FIXED)
 ========================= */
+
 async function createUser() {
     try {
-        const res = await fetch(API_BASE + "/generate?type=user");
+        const res = await fetch(API_BASE + "/generate?type=user", {
+            headers: {
+                "x-api-key": API_KEY
+            }
+        });
+
         if (!res.ok) throw new Error("API error");
+
         return await res.json();
+
     } catch (e) {
-        console.error("Backend error:", e);
+        console.log("API fallback");
 
         return {
             username: "offline_user",
@@ -148,6 +136,7 @@ async function createUser() {
 /* =========================
    FORMAT
 ========================= */
+
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -162,8 +151,10 @@ ZIP: ${u.zip}`;
 /* =========================
    RENDER
 ========================= */
+
 async function render(text) {
     output.innerHTML = "";
+
     const lines = text.split("\n");
 
     for (let i = 0; i < lines.length; i++) {
@@ -192,8 +183,9 @@ async function render(text) {
 }
 
 /* =========================
-   GENERATE
+   SINGLE
 ========================= */
+
 async function generate() {
     if (running) return;
     running = true;
@@ -212,6 +204,7 @@ async function generate() {
 /* =========================
    BULK
 ========================= */
+
 async function runBulk() {
     if (running) return;
     running = true;
@@ -221,6 +214,7 @@ async function runBulk() {
     const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
 
     const arr = [];
+
     output.innerHTML = "";
 
     for (let i = 0; i < count; i++) {
@@ -228,17 +222,16 @@ async function runBulk() {
         arr.push(u);
 
         const block = document.createElement("div");
-        block.style.marginBottom = "14px";
-
+        block.style.marginBottom = "10px";
         block.innerHTML = `
-            <div><span class="key">Name: </span>${u.name}</div>
-            <div><span class="key">Country: </span>${u.country}</div>
-            <div><span class="key">City: </span>${u.city}</div>
+            <div><span class="key">Name:</span> ${u.name}</div>
+            <div><span class="key">Country:</span> ${u.country}</div>
+            <div><span class="key">City:</span> ${u.city}</div>
         `;
 
         output.appendChild(block);
 
-        await new Promise(r => setTimeout(r, 40));
+        await new Promise(r => setTimeout(r, 20));
     }
 
     lastData = arr;
@@ -248,38 +241,11 @@ async function runBulk() {
 }
 
 /* =========================
-   EXPORT
+   COPY
 ========================= */
+
 function copy() {
     navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
-}
-
-function downloadJSON() {
-    const blob = new Blob([JSON.stringify(lastData, null, 2)], {
-        type: "application/json"
-    });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.json";
-    a.click();
-}
-
-function downloadCSV() {
-    const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
-
-    lastData.forEach(u => {
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
-    });
-
-    const blob = new Blob([rows.join("\n")], {
-        type: "text/csv"
-    });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.csv";
-    a.click();
 }
 
 </script>
