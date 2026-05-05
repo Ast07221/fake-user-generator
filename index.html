@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FakeUserGeneratorPro SaaS</title>
+<title>FakeUserGenerator SaaS v7</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -97,13 +97,15 @@ body {
     <span onclick="copy()">copy</span>
     <span onclick="downloadJSON()">json</span>
     <span onclick="downloadCSV()">csv</span>
-    <span onclick="toggleBackend()">api</span>
 </div>
 
 <script>
 
+/* =========================
+   CONFIG (v7 API ONLY)
+========================= */
+
 const API_BASE = "https://fake-user-generator-l0m7.onrender.com/api";
-let useBackend = true;
 
 const output = document.getElementById("output");
 const statusEl = document.getElementById("status");
@@ -112,35 +114,43 @@ const bulkInput = document.getElementById("bulkInput");
 let running = false;
 let lastData = [];
 
-/* STATUS */
+/* =========================
+   STATUS
+========================= */
 function setStatus(t) {
     statusEl.innerHTML = `<span class="dots">${t}</span>`;
 }
 
-/* CREATE USER */
+/* =========================
+   API CALL (CORE ENGINE)
+========================= */
 async function createUser() {
-    if (useBackend) {
-        try {
-            const res = await fetch(API_BASE + "/user");
-            return await res.json();
-        } catch (e) {
-            console.log("API error, fallback used");
-        }
-    }
+    try {
+        const res = await fetch(API_BASE + "/generate?type=user");
+        if (!res.ok) throw new Error("API error");
 
-    return {
-        username: "local_user",
-        name: "Local User",
-        email: "local@mail.com",
-        phone: "+0000000000",
-        country: "Local",
-        city: "Local",
-        address: "Street 1",
-        zip: "00000"
-    };
+        return await res.json();
+
+    } catch (e) {
+        console.error("Backend error:", e);
+
+        // minimal safe fallback (НЕ логика продукта)
+        return {
+            username: "offline_user",
+            name: "Offline User",
+            email: "offline@mail.com",
+            phone: "+0000000000",
+            country: "Offline",
+            city: "Offline",
+            address: "N/A",
+            zip: "00000"
+        };
+    }
 }
 
-/* FORMAT */
+/* =========================
+   FORMAT
+========================= */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -152,7 +162,9 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* RENDER */
+/* =========================
+   RENDER (optimized)
+========================= */
 async function render(text) {
     output.innerHTML = "";
 
@@ -181,15 +193,17 @@ async function render(text) {
 
         output.appendChild(row);
 
-        await new Promise(r => setTimeout(r, 45));
+        await new Promise(r => setTimeout(r, 30));
     }
 }
 
-/* GENERATE */
+/* =========================
+   SINGLE GENERATE
+========================= */
 async function generate() {
     if (running) return;
-
     running = true;
+
     setStatus("processing");
 
     const u = await createUser();
@@ -201,35 +215,52 @@ async function generate() {
     running = false;
 }
 
-/* BULK */
+/* =========================
+   BULK GENERATE (API)
+========================= */
 async function runBulk() {
     if (running) return;
-
     running = true;
+
     setStatus("processing");
 
     const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
 
     const arr = [];
 
+    output.innerHTML = "";
+
     for (let i = 0; i < count; i++) {
-        arr.push(await createUser());
+        const u = await createUser();
+        arr.push(u);
+
+        const block = document.createElement("div");
+        block.style.marginBottom = "14px";
+
+        block.innerHTML = `
+            <div><span class="key">Name: </span>${u.name}</div>
+            <div><span class="key">Country: </span>${u.country}</div>
+            <div><span class="key">City: </span>${u.city}</div>
+        `;
+
+        output.appendChild(block);
+
+        await new Promise(r => setTimeout(r, 40));
     }
 
     lastData = arr;
-
-    await render(arr.map(format).join("\n\n"));
 
     setStatus("idle");
     running = false;
 }
 
-/* COPY */
+/* =========================
+   EXPORT
+========================= */
 function copy() {
-    navigator.clipboard.writeText(output.innerText);
+    navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
 }
 
-/* JSON */
 function downloadJSON() {
     const blob = new Blob([JSON.stringify(lastData, null, 2)], {
         type: "application/json"
@@ -241,7 +272,6 @@ function downloadJSON() {
     a.click();
 }
 
-/* CSV */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
 
@@ -257,12 +287,6 @@ function downloadCSV() {
     a.href = URL.createObjectURL(blob);
     a.download = "users.csv";
     a.click();
-}
-
-/* TOGGLE API */
-function toggleBackend() {
-    useBackend = !useBackend;
-    alert("API: " + (useBackend ? "ON" : "OFF"));
 }
 
 </script>
