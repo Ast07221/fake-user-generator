@@ -7,20 +7,25 @@ app.use(cors());
 app.use(express.json());
 
 /* =========================
-   MEMORY SYSTEMS
+   "DATABASE"
 ========================= */
 
-const API_KEYS = new Map();
+const users = new Map();        // email -> user
+const sessions = new Map();     // token -> email
+
+/* =========================
+   CORE DATA
+========================= */
 
 const RATE_LIMIT = {
-    max: 50,
+    max: 100,
     windowMs: 60 * 1000
 };
 
-const cache = new Map();
+const usage = new Map(); // apiKey -> usage stats
 
 /* =========================
-   CORE GENERATOR
+   GENERATOR ENGINE
 ========================= */
 
 const countries = {
@@ -30,18 +35,13 @@ const countries = {
     UK: ["London", "Manchester"]
 };
 
-const names = [
-    "John Smith",
-    "Emma Brown",
-    "Liam Johnson",
-    "Olivia Davis"
-];
+const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis"];
 
 function pick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateUser() {
+function generateUserData() {
     const country = pick(Object.keys(countries));
     const city = pick(countries[country]);
     const name = pick(names);
@@ -51,62 +51,120 @@ function generateUser() {
         Math.floor(Math.random() * 999);
 
     return {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         username,
         name,
         email: username + "@mail.com",
-        phone:
-            "+" +
-            (Math.floor(Math.random() * 9000000000) +
-                1000000000),
+        phone: "+" + (Math.floor(Math.random() * 9000000000) + 1000000000),
         country,
         city,
         address: "Street " + Math.floor(Math.random() * 300),
         zip: Math.floor(10000 + Math.random() * 90000),
-        version: "v8"
+        createdAt: Date.now()
     };
 }
 
 /* =========================
-   API KEY
+   AUTH SYSTEM
 ========================= */
 
-function createApiKey() {
+function generateToken() {
+    return crypto.randomBytes(24).toString("hex");
+}
+
+function generateApiKey() {
     return crypto.randomBytes(16).toString("hex");
 }
 
-const DEFAULT_KEY = createApiKey();
-API_KEYS.set(DEFAULT_KEY, {
-    requests: 0,
-    lastReset: Date.now()
+/* =========================
+   REGISTER
+========================= */
+
+app.post("/auth/register", (req, res) => {
+    const { email, password } = req.body;
+
+    if (users.has(email)) {
+        return res.status(400).json({ error: "User exists" });
+    }
+
+    const apiKey = generateApiKey();
+    const token = generateToken();
+
+    const user = {
+        email,
+        password,
+        apiKey,
+        createdAt: Date.now()
+    };
+
+    users.set(email, user);
+    sessions.set(token, email);
+
+    usage.set(apiKey, {
+        requests: 0,
+        lastReset: Date.now()
+    });
+
+    res.json({
+        token,
+        apiKey
+    });
 });
 
-console.log("DEFAULT API KEY:", DEFAULT_KEY);
+/* =========================
+   LOGIN
+========================= */
+
+app.post("/auth/login", (req, res) => {
+    const { email, password } = req.body;
+
+    const user = users.get(email);
+
+    if (!user || user.password !== password) {
+        return res.status(401).json({ error: "Invalid login" });
+    }
+
+    const token = generateToken();
+    sessions.set(token, email);
+
+    res.json({
+        token,
+        apiKey: user.apiKey
+    });
+});
 
 /* =========================
-   AUTH
+   AUTH MIDDLEWARE
 ========================= */
 
 function auth(req, res, next) {
-    const key = req.headers["x-api-key"];
+    const token = req.headers["authorization"];
 
-    if (!key || !API_KEYS.has(key)) {
-        return res.status(401).json({
-            error: "Invalid API key"
-        });
+    if (!token || !sessions.has(token)) {
+        return res.status(401).json({ error: "Unauthorized" });
     }
 
-    req.apiKey = key;
+    const email = sessions.get(token);
+    req.user = users.get(email);
+
     next();
 }
 
 /* =========================
-   RATE LIMIT
+   RATE LIMIT PER USER
 ========================= */
 
 function rateLimit(req, res, next) {
-    const key = req.apiKey;
-    const record = API_KEYS.get(key);
+    const apiKey = req.user.apiKey;
+
+    if (!usage.has(apiKey)) {
+        usage.set(apiKey, {
+            requests: 0,
+            lastReset: Date.now()
+        });
+    }
+
+    const record = usage.get(apiKey);
     const now = Date.now();
 
     if (now - record.lastReset > RATE_LIMIT.windowMs) {
@@ -125,79 +183,52 @@ function rateLimit(req, res, next) {
 }
 
 /* =========================
-   CACHE KEY
+   GENERATE ENDPOINT
 ========================= */
-
-function cacheKey(type) {
-    return `gen_${type}`;
-}
+app.get("/api/generate", auth, rateLimit, (req, res) => {
+    const data = generateUserData();
+    res.json(data);
+});
 
 /* =========================
-   ROUTES
+   BULK
 ========================= */
 
-app.get(
-    "/api/generate",
-    auth,
-    rateLimit,
-    (req, res) => {
-        const type = req.query.type || "user";
+app.post("/api/bulk", auth, rateLimit, (req, res) => {
+    const count = Math.min(req.body.count || 5, 100);
 
-        const key = cacheKey(type);
-        const cached = cache.get(key);
+    const result = [];
 
-        if (cached && Date.now() - cached.time < 1000) {
-            return res.json(cached.data);
-        }
-
-        let data;
-
-        if (type === "user") {
-            data = generateUser();
-        } else {
-            return res.status(400).json({
-                error: "Unknown type"
-            });
-        }
-
-        cache.set(key, {
-            data,
-            time: Date.now()
-        });
-
-        res.json(data);
+    for (let i = 0; i < count; i++) {
+        result.push(generateUserData());
     }
-);
 
-app.post(
-    "/api/bulk",
-    auth,
-    rateLimit,
-    (req, res) => {
-        const count = Math.min(
-            req.body.count || 5,
-            100
-        );
-
-        const result = [];
-
-        for (let i = 0; i < count; i++) {
-            result.push(generateUser());
-        }
-
-        res.json(result);
-    }
-);
+    res.json(result);
+});
 
 /* =========================
-   HEALTH CHECK (FIXED)
+   USAGE STATS
+========================= */
+
+app.get("/api/stats", auth, (req, res) => {
+    const apiKey = req.user.apiKey;
+
+    const record = usage.get(apiKey);
+
+    res.json({
+        requests: record?.requests || 0,
+        remaining: RATE_LIMIT.max - (record?.requests || 0)
+    });
+});
+
+/* =========================
+   HEALTH
 ========================= */
 
 app.get("/health", (req, res) => {
     res.json({
         status: "ok",
-        service: "fake-user-generator",
-        version: "v8"
+        version: "v9 SaaS platform"
     });
 });
 
@@ -206,8 +237,5 @@ app.get("/health", (req, res) => {
 ========================= */
 
 app.listen(10000, () => {
-    console.log(
-        "v8 SaaS production running on port 10000"
-    );
-    console.log("API KEY:", DEFAULT_KEY);
+    console.log("v9 SaaS platform running");
 });
