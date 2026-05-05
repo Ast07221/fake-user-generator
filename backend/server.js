@@ -1,224 +1,118 @@
 import express from "express";
 import cors from "cors";
-import crypto from "crypto";
+import { v4 as uuid } from "uuid";
+import bcrypt from "bcrypt";
+import Redis from "ioredis";
+import pg from "pg";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 /* =========================
-   "DATABASE"
+   DB (Postgres)
 ========================= */
 
-const users = new Map();        // email -> user
-const sessions = new Map();     // token -> email
+const db = new pg.Pool({
+    connectionString: process.env.DATABASE_URL
+});
 
 /* =========================
-   CORE DATA
+   REDIS
 ========================= */
 
-const RATE_LIMIT = {
-    max: 100,
-    windowMs: 60 * 1000
-};
-
-const usage = new Map(); // apiKey -> usage stats
+const redis = new Redis(process.env.REDIS_URL);
 
 /* =========================
-   GENERATOR ENGINE
+   GENERATOR CORE
 ========================= */
 
-const countries = {
-    USA: ["New York", "Los Angeles", "Chicago"],
-    Germany: ["Berlin", "Munich"],
-    France: ["Paris", "Lyon"],
-    UK: ["London", "Manchester"]
-};
-
-const names = ["John Smith","Emma Brown","Liam Johnson","Olivia Davis"];
-
-function pick(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function generateUserData() {
-    const country = pick(Object.keys(countries));
-    const city = pick(countries[country]);
-    const name = pick(names);
-
-    const username =
-        name.toLowerCase().replace(" ", "") +
-        Math.floor(Math.random() * 999);
-
+function generateUser() {
     return {
-        id: crypto.randomUUID(),
-        username,
-        name,
-        email: username + "@mail.com",
-        phone: "+" + (Math.floor(Math.random() * 9000000000) + 1000000000),
-        country,
-        city,
-        address: "Street " + Math.floor(Math.random() * 300),
-        zip: Math.floor(10000 + Math.random() * 90000),
+        id: uuid(),
+        username: "user_" + Math.floor(Math.random() * 9999),
+        name: "Demo User",
+        email: "demo@mail.com",
+        country: "USA",
+        city: "NYC",
         createdAt: Date.now()
     };
 }
-
-/* =========================
-   AUTH SYSTEM
-========================= */
-
-function generateToken() {
-    return crypto.randomBytes(24).toString("hex");
-}
-
-function generateApiKey() {
-    return crypto.randomBytes(16).toString("hex");
-}
-
-/* =========================
-   REGISTER
-========================= */
-
-app.post("/auth/register", (req, res) => {
-    const { email, password } = req.body;
-
-    if (users.has(email)) {
-        return res.status(400).json({ error: "User exists" });
-    }
-
-    const apiKey = generateApiKey();
-    const token = generateToken();
-
-    const user = {
-        email,
-        password,
-        apiKey,
-        createdAt: Date.now()
-    };
-
-    users.set(email, user);
-    sessions.set(token, email);
-
-    usage.set(apiKey, {
-        requests: 0,
-        lastReset: Date.now()
-    });
-
-    res.json({
-        token,
-        apiKey
-    });
-});
-
-/* =========================
-   LOGIN
-========================= */
-
-app.post("/auth/login", (req, res) => {
-    const { email, password } = req.body;
-
-    const user = users.get(email);
-
-    if (!user || user.password !== password) {
-        return res.status(401).json({ error: "Invalid login" });
-    }
-
-    const token = generateToken();
-    sessions.set(token, email);
-
-    res.json({
-        token,
-        apiKey: user.apiKey
-    });
-});
 
 /* =========================
    AUTH MIDDLEWARE
 ========================= */
 
-function auth(req, res, next) {
-    const token = req.headers["authorization"];
+async function auth(req, res, next) {
+    const key = req.headers["x-api-key"];
 
-    if (!token || !sessions.has(token)) {
-        return res.status(401).json({ error: "Unauthorized" });
+    if (!key) return res.status(401).json({ error: "No API key" });
+
+    const cached = await redis.get(`apikey:${key}`);
+    if (!cached) {
+        const result = await db.query(
+            "SELECT * FROM users WHERE api_key=$1",
+            [key]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: "Invalid key" });
+        }
+
+        await redis.set(`apikey:${key}`, JSON.stringify(result.rows[0]), "EX", 300);
+        req.user = result.rows[0];
+    } else {
+        req.user = JSON.parse(cached);
     }
-
-    const email = sessions.get(token);
-    req.user = users.get(email);
 
     next();
 }
 
 /* =========================
-   RATE LIMIT PER USER
+   RATE LIMIT (Redis)
 ========================= */
 
-function rateLimit(req, res, next) {
-    const apiKey = req.user.apiKey;
+async function rateLimit(req, res, next) {
+    const key = `rate:${req.user.api_key}`;
 
-    if (!usage.has(apiKey)) {
-        usage.set(apiKey, {
-            requests: 0,
-            lastReset: Date.now()
-        });
+    const count = await redis.incr(key);
+
+    if (count === 1) {
+        await redis.expire(key, 60);
     }
 
-    const record = usage.get(apiKey);
-    const now = Date.now();
-
-    if (now - record.lastReset > RATE_LIMIT.windowMs) {
-        record.requests = 0;
-        record.lastReset = now;
+    if (count > 100) {
+        return res.status(429).json({ error: "Rate limit exceeded" });
     }
 
-    if (record.requests >= RATE_LIMIT.max) {
-        return res.status(429).json({
-            error: "Rate limit exceeded"
-        });
-    }
-
-    record.requests++;
     next();
 }
 
 /* =========================
-   GENERATE ENDPOINT
+   API
 ========================= */
-app.get("/api/generate", auth, rateLimit, (req, res) => {
-    const data = generateUserData();
+
+app.get("/api/generate", auth, rateLimit, async (req, res) => {
+    const data = generateUser();
+
+    await db.query(
+        "INSERT INTO usage_logs(user_id, endpoint, created_at) VALUES ($1,$2,NOW())",
+        [req.user.id, "/api/generate"]
+    );
+
     res.json(data);
 });
 
-/* =========================
-   BULK
-========================= */
-
-app.post("/api/bulk", auth, rateLimit, (req, res) => {
+app.post("/api/bulk", auth, rateLimit, async (req, res) => {
     const count = Math.min(req.body.count || 5, 100);
 
     const result = [];
 
     for (let i = 0; i < count; i++) {
-        result.push(generateUserData());
+        result.push(generateUser());
     }
 
     res.json(result);
-});
-
-/* =========================
-   USAGE STATS
-========================= */
-
-app.get("/api/stats", auth, (req, res) => {
-    const apiKey = req.user.apiKey;
-
-    const record = usage.get(apiKey);
-
-    res.json({
-        requests: record?.requests || 0,
-        remaining: RATE_LIMIT.max - (record?.requests || 0)
-    });
 });
 
 /* =========================
@@ -228,7 +122,7 @@ app.get("/api/stats", auth, (req, res) => {
 app.get("/health", (req, res) => {
     res.json({
         status: "ok",
-        version: "v9 SaaS platform"
+        version: "v10 production"
     });
 });
 
@@ -237,5 +131,5 @@ app.get("/health", (req, res) => {
 ========================= */
 
 app.listen(10000, () => {
-    console.log("v9 SaaS platform running");
+    console.log("v10 production SaaS running");
 });
