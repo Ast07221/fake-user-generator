@@ -97,7 +97,6 @@ body {
     <span onclick="copy()">copy</span>
     <span onclick="downloadJSON()">json</span>
     <span onclick="downloadCSV()">csv</span>
-
     <span onclick="toggleBackend()">api</span>
 </div>
 
@@ -113,22 +112,22 @@ const bulkInput = document.getElementById("bulkInput");
 let running = false;
 let lastData = [];
 
+/* STATUS */
 function setStatus(t) {
     statusEl.innerHTML = `<span class="dots">${t}</span>`;
 }
 
-/* =========================
-   CREATE USER (LOCAL + API)
-========================= */
-
+/* CREATE USER */
 async function createUser() {
-
     if (useBackend) {
-        const res = await fetch(API_BASE + "/user");
-        return await res.json();
+        try {
+            const res = await fetch(API_BASE + "/user");
+            return await res.json();
+        } catch (e) {
+            console.log("API error, fallback used");
+        }
     }
 
-    // fallback (если backend выключен)
     return {
         username: "local_user",
         name: "Local User",
@@ -141,10 +140,7 @@ async function createUser() {
     };
 }
 
-/* =========================
-   FORMAT
-========================= */
-
+/* FORMAT */
 function format(u) {
     return `Username: ${u.username}
 Name: ${u.name}
@@ -156,10 +152,7 @@ Address: ${u.address}
 ZIP: ${u.zip}`;
 }
 
-/* =========================
-   RENDER
-========================= */
-
+/* RENDER */
 async function render(text) {
     output.innerHTML = "";
 
@@ -192,12 +185,10 @@ async function render(text) {
     }
 }
 
-/* =========================
-   SINGLE
-========================= */
-
+/* GENERATE */
 async function generate() {
     if (running) return;
+
     running = true;
     setStatus("processing");
 
@@ -210,14 +201,11 @@ async function generate() {
     running = false;
 }
 
-/* =========================
-   BULK SAFE
-========================= */
-
+/* BULK */
 async function runBulk() {
     if (running) return;
-    running = true;
 
+    running = true;
     setStatus("processing");
 
     const count = Math.min(100, Math.max(1, parseInt(bulkInput.value || 5)));
@@ -236,40 +224,42 @@ async function runBulk() {
     running = false;
 }
 
-/* =========================
-   EXPORT
-========================= */
-
+/* COPY */
 function copy() {
     navigator.clipboard.writeText(output.innerText);
 }
 
+/* JSON */
 function downloadJSON() {
-    const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
+    const blob = new Blob([JSON.stringify(lastData, null, 2)], {
+        type: "application/json"
+    });
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "users.json";
     a.click();
 }
 
+/* CSV */
 function downloadCSV() {
     const rows = ["Username,Name,Email,Phone,Country,City,Address,ZIP"];
 
-    lastData.forEach(u =>
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`)
-    );
+    lastData.forEach(u => {
+        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
+    });
 
-    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    const blob = new Blob([rows.join("\n")], {
+        type: "text/csv"
+    });
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "users.csv";
     a.click();
 }
 
-/* =========================
-   BACKEND TOGGLE
-========================= */
-
+/* TOGGLE API */
 function toggleBackend() {
     useBackend = !useBackend;
     alert("API: " + (useBackend ? "ON" : "OFF"));
