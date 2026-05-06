@@ -67,11 +67,10 @@ select, input {
     color:#888;
 }
 
-/* typing effect */
+/* typing cursor */
 .typing {
     border-right:2px solid #888;
-    white-space:nowrap;
-    overflow:hidden;
+    white-space:pre-wrap;
 }
 </style>
 </head>
@@ -106,7 +105,7 @@ select, input {
 <script>
 
 /* =========================
-   REAL DATA (v5)
+   DATA
 ========================= */
 
 const countries = [
@@ -176,17 +175,29 @@ function generateUser(){
 }
 
 /* =========================
-   TYPING EFFECT
+   🔥  FIXED TYPING EFFECT
 ========================= */
 
 async function typeText(el, text){
     el.innerHTML = "";
     el.classList.add("typing");
 
+    // small delay before start (feels like server thinking)
+    await new Promise(r => setTimeout(r, 180));
+
     for(let i=0;i<text.length;i++){
         el.innerHTML += text[i];
-        await new Promise(r=>setTimeout(r,5));
+
+        let delay = 6;
+
+        if(text[i] === "\n") delay = 60;
+        if(text[i] === ":") delay = 35;
+        if(text[i] === " ") delay = 10;
+
+        await new Promise(r => setTimeout(r, delay));
     }
+
+    await new Promise(r => setTimeout(r, 120));
 
     el.classList.remove("typing");
 }
