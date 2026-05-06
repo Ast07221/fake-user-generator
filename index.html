@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator v6.1</title>
+<title>Fake User Generator</title>
 
 <style>
 body {
@@ -11,52 +11,80 @@ body {
     font-family: system-ui;
     background: #0b0b0b;
     color: #fff;
+
+    /* 🔥  центрирование */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .wrapper {
+    width: 100%;
     max-width: 1100px;
-    margin: 40px auto;
     padding: 20px;
 }
 
+/* 🔥  TOP BAR */
 .topbar {
     display:flex;
     flex-wrap:wrap;
     justify-content:space-between;
-    gap:10px;
+    gap:12px;
     margin-bottom:20px;
 }
 
+/* 🔥  PREMIUM BUTTONS */
 button {
-    background:#1f1f1f;
-    border:0;
+    background:#1a1a1a;
+    border:1px solid #2a2a2a;
     color:#fff;
-    padding:8px 14px;
+    padding:10px 16px;
     cursor:pointer;
+
+    border-radius:12px; /* 👈 закругление */
+    font-weight:500;
+    letter-spacing:0.3px;
+
+    transition:all 0.25s ease;
 }
 
-button:hover { background:#333; }
+button:hover {
+    background:#2a2a2a;
+    transform:translateY(-1px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
 
+/* 🔥  INPUTS */
 select, input {
     background:#111;
     color:#fff;
-    border:0;
-    padding:6px;
+    border:1px solid #222;
+    padding:8px;
+    border-radius:8px;
 }
 
+/* GRID */
 .grid {
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-    gap:12px;
+    gap:14px;
 }
 
+/* CARDS */
 .card {
     background:#151515;
-    padding:14px;
-    border-radius:10px;
+    padding:16px;
+    border-radius:14px;
     position:relative;
+    transition:0.2s;
 }
 
+.card:hover {
+    background:#1c1c1c;
+}
+
+/* COPY BTN */
 .copyBtn {
     position:absolute;
     top:10px;
@@ -66,13 +94,14 @@ select, input {
     cursor:pointer;
 }
 
+/* TYPE EFFECT */
 .typing {
     white-space: pre-wrap;
     border-right: 2px solid #666;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="wrapper">
@@ -104,30 +133,18 @@ select, input {
 
 <script>
 
-/* =========================
-   DATA ENGINE (100% SAFE)
-========================= */
-
+/* ===== DATA ===== */
 const countries = [
-{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago","Houston"],zips:["10001","90001","60601","77001"]},
-{country:"UK",code:"+44",cities:["London","Manchester","Birmingham"],zips:["SW1A","M1","B1"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
-{country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
-{country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"],zips:["28001","08001","46001"]},
-{country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
-{country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
-{country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"],zips:["2000","3000","4000"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],zips:["100-0001","530-0001","600-0001"]},
-{country:"Brazil",code:"+55",cities:["Rio","Sao Paulo","Brasilia"],zips:["20000","01000","70000"]},
-{country:"India",code:"+91",cities:["Delhi","Mumbai","Bangalore"],zips:["110001","400001","560001"]},
-{country:"Mexico",code:"+52",cities:["Mexico City","Guadalajara","Monterrey"],zips:["01000","44100","64000"]},
-{country:"Turkey",code:"+90",cities:["Istanbul","Ankara","Izmir"],zips:["34000","06000","35000"]},
-{country:"Poland",code:"+48",cities:["Warsaw","Krakow","Gdansk"],zips:["00-001","30-001","80-001"]}
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
+{country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
+{country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]}
 ];
 
-const firstNames = ["Liam","Noah","Oliver","James","Emma","Olivia","Ava","Sophia","Mia","Lucas","Ethan","Mason"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Martin","Thomas","Jackson","Harris"];
+const firstNames = ["Liam","Noah","Oliver","Emma","Olivia","Ava","Sophia"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson"];
 
 const output = document.getElementById("output");
 const filter = document.getElementById("countryFilter");
@@ -135,7 +152,7 @@ const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
 
-/* ========================= */
+/* ===== INIT ===== */
 function init(){
     filter.innerHTML = `<option value="all">All</option>`;
     countries.forEach(c=>{
@@ -147,16 +164,14 @@ function init(){
 }
 init();
 
+/* ===== CORE ===== */
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* =========================
-   USER GENERATOR
-========================= */
 function generateUser(){
-
     let pool = countries;
+
     if(filter.value !== "all"){
         pool = countries.filter(c=>c.country===filter.value);
     }
@@ -179,9 +194,7 @@ function generateUser(){
     };
 }
 
-/* =========================
-   TYPE EFFECT (FAST + STABLE)
-========================= */
+/* ===== TYPE EFFECT ===== */
 function typeText(el, text){
     el.innerHTML = "";
     let i = 0;
@@ -196,9 +209,7 @@ function typeText(el, text){
     step();
 }
 
-/* =========================
-   RENDER
-========================= */
+/* ===== RENDER ===== */
 function render(list, append=false){
 
     if(!append) output.innerHTML = "";
@@ -233,9 +244,7 @@ ZIP: ${u.zip}`;
     });
 }
 
-/* =========================
-   ACTIONS
-========================= */
+/* ===== ACTIONS ===== */
 function generate(){
     const count = parseInt(bulkInput.value || 5);
     const arr = [];
@@ -262,9 +271,7 @@ function clearAll(){
     lastData=[];
 }
 
-/* =========================
-   EXPORT
-========================= */
+/* ===== EXPORT ===== */
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
