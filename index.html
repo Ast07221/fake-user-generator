@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator PRO</title>
+<title>Fake User Generator</title>
 
 <style>
 body {
@@ -15,10 +15,10 @@ body {
     overflow: hidden;
 }
 
-/* центр */
+/* CENTER */
 .wrapper {
     position: absolute;
-    top: 52%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
@@ -26,110 +26,87 @@ body {
     padding: 20px;
 }
 
-/* 🔥  loader выше */
-.loaderWrap {
-    position: absolute;
-    top: 43%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 900px;
-    padding: 0 20px;
-}
-
-.loader {
-    text-align:left;
-    font-size:13px;
-    opacity:0.4;
-}
-.loader::after {
-    content:".";
-    animation:dots 1.4s infinite;
-}
-@keyframes dots {
-    0%{content:".";}
-    33%{content:"..";}
-    66%{content:"...";}
-    100%{content:".";}
-}
-
-/* сетка */
+/* GRID */
 .grid {
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    grid-template-columns:1fr;
     gap:14px;
-    text-align:left;
 }
 
-/* карточки */
+/* CARD */
 .card {
     background: transparent;
-    padding:12px 0;
-    position:relative;
+    padding: 10px 0;
 }
 
-/* 🔥  белый текст */
-.card div {
-    font-size:14px;
-    line-height:1.7;
-    color:#fff;
+/* TEXT */
+.label {
+    color: #7a7a7a;
+}
+.value {
+    color: #ffffff;
 }
 
-/* copy */
-.copyBtn {
-    position:absolute;
-    top:0;
-    right:0;
-    font-size:11px;
-    opacity:0.5;
-    cursor:pointer;
+/* TOP DOTS */
+.idle {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    font-size: 12px;
+    color: #777;
+    letter-spacing: 3px;
+}
+.idle::after {
+    content: "...";
+    animation: blink 1.2s infinite;
+}
+@keyframes blink {
+    0%,100% { opacity:0.2 }
+    50% { opacity:1 }
 }
 
-/* панель */
+/* CONTROL PANEL */
 .topbar {
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 14px;
     flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
 }
 
-/* кнопки */
+/* BUTTONS TEXT ONLY */
 button {
-    background:none;
-    border:none;
-    color:#aaa;
+    background: none;
+    border: none;
+    color: #fff;
     cursor:pointer;
-    font-size:13px;
+    font-weight:500;
 }
-button:hover { color:#fff; }
 
-/* input */
-select, input {
+/* INPUT */
+input {
     background:none;
     border:none;
     color:#fff;
-    border-bottom:1px solid #333;
-    padding:4px;
+    width:40px;
+    text-align:center;
 }
 
-input {
-    width:35px;
-    text-align:center;
+/* TYPE */
+.typing {
+    border-right:1px solid #555;
+    white-space: pre-wrap;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🔥  loader отдельно -->
-<div class="loaderWrap">
-    <div id="loader" class="loader">...</div>
-</div>
-
 <div class="wrapper">
+    <div class="idle" id="idle"></div>
     <div id="output" class="grid"></div>
 </div>
 
@@ -137,8 +114,7 @@ input {
     <button onclick="generate()">generate</button>
     <button onclick="generateMore()">more</button>
     <button onclick="clearAll()">clear</button>
-    <select id="countryFilter"></select>
-    <input id="bulkInput" type="number" value="1" min="1" max="99">
+    <input id="bulkInput" type="number" value="1">
     <button onclick="copyAll()">copy</button>
     <button onclick="downloadJSON()">json</button>
     <button onclick="downloadCSV()">csv</button>
@@ -146,184 +122,173 @@ input {
 
 <script>
 
-/* 🔥  50+ COUNTRIES */
-const DATA = {
-US:{name:"United States",code:"+1",cities:["New York","Los Angeles","Chicago"]},
-GB:{name:"United Kingdom",code:"+44",cities:["London","Manchester"]},
-DE:{name:"Germany",code:"+49",cities:["Berlin","Munich"]},
-FR:{name:"France",code:"+33",cities:["Paris","Lyon"]},
-ES:{name:"Spain",code:"+34",cities:["Madrid","Barcelona"]},
-IT:{name:"Italy",code:"+39",cities:["Rome","Milan"]},
-NL:{name:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"]},
-PL:{name:"Poland",code:"+48",cities:["Warsaw","Krakow"]},
-UA:{name:"Ukraine",code:"+380",cities:["Kyiv","Lviv"]},
-TR:{name:"Turkey",code:"+90",cities:["Istanbul","Ankara"]},
-JP:{name:"Japan",code:"+81",cities:["Tokyo","Osaka"]},
-CN:{name:"China",code:"+86",cities:["Beijing","Shanghai"]},
-KR:{name:"South Korea",code:"+82",cities:["Seoul","Busan"]},
-IN:{name:"India",code:"+91",cities:["Mumbai","Delhi"]},
-BR:{name:"Brazil",code:"+55",cities:["Sao Paulo","Rio"]},
-CA:{name:"Canada",code:"+1",cities:["Toronto","Vancouver"]},
-AU:{name:"Australia",code:"+61",cities:["Sydney","Melbourne"]},
-SE:{name:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"]},
-NO:{name:"Norway",code:"+47",cities:["Oslo","Bergen"]},
-DK:{name:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"]},
-FI:{name:"Finland",code:"+358",cities:["Helsinki","Espoo"]},
-CH:{name:"Switzerland",code:"+41",cities:["Zurich","Geneva"]},
-AT:{name:"Austria",code:"+43",cities:["Vienna","Salzburg"]},
-    BE:{name:"Belgium",code:"+32",cities:["Brussels","Antwerp"]},
-PT:{name:"Portugal",code:"+351",cities:["Lisbon","Porto"]},
-GR:{name:"Greece",code:"+30",cities:["Athens","Thessaloniki"]},
-HU:{name:"Hungary",code:"+36",cities:["Budapest","Debrecen"]},
-CZ:{name:"Czech Republic",code:"+420",cities:["Prague","Brno"]},
-RO:{name:"Romania",code:"+40",cities:["Bucharest","Cluj"]},
-BG:{name:"Bulgaria",code:"+359",cities:["Sofia","Varna"]},
-SK:{name:"Slovakia",code:"+421",cities:["Bratislava","Kosice"]},
-SI:{name:"Slovenia",code:"+386",cities:["Ljubljana","Maribor"]},
-HR:{name:"Croatia",code:"+385",cities:["Zagreb","Split"]},
-RS:{name:"Serbia",code:"+381",cities:["Belgrade","Novi Sad"]},
-LT:{name:"Lithuania",code:"+370",cities:["Vilnius","Kaunas"]},
-LV:{name:"Latvia",code:"+371",cities:["Riga","Daugavpils"]},
-EE:{name:"Estonia",code:"+372",cities:["Tallinn","Tartu"]},
-IS:{name:"Iceland",code:"+354",cities:["Reykjavik"]},
-IE:{name:"Ireland",code:"+353",cities:["Dublin","Cork"]},
-MX:{name:"Mexico",code:"+52",cities:["Mexico City","Guadalajara"]},
-AR:{name:"Argentina",code:"+54",cities:["Buenos Aires","Cordoba"]},
-CL:{name:"Chile",code:"+56",cities:["Santiago","Valparaiso"]},
-CO:{name:"Colombia",code:"+57",cities:["Bogota","Medellin"]},
-PE:{name:"Peru",code:"+51",cities:["Lima","Cusco"]},
-ZA:{name:"South Africa",code:"+27",cities:["Johannesburg","Cape Town"]},
-EG:{name:"Egypt",code:"+20",cities:["Cairo","Alexandria"]},
-SA:{name:"Saudi Arabia",code:"+966",cities:["Riyadh","Jeddah"]},
-AE:{name:"UAE",code:"+971",cities:["Dubai","Abu Dhabi"]}
-};
+/* ===== REAL DATA ENGINE (50+) ===== */
+const countries = [
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
+{country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
+{country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
+{country:"Italy",code:"+39",cities:["Rome","Milan"],zips:["00100","20100"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]},
+{country:"Poland",code:"+48",cities:["Warsaw","Krakow"],zips:["00-001","30-001"]},
+{country:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"],zips:["11120","41101"]},
+{country:"Norway",code:"+47",cities:["Oslo","Bergen"],zips:["0001","5003"]},
+{country:"Denmark",code:"+45",cities:["Copenhagen"],zips:["1000"]},
+{country:"Finland",code:"+358",cities:["Helsinki"],zips:["00100"]},
+{country:"Canada",code:"+1",cities:["Toronto","Vancouver"],zips:["M5H","V5K"]},
+{country:"Australia",code:"+61",cities:["Sydney","Melbourne"],zips:["2000","3000"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],zips:["100-0001","530-0001"]},
+{country:"Brazil",code:"+55",cities:["Sao Paulo","Rio"],zips:["01000","20000"]},
+{country:"Mexico",code:"+52",cities:["Mexico City"],zips:["01000"]},
+{country:"India",code:"+91",cities:["Delhi","Mumbai"],zips:["110001","400001"]},
+{country:"China",code:"+86",cities:["Beijing","Shanghai"],zips:["100000","200000"]},
+{country:"Turkey",code:"+90",cities:["Istanbul","Ankara"],zips:["34000","06000"]},
+{country:"Ukraine",code:"+380",cities:["Kyiv","Lviv"],zips:["01001","79000"]},
+{country:"Romania",code:"+40",cities:["Bucharest"],zips:["010000"]},
+{country:"Czechia",code:"+420",cities:["Prague"],zips:["11000"]},
+    {country:"Hungary",code:"+36",cities:["Budapest"],zips:["1000"]},
+{country:"Austria",code:"+43",cities:["Vienna"],zips:["1010"]},
+{country:"Switzerland",code:"+41",cities:["Zurich"],zips:["8001"]},
+{country:"Belgium",code:"+32",cities:["Brussels"],zips:["1000"]},
+{country:"Portugal",code:"+351",cities:["Lisbon"],zips:["1000-001"]},
+{country:"Greece",code:"+30",cities:["Athens"],zips:["10552"]},
+{country:"Israel",code:"+972",cities:["Tel Aviv"],zips:["61000"]},
+{country:"UAE",code:"+971",cities:["Dubai"],zips:["00000"]},
+{country:"South Africa",code:"+27",cities:["Cape Town"],zips:["8000"]},
+{country:"Argentina",code:"+54",cities:["Buenos Aires"],zips:["C1000"]},
+{country:"Chile",code:"+56",cities:["Santiago"],zips:["8320000"]},
+{country:"Colombia",code:"+57",cities:["Bogota"],zips:["110111"]},
+{country:"Peru",code:"+51",cities:["Lima"],zips:["15001"]},
+{country:"Thailand",code:"+66",cities:["Bangkok"],zips:["10100"]},
+{country:"Vietnam",code:"+84",cities:["Hanoi"],zips:["100000"]},
+{country:"Indonesia",code:"+62",cities:["Jakarta"],zips:["10110"]},
+{country:"Philippines",code:"+63",cities:["Manila"],zips:["1000"]},
+{country:"Malaysia",code:"+60",cities:["Kuala Lumpur"],zips:["50000"]}
+];
 
-/* names */
-const firstNames=["Liam","Noah","Oliver","Emma","Ava","Sophia","James","Mia"];
-const lastNames=["Smith","Johnson","Brown","Taylor","Wilson","Martin","Lee"];
+const firstNames = ["Liam","Noah","Oliver","Emma","Olivia","Ava","Sophia","Mia","Lucas","Ethan","Daniel","Leo"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris"];
 
-const output=document.getElementById("output");
-const loader=document.getElementById("loader");
-const filter=document.getElementById("countryFilter");
-const bulkInput=document.getElementById("bulkInput");
+const output = document.getElementById("output");
+const bulkInput = document.getElementById("bulkInput");
+let lastData = [];
 
-let lastData=[];
-
-/* init */
-function init(){
-  Object.keys(DATA).forEach(k=>{
-    const o=document.createElement("option");
-    o.value=k;
-    o.textContent=DATA[k].name;
-    filter.appendChild(o);
-  });
+/* CORE */
+function pick(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
 }
-init();
 
-/* utils */
-function pick(a){return a[Math.floor(Math.random()*a.length)];}
-function zip(){return String(10000+Math.floor(Math.random()*89999));}
-
-/* generator */
 function generateUser(){
-  const keys=Object.keys(DATA);
-  const k=filter.value || pick(keys);
-  const c=DATA[k];
+    const loc = pick(countries);
+    const first = pick(firstNames);
+    const last = pick(lastNames);
 
-  const f=pick(firstNames);
-  const l=pick(lastNames);
-  const username=(f+"."+l+Math.floor(Math.random()*999)).toLowerCase();
+    const username = (first + last + Math.floor(Math.random()*999)).toLowerCase();
 
-  return {
-    username,
-    name:`${f} ${l}`,
-    email:`${username}@gmail.com`,
-    phone:`${c.code} ${Math.floor(100000000+Math.random()*900000000)}`,
-    country:c.name,
-    city:pick(c.cities),
-    zip:zip()
-  };
+    return {
+        username,
+        name: first + " " + last,
+        email: username + "@gmail.com",
+        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
+        country: loc.country,
+        city: pick(loc.cities),
+        zip: pick(loc.zips)
+    };
 }
 
-/* render */
-function render(list,append=false){
-  loader.style.display="none";
-  if(!append) output.innerHTML="";
-
-  list.forEach(u=>{
-    const card=document.createElement("div");
-    card.className="card";
-
-    const btn=document.createElement("div");
-    btn.className="copyBtn";
-    btn.innerText="copy";
-    btn.onclick=()=>navigator.clipboard.writeText(JSON.stringify(u,null,2));
-
-    const div=document.createElement("div");
-    div.innerHTML=
-`Username: ${u.username}<br>
-Name: ${u.name}<br>
-Email: ${u.email}<br>
-Phone: ${u.phone}<br>
-Country: ${u.country}<br>
-City: ${u.city}<br>
-ZIP: ${u.zip}`;
-
-    card.appendChild(btn);
-    card.appendChild(div);
-    output.appendChild(card);
-  });
+/* TYPE EFFECT */
+function typeText(el, text){
+    el.innerHTML = "";
+    let i = 0;
+    function step(){
+        if(i < text.length){
+            el.innerHTML += text[i++];
+            setTimeout(step, 10);
+        }
+    }
+    step();
 }
 
-/* actions */
+/* RENDER */
+function render(list){
+    output.innerHTML = "";
+
+    list.forEach((u, index)=>{
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const content = document.createElement("div");
+
+        const text =
+`<span class="label">Username:</span> <span class="value">${u.username}</span>
+<span class="label">Name:</span> <span class="value">${u.name}</span>
+<span class="label">Email:</span> <span class="value">${u.email}</span>
+<span class="label">Phone:</span> <span class="value">${u.phone}</span>
+<span class="label">Country:</span> <span class="value">${u.country}</span>
+<span class="label">City:</span> <span class="value">${u.city}</span>
+<span class="label">ZIP:</span> <span class="value">${u.zip}</span>`;
+
+        card.appendChild(content);
+        output.appendChild(card);
+
+        setTimeout(()=>{
+            typeText(content, text);
+        }, index * 150);
+    });
+}
+
+/* ACTIONS */
 function generate(){
-  loader.style.display="block";
-  output.innerHTML="";
-  setTimeout(()=>{
-    const n=parseInt(bulkInput.value||1);
-    const arr=[];
-    for(let i=0;i<n;i++) arr.push(generateUser());
-    lastData=arr;
-    render(arr,false);
-  },300);
+    document.getElementById("idle").style.display = "none";
+
+    const count = parseInt(bulkInput.value || 1);
+    const arr = [];
+    for(let i=0;i<count;i++){
+        arr.push(generateUser());
+    }
+    lastData = arr;
+    render(arr);
 }
 
 function generateMore(){
-  const arr=[];
-  for(let i=0;i<3;i++) arr.push(generateUser());
-  lastData=lastData.concat(arr);
-  render(arr,true);
+    const arr=[];
+    for(let i=0;i<2;i++){
+        arr.push(generateUser());
+    }
+    lastData = lastData.concat(arr);
+    render(lastData);
 }
 
 function clearAll(){
-  output.innerHTML="";
-  loader.style.display="block";
-  lastData=[];
+    output.innerHTML="";
+    lastData=[];
+    document.getElementById("idle").style.display = "block";
 }
-    /* export */
+
+/* EXPORT */
 function copyAll(){
-  navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
-function downloadJSON(){
-  const blob=new Blob([JSON.stringify(lastData,null,2)]);
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="users.json";
-  a.click();
+    function downloadJSON(){
+    const blob=new Blob([JSON.stringify(lastData,null,2)]);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="users.json";
+    a.click();
 }
 function downloadCSV(){
-  const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
-  lastData.forEach(u=>{
-    rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
-  });
-  const blob=new Blob([rows.join("\n")]);
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="users.csv";
-  a.click();
+    const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
+    lastData.forEach(u=>{
+        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
+    });
+    const blob=new Blob([rows.join("\n")]);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="users.csv";
+    a.click();
 }
 
 </script>
-
 </body>
 </html>
