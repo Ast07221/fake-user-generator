@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator Pro</title>
+<title>Fake User Generator v6</title>
 
 <style>
 body {
@@ -14,60 +14,59 @@ body {
 }
 
 .wrapper {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 40px auto;
     padding: 20px;
 }
 
 .topbar {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:space-between;
+    margin-bottom:20px;
 }
 
 button {
-    background: #222;
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    cursor: pointer;
+    background:#1f1f1f;
+    border:0;
+    color:#fff;
+    padding:8px 14px;
+    cursor:pointer;
 }
 button:hover { background:#333; }
 
 select, input {
     background:#111;
     color:#fff;
-    border:none;
+    border:0;
     padding:6px;
 }
 
 .grid {
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-    gap:15px;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:12px;
 }
 
 .card {
     background:#151515;
-    padding:15px;
+    padding:14px;
     border-radius:10px;
     position:relative;
+    min-height:120px;
 }
-
-.key { color:#888; font-size:12px; }
 
 .copyBtn {
     position:absolute;
     top:10px;
     right:10px;
     font-size:11px;
+    opacity:0.6;
     cursor:pointer;
-    color:#888;
 }
 
-/* typing cursor */
+/* 🔥  IMPORTANT: stable typing cursor */
 .typing {
     border-right:2px solid #888;
     white-space:pre-wrap;
@@ -92,7 +91,7 @@ select, input {
     </div>
 
     <div>
-        <button onclick="copyAll()">Copy All</button>
+        <button onclick="copyAll()">Copy</button>
         <button onclick="downloadJSON()">JSON</button>
         <button onclick="downloadCSV()">CSV</button>
     </div>
@@ -105,34 +104,34 @@ select, input {
 <script>
 
 /* =========================
-   DATA
+   DATA ENGINE v6
 ========================= */
 
 const countries = [
-{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
-{country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
-{country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
-{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
-{country:"Italy",code:"+39",cities:["Rome","Milan"],zips:["00100","20100"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]},
-{country:"Canada",code:"+1",cities:["Toronto","Vancouver"],zips:["M5H","V5K"]},
-{country:"Australia",code:"+61",cities:["Sydney","Melbourne"],zips:["2000","3000"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],zips:["100-0001","530-0001"]}
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago","Houston"],zips:["10001","90001","60601","77001"]},
+{country:"UK",code:"+44",cities:["London","Manchester","Birmingham"],zips:["SW1A","M1","B1"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
+{country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"],zips:["28001","08001","46001"]},
+{country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
+{country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
+{country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"],zips:["2000","3000","4000"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],zips:["100-0001","530-0001","600-0001"]}
 ];
 
-const firstNames = ["Liam","Noah","Oliver","James","Lucas","Emma","Olivia","Ava","Sophia","Mia","Ethan","Isabella"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin"];
+const firstNames = ["Liam","Noah","Oliver","James","Lucas","Emma","Olivia","Ava","Sophia","Mia","Ethan","Isabella","William","Henry"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin","Thompson","Garcia"];
 
 const output = document.getElementById("output");
-const bulkInput = document.getElementById("bulkInput");
 const filter = document.getElementById("countryFilter");
+const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
 
 /* ========================= */
 
-function initFilter(){
+function init(){
     filter.innerHTML = `<option value="all">All</option>`;
     countries.forEach(c=>{
         const o=document.createElement("option");
@@ -141,7 +140,7 @@ function initFilter(){
         filter.appendChild(o);
     });
 }
-initFilter();
+init();
 
 /* ========================= */
 
@@ -149,73 +148,90 @@ function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
+/* =========================
+   REALISTIC ENGINE
+========================= */
+
 function generateUser(){
 
     let pool = countries;
     if(filter.value !== "all"){
-        pool = countries.filter(c=>c.country === filter.value);
+        pool = countries.filter(c=>c.country===filter.value);
     }
-
     const loc = pick(pool);
     const first = pick(firstNames);
     const last = pick(lastNames);
 
-    const username = (first+last+Math.floor(Math.random()*999)).toLowerCase();
+    const username = (first + "." + last + Math.floor(Math.random()*999)).toLowerCase();
 
     return {
         username,
-        name: first+" "+last,
-        email: username+"@gmail.com",
-        phone: loc.code + Math.floor(100000000 + Math.random()*900000000),
+        name: first + " " + last,
+        email: username + "@gmail.com",
+        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
         country: loc.country,
         city: pick(loc.cities),
-        address: "Street "+Math.floor(Math.random()*200),
+        address: "Street " + Math.floor(Math.random()*500),
         zip: pick(loc.zips)
     };
 }
 
 /* =========================
-   🔥  FIXED TYPING EFFECT
+   🔥  FIXED HARD TYPING ENGINE
+   (IMPORTANT FIX: forced repaint)
 ========================= */
 
+function sleep(ms){
+    return new Promise(r => setTimeout(r, ms));
+}
+
 async function typeText(el, text){
+
     el.innerHTML = "";
     el.classList.add("typing");
 
-    // small delay before start (feels like server thinking)
-    await new Promise(r => setTimeout(r, 180));
+    // force render start
+    await sleep(120);
 
     for(let i=0;i<text.length;i++){
+
         el.innerHTML += text[i];
 
-        let delay = 6;
+        // force browser repaint (IMPORTANT FIX)
+        el.scrollTop = el.scrollHeight;
 
-        if(text[i] === "\n") delay = 60;
+        let delay = 8;
+
+        if(text[i] === "\n") delay = 70;
         if(text[i] === ":") delay = 35;
-        if(text[i] === " ") delay = 10;
+        if(text[i] === " ") delay = 12;
 
-        await new Promise(r => setTimeout(r, delay));
+        await sleep(delay);
     }
 
-    await new Promise(r => setTimeout(r, 120));
-
+    await sleep(150);
     el.classList.remove("typing");
 }
 
 /* ========================= */
 
-async function render(data, append=false){
+async function render(list, append=false){
 
     if(!append) output.innerHTML = "";
 
-    for(const u of data){
+    for(const u of list){
 
         const card = document.createElement("div");
-        card.className="card";
+        card.className = "card";
+
+        const btn = document.createElement("div");
+        btn.className = "copyBtn";
+        btn.innerText = "copy";
+        btn.onclick = () => navigator.clipboard.writeText(JSON.stringify(u,null,2));
 
         const content = document.createElement("div");
 
-        card.innerHTML = `<div class="copyBtn" onclick='copyOne(${JSON.stringify(u)})'>copy</div>`;
+        card.appendChild(btn);
         card.appendChild(content);
         output.appendChild(card);
 
@@ -234,15 +250,15 @@ ZIP: ${u.zip}`;
 /* ========================= */
 
 function generate(){
-    const arr=[];
-    const count=parseInt(bulkInput.value);
+    const count = parseInt(bulkInput.value || 5);
+    const arr = [];
 
     for(let i=0;i<count;i++){
         arr.push(generateUser());
     }
 
     lastData = arr;
-    render(arr);
+    render(arr,false);
 }
 
 function generateMore(){
@@ -250,7 +266,6 @@ function generateMore(){
     for(let i=0;i<3;i++){
         arr.push(generateUser());
     }
-
     lastData = lastData.concat(arr);
     render(arr,true);
 }
@@ -262,16 +277,12 @@ function clearAll(){
 
 /* ========================= */
 
-function copyOne(u){
-    navigator.clipboard.writeText(JSON.stringify(u,null,2));
-}
-
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
 
 function downloadJSON(){
-    const blob=new Blob([JSON.stringify(lastData,null,2)]);
+    const blob = new Blob([JSON.stringify(lastData,null,2)]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download="users.json";
@@ -280,9 +291,11 @@ function downloadJSON(){
 
 function downloadCSV(){
     const rows=["Username,Name,Email,Phone,Country,City,Address,ZIP"];
+
     lastData.forEach(u=>{
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
     });
+
     const blob=new Blob([rows.join("\n")]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
