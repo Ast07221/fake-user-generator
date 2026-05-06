@@ -11,73 +11,70 @@
 body {
     margin: 0;
     font-family: Inter, system-ui;
-    background: #0a0a0a;
+    background: #0b0b0b;
     color: #fff;
-    height: 100vh;
-    overflow: hidden;
 }
 
 /* CENTER */
 .wrapper {
     position: absolute;
-    top: 45%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 420px;
-}
-
-/* OUTPUT */
-#output {
-    font-size: 15px;
-    line-height: 1.8;
-    font-weight: 300;
-    min-height: 220px;
-}
-
-.key {
-    color: #777;
-    font-weight: 500;
+    width: 440px;
 }
 
 /* STATUS */
 #status {
     font-size: 12px;
     opacity: 0.6;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
-/* DOTS */
-.dots::after {
-    content: "...";
-    animation: blink 1.2s infinite;
-}
-@keyframes blink {
-    0%,100% { opacity: 0.2; }
-    50% { opacity: 1; }
+/* OUTPUT */
+#output {
+    font-size: 15px;
+    line-height: 1.6;
 }
 
-/* BOTTOM BAR */
+/* ROW */
+.card {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #222;
+}
+
+.key {
+    color: #888;
+}
+
+/* SELECT */
+select {
+    width: 100%;
+    margin-bottom: 15px;
+    background: #111;
+    color: #fff;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* ACTIONS */
 .actions {
     position: fixed;
-    bottom: 30px;
+    bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 18px;
     font-size: 12px;
-    letter-spacing: 1px;
 }
 
 .actions span {
     cursor: pointer;
     padding: 6px 10px;
+    background: #151515;
     border-radius: 8px;
-    background: #111;
-    transition: 0.2s;
-}
-
-.actions span:hover {
-    background: #1c1c1c;
 }
 
 /* INPUT */
@@ -89,6 +86,16 @@ body {
     color: #fff;
     text-align: center;
 }
+
+/* DOTS */
+.dots::after {
+    content: "...";
+    animation: blink 1.2s infinite;
+}
+@keyframes blink {
+    0%,100% { opacity: 0.2; }
+    50% { opacity: 1; }
+}
 </style>
 </head>
 
@@ -98,6 +105,11 @@ body {
 
     <div id="status"><span class="dots">idle</span></div>
 
+    <!-- FILTER -->
+    <select id="countrySelect">
+        <option value="random">🌍 Random Country</option>
+    </select>
+
     <div id="output"></div>
 
 </div>
@@ -106,7 +118,7 @@ body {
     <span onclick="generate()">generate</span>
 
     <span>
-        bulk <input id="bulkInput" type="number" value="5" min="1" max="50">
+        bulk <input id="bulkInput" type="number" value="5">
     </span>
 
     <span onclick="runBulk()">run</span>
@@ -117,55 +129,36 @@ body {
 
 <script>
 
-const output = document.getElementById("output");
-const statusEl = document.getElementById("status");
-const bulkInput = document.getElementById("bulkInput");
+/* ===== DATA ===== */
 
-let running = false;
-let lastData = [];
-
-/* =========================
-   DATA (50+ стран)
-========================= */
-
-const locations = [
-{country:"USA",capital:"Washington",code:"+1",zips:["10001","90001","60601"]},
-{country:"UK",capital:"London",code:"+44",zips:["SW1A","M1","L1"]},
-{country:"Germany",capital:"Berlin",code:"+49",zips:["10115","80331"]},
-{country:"France",capital:"Paris",code:"+33",zips:["75001","69001"]},
-{country:"Spain",capital:"Madrid",code:"+34",zips:["28001","08001"]},
-{country:"Italy",capital:"Rome",code:"+39",zips:["00100","20100"]},
-{country:"Netherlands",capital:"Amsterdam",code:"+31",zips:["1012","3011"]},
-{country:"Poland",capital:"Warsaw",code:"+48",zips:["00-001","30-001"]},
-{country:"Hungary",capital:"Budapest",code:"+36",zips:["1011","4024"]},
-{country:"Czech Republic",capital:"Prague",code:"+420",zips:["11000"]},
-{country:"Sweden",capital:"Stockholm",code:"+46",zips:["11120"]},
-{country:"Norway",capital:"Oslo",code:"+47",zips:["0001"]},
-{country:"Denmark",capital:"Copenhagen",code:"+45",zips:["1000"]},
-{country:"Finland",capital:"Helsinki",code:"+358",zips:["00100"]},
-{country:"Canada",capital:"Ottawa",code:"+1",zips:["K1A"]},
-{country:"Australia",capital:"Canberra",code:"+61",zips:["2600"]},
-{country:"Brazil",capital:"Brasilia",code:"+55",zips:["70000"]},
-{country:"Japan",capital:"Tokyo",code:"+81",zips:["100-0001"]},
-{country:"India",capital:"New Delhi",code:"+91",zips:["110001"]},
-{country:"China",capital:"Beijing",code:"+86",zips:["100000"]},
-{country:"Mexico",capital:"Mexico City",code:"+52",zips:["01000"]},
-{country:"Turkey",capital:"Ankara",code:"+90",zips:["06000"]},
-{country:"UAE",capital:"Abu Dhabi",code:"+971",zips:["00000"]},
-{country:"South Africa",capital:"Pretoria",code:"+27",zips:["0002"]},
-    {country:"Argentina",capital:"Buenos Aires",code:"+54",zips:["C1000"]},
-{country:"Indonesia",capital:"Jakarta",code:"+62",zips:["10110"]},
-{country:"Thailand",capital:"Bangkok",code:"+66",zips:["10100"]},
-{country:"Vietnam",capital:"Hanoi",code:"+84",zips:["100000"]},
-{country:"South Korea",capital:"Seoul",code:"+82",zips:["03000"]},
-{country:"Saudi Arabia",capital:"Riyadh",code:"+966",zips:["11461"]}
+const countries = [
+{country:"USA", city:"New York", zip:"10001", code:"+1"},
+{country:"Germany", city:"Berlin", zip:"10115", code:"+49"},
+{country:"France", city:"Paris", zip:"75001", code:"+33"},
+{country:"UK", city:"London", zip:"EC1A", code:"+44"},
+{country:"Italy", city:"Rome", zip:"00100", code:"+39"},
+{country:"Spain", city:"Madrid", zip:"28001", code:"+34"},
+{country:"Netherlands", city:"Amsterdam", zip:"1012", code:"+31"},
+{country:"Canada", city:"Toronto", zip:"M5H", code:"+1"},
+{country:"Japan", city:"Tokyo", zip:"100-0001", code:"+81"},
+{country:"Australia", city:"Sydney", zip:"2000", code:"+61"}
 ];
 
-/* имена */
-const firstNames = ["Liam","Noah","Oliver","James","Lucas","Henry","Emma","Olivia","Ava","Sophia","Mia","Isabella"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin"];
+const firstNames = ["John","Emma","Liam","Olivia","Noah","Ava","Lucas","Mia"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas"];
 
-/* ========================= */
+/* ===== INIT SELECT ===== */
+
+const select = document.getElementById("countrySelect");
+
+countries.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.country;
+    opt.textContent = c.country;
+    select.appendChild(opt);
+});
+
+/* ===== CORE ===== */
 
 function pick(arr) {
     return arr[Math.floor(Math.random()*arr.length)];
@@ -173,95 +166,87 @@ function pick(arr) {
 
 function generateUser() {
 
-    const loc = pick(locations);
+    let loc;
+
+    if (select.value === "random") {
+        loc = pick(countries);
+    } else {
+        loc = countries.find(c => c.country === select.value);
+    }
+
     const first = pick(firstNames);
     const last = pick(lastNames);
 
-    const username = (first + last + Math.floor(Math.random()*1000)).toLowerCase();
+    const username = (first+last+Math.floor(Math.random()*999)).toLowerCase();
 
     return {
         username,
         name: first + " " + last,
         email: username + "@gmail.com",
-        phone: loc.code + Math.floor(100000000 + Math.random()*900000000),
+        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
         country: loc.country,
-        capital: loc.capital,
+        city: loc.city,
         address: "Street " + Math.floor(Math.random()*200),
-        zip: pick(loc.zips)
+        zip: loc.zip
     };
 }
 
-/* ========================= */
+/* ===== RENDER ===== */
 
-function format(u) {
-    return `Username: ${u.username}
-Name: ${u.name}
-Email: ${u.email}
-Phone: ${u.phone}
-Country: ${u.country}
-Capital: ${u.capital}
-Address: ${u.address}
-ZIP: ${u.zip}`;
-}
+const output = document.getElementById("output");
+const statusEl = document.getElementById("status");
+const bulkInput = document.getElementById("bulkInput");
 
-/* ========================= */
+let lastData = [];
+let running = false;
 
-async function render(text) {
+async function render(arr) {
     output.innerHTML = "";
 
-    const lines = text.split("\n");
+    for (let u of arr) {
 
-    for (let line of lines) {
+        const div = document.createElement("div");
+        div.className = "card";
 
-        const parts = line.split(":");
+        div.innerHTML = `
+        <div><span class="key">Name:</span> ${u.name}</div>
+        <div><span class="key">Email:</span> ${u.email}</div>
+        <div><span class="key">Phone:</span> ${u.phone}</div>
+        <div><span class="key">Country:</span> ${u.country}</div>
+        <div><span class="key">City:</span> ${u.city}</div>
+        <div><span class="key">ZIP:</span> ${u.zip}</div>
+        `;
 
-        const row = document.createElement("div");
+        output.appendChild(div);
 
-        if (parts.length > 1) {
-            row.innerHTML = `<span class="key">${parts[0]}:</span>${parts.slice(1).join(":")}`;
-        } else {
-            row.textContent = line;
-        }
-
-        output.appendChild(row);
-
-        await new Promise(r => setTimeout(r, 25));
+        await new Promise(r => setTimeout(r, 20));
     }
 }
 
-/* ========================= */
-
-function setStatus(t) {
-    statusEl.innerHTML = `<span class="dots">${t}</span>`;
-}
-
-/* ========================= */
+/* ===== ACTIONS ===== */
 
 async function generate() {
     if (running) return;
     running = true;
 
-    setStatus("processing");
+    statusEl.innerHTML = `<span class="dots">processing</span>`;
 
     const u = generateUser();
     lastData = [u];
 
-    await render(format(u));
+    await render([u]);
 
-    setStatus("idle");
+    statusEl.innerHTML = `<span class="dots">idle</span>`;
     running = false;
 }
-
-/* ========================= */
 
 async function runBulk() {
     if (running) return;
     running = true;
 
-    setStatus("processing");
+    statusEl.innerHTML = `<span class="dots">processing</span>`;
 
-    const count = Math.min(50, Math.max(1, parseInt(bulkInput.value)));
-
+    const count = Math.min(50, parseInt(bulkInput.value || 5));
     const arr = [];
 
     for (let i = 0; i < count; i++) {
@@ -270,16 +255,16 @@ async function runBulk() {
 
     lastData = arr;
 
-    await render(arr.map(format).join("\n\n"));
+    await render(arr);
 
-    setStatus("idle");
+    statusEl.innerHTML = `<span class="dots">idle</span>`;
     running = false;
 }
 
-/* ========================= */
+/* ===== EXPORT ===== */
 
 function copy() {
-    navigator.clipboard.writeText(output.innerText);
+    navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
 }
 
 function downloadJSON() {
@@ -291,10 +276,10 @@ function downloadJSON() {
 }
 
 function downloadCSV() {
-    const rows = ["Username,Name,Email,Phone,Country,Capital,Address,ZIP"];
+    const rows = ["Name,Email,Phone,Country,City,ZIP"];
 
-    lastData.forEach(u=>{
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.capital},${u.address},${u.zip}`);
+    lastData.forEach(u => {
+        rows.push(`${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
     });
 
     const blob = new Blob([rows.join("\n")]);
