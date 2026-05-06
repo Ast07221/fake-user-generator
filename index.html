@@ -19,7 +19,6 @@ body {
     padding: 20px;
 }
 
-/* TOP BAR */
 .topbar {
     display:flex;
     flex-wrap:wrap;
@@ -44,7 +43,6 @@ select, input {
     padding:6px;
 }
 
-/* OUTPUT */
 .grid {
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
@@ -59,15 +57,6 @@ select, input {
     min-height:120px;
 }
 
-/* 🔥  BIGGER PREMIUM FONT */
-#output {
-    font-size: 19px;
-    line-height: 1.9;
-    font-weight: 300;
-    letter-spacing: 0.2px;
-}
-
-/* COPY BUTTON */
 .copyBtn {
     position:absolute;
     top:10px;
@@ -77,33 +66,37 @@ select, input {
     cursor:pointer;
 }
 
+/* BIG PREMIUM TEXT */
+#output {
+    font-size: 20px;
+    line-height: 1.9;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+
 /* typing cursor */
 .typing {
     border-right:2px solid #888;
     white-space:pre-wrap;
 }
 
-/* =========================
-   💎  PREMIUM DOTS LOADER
-========================= */
-
+/* PREMIUM LOADER */
 .premium-dots {
     font-size: 16px;
-    font-weight: 400;
     letter-spacing: 2px;
     opacity: 0.8;
 }
 
 .premium-dots::after {
     content: ".";
-    animation: dotsAnim 1.2s infinite;
+    animation: dots 1.2s infinite;
 }
 
-@keyframes dotsAnim {
-    0%   { content: "."; opacity: 0.3; }
-    33%  { content: ".."; opacity: 0.6; }
-    66%  { content: "..."; opacity: 1; }
-    100% { content: "."; opacity: 0.3; }
+@keyframes dots {
+    0%   { content: "."; }
+    33%  { content: ".."; }
+    66%  { content: "..."; }
+    100% { content: "."; }
 }
 
 </style>
@@ -163,8 +156,8 @@ const filter = document.getElementById("countryFilter");
 const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
-    /* ========================= */
 
+/* INIT FILTER */
 function init(){
     filter.innerHTML = `<option value="all">All</option>`;
     countries.forEach(c=>{
@@ -182,10 +175,7 @@ function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* =========================
-   REALISTIC GENERATOR
-========================= */
-
+/* REAL ENGINE */
 function generateUser(){
 
     let pool = countries;
@@ -220,7 +210,7 @@ function sleep(ms){
 }
 
 /* =========================
-   🔥 STRONG TYPING EFFECT
+   🔥  REAL TYPE EFFECT FIXED
 ========================= */
 
 async function typeText(el, text){
@@ -234,13 +224,13 @@ async function typeText(el, text){
 
         el.innerHTML += text[i];
 
-        let delay = 9;
+        let delay = 10;
 
         if(text[i] === "\n") delay = 70;
-        if(text[i] === ":") delay = 40;
+        if(text[i] === ":") delay = 35;
         if(text[i] === " ") delay = 12;
 
-        delay += Math.random() * 4;
+        delay += Math.random()*3;
 
         await sleep(delay);
     }
@@ -250,9 +240,7 @@ async function typeText(el, text){
     el.classList.remove("typing");
 }
 
-/* =========================
-   RENDER
-========================= */
+/* ========================= */
 
 async function render(list, append=false){
 
@@ -286,18 +274,17 @@ ZIP: ${u.zip}`;
     }
 }
 
-/* =========================
-   ACTIONS
-========================= */
+/* ========================= */
 
 function generate(){
+
     const count = parseInt(bulkInput.value || 5);
-    const arr = [];
 
     output.innerHTML = `<div class="premium-dots">Generating users</div>`;
 
     setTimeout(() => {
 
+        const arr = [];
         for(let i=0;i<count;i++){
             arr.push(generateUser());
         }
@@ -322,9 +309,7 @@ function clearAll(){
     lastData=[];
 }
 
-/* =========================
-   EXPORT
-========================= */
+/* EXPORT */
 
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
