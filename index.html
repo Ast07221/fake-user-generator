@@ -11,57 +11,19 @@ body {
     font-family: system-ui;
     background: #0b0b0b;
     color: #fff;
-
-    /* 🔥  центрирование */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
+/* 🔥  CENTER OUTPUT */
 .wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
     max-width: 1100px;
     padding: 20px;
-}
-
-/* 🔥  TOP BAR */
-.topbar {
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:20px;
-}
-
-/* 🔥  PREMIUM BUTTONS */
-button {
-    background:#1a1a1a;
-    border:1px solid #2a2a2a;
-    color:#fff;
-    padding:10px 16px;
-    cursor:pointer;
-
-    border-radius:12px; /* 👈 закругление */
-    font-weight:500;
-    letter-spacing:0.3px;
-
-    transition:all 0.25s ease;
-}
-
-button:hover {
-    background:#2a2a2a;
-    transform:translateY(-1px);
-    box-shadow:0 4px 12px rgba(0,0,0,0.4);
-}
-
-/* 🔥  INPUTS */
-select, input {
-    background:#111;
-    color:#fff;
-    border:1px solid #222;
-    padding:8px;
-    border-radius:8px;
 }
 
 /* GRID */
@@ -71,7 +33,7 @@ select, input {
     gap:14px;
 }
 
-/* CARDS */
+/* CARD */
 .card {
     background:#151515;
     padding:16px;
@@ -84,7 +46,7 @@ select, input {
     background:#1c1c1c;
 }
 
-/* COPY BTN */
+/* COPY */
 .copyBtn {
     position:absolute;
     top:10px;
@@ -94,46 +56,86 @@ select, input {
     cursor:pointer;
 }
 
+/* 🔥  FIXED CONTROL PANEL */
+.topbar {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+
+    background: rgba(15,15,15,0.75);
+    backdrop-filter: blur(10px);
+
+    padding: 12px 18px;
+    border-radius: 16px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* PREMIUM BUTTONS */
+button {
+    background:#1a1a1a;
+    border:1px solid #2a2a2a;
+    color:#fff;
+    padding:10px 16px;
+    cursor:pointer;
+    border-radius:12px;
+    font-weight:500;
+    transition:0.25s;
+}
+
+button:hover {
+    background:#2a2a2a;
+    transform:translateY(-1px);
+}
+
+/* INPUT */
+select, input {
+    background:#111;
+    color:#fff;
+    border:1px solid #222;
+    padding:8px;
+    border-radius:8px;
+}
+
 /* TYPE EFFECT */
 .typing {
     white-space: pre-wrap;
     border-right: 2px solid #666;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="wrapper">
-
-<div class="topbar">
-
-    <div>
-        <button onclick="generate()">Generate</button>
-        <button onclick="generateMore()">More</button>
-        <button onclick="clearAll()">Clear</button>
-    </div>
-
-    <div>
-        <select id="countryFilter"></select>
-        <input id="bulkInput" type="number" value="5">
-    </div>
-
-    <div>
-        <button onclick="copyAll()">Copy</button>
-        <button onclick="downloadJSON()">JSON</button>
-        <button onclick="downloadCSV()">CSV</button>
-    </div>
-
+    <div id="output" class="grid"></div>
 </div>
 
-<div id="output" class="grid"></div>
+<!-- 🔥  CONTROL PANEL -->
+<div class="topbar">
+
+    <button onclick="generate()">Generate</button>
+    <button onclick="generateMore()">More</button>
+    <button onclick="clearAll()">Clear</button>
+
+    <select id="countryFilter"></select>
+    <input id="bulkInput" type="number" value="5">
+
+    <button onclick="copyAll()">Copy</button>
+    <button onclick="downloadJSON()">JSON</button>
+    <button onclick="downloadCSV()">CSV</button>
 
 </div>
 
 <script>
 
-/* ===== DATA ===== */
+/* DATA */
 const countries = [
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
 {country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
@@ -152,7 +154,7 @@ const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
 
-/* ===== INIT ===== */
+/* INIT */
 function init(){
     filter.innerHTML = `<option value="all">All</option>`;
     countries.forEach(c=>{
@@ -164,7 +166,7 @@ function init(){
 }
 init();
 
-/* ===== CORE ===== */
+/* CORE */
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
@@ -194,7 +196,7 @@ function generateUser(){
     };
 }
 
-/* ===== TYPE EFFECT ===== */
+/* TYPE EFFECT */
 function typeText(el, text){
     el.innerHTML = "";
     let i = 0;
@@ -209,9 +211,8 @@ function typeText(el, text){
     step();
 }
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(list, append=false){
-
     if(!append) output.innerHTML = "";
 
     list.forEach((u, index)=>{
@@ -244,7 +245,7 @@ ZIP: ${u.zip}`;
     });
 }
 
-/* ===== ACTIONS ===== */
+/* ACTIONS */
 function generate(){
     const count = parseInt(bulkInput.value || 5);
     const arr = [];
@@ -271,7 +272,7 @@ function clearAll(){
     lastData=[];
 }
 
-/* ===== EXPORT ===== */
+/* EXPORT */
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
