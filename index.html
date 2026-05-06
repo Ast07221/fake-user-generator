@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator v6</title>
+<title>Fake User Generator v6 Premium</title>
 
 <style>
 body {
@@ -19,11 +19,12 @@ body {
     padding: 20px;
 }
 
+/* TOP BAR */
 .topbar {
     display:flex;
     flex-wrap:wrap;
-    gap:10px;
     justify-content:space-between;
+    gap:10px;
     margin-bottom:20px;
 }
 
@@ -43,6 +44,7 @@ select, input {
     padding:6px;
 }
 
+/* OUTPUT */
 .grid {
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
@@ -57,6 +59,15 @@ select, input {
     min-height:120px;
 }
 
+/* 🔥  BIGGER PREMIUM FONT */
+#output {
+    font-size: 19px;
+    line-height: 1.9;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+
+/* COPY BUTTON */
 .copyBtn {
     position:absolute;
     top:10px;
@@ -66,11 +77,35 @@ select, input {
     cursor:pointer;
 }
 
-/* 🔥  IMPORTANT: stable typing cursor */
+/* typing cursor */
 .typing {
     border-right:2px solid #888;
     white-space:pre-wrap;
 }
+
+/* =========================
+   💎  PREMIUM DOTS LOADER
+========================= */
+
+.premium-dots {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+.premium-dots::after {
+    content: ".";
+    animation: dotsAnim 1.2s infinite;
+}
+
+@keyframes dotsAnim {
+    0%   { content: "."; opacity: 0.3; }
+    33%  { content: ".."; opacity: 0.6; }
+    66%  { content: "..."; opacity: 1; }
+    100% { content: "."; opacity: 0.3; }
+}
+
 </style>
 </head>
 
@@ -104,7 +139,7 @@ select, input {
 <script>
 
 /* =========================
-   DATA ENGINE v6
+   DATA ENGINE
 ========================= */
 
 const countries = [
@@ -121,15 +156,14 @@ const countries = [
 ];
 
 const firstNames = ["Liam","Noah","Oliver","James","Lucas","Emma","Olivia","Ava","Sophia","Mia","Ethan","Isabella","William","Henry"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin","Thompson","Garcia"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin","Garcia","Wilson"];
 
 const output = document.getElementById("output");
 const filter = document.getElementById("countryFilter");
 const bulkInput = document.getElementById("bulkInput");
 
 let lastData = [];
-
-/* ========================= */
+    /* ========================= */
 
 function init(){
     filter.innerHTML = `<option value="all">All</option>`;
@@ -149,7 +183,7 @@ function pick(arr){
 }
 
 /* =========================
-   REALISTIC ENGINE
+   REALISTIC GENERATOR
 ========================= */
 
 function generateUser(){
@@ -158,6 +192,7 @@ function generateUser(){
     if(filter.value !== "all"){
         pool = countries.filter(c=>c.country===filter.value);
     }
+
     const loc = pick(pool);
     const first = pick(firstNames);
     const last = pick(lastNames);
@@ -177,43 +212,47 @@ function generateUser(){
 }
 
 /* =========================
-   🔥  FIXED HARD TYPING ENGINE
-   (IMPORTANT FIX: forced repaint)
+   UTIL
 ========================= */
 
 function sleep(ms){
     return new Promise(r => setTimeout(r, ms));
 }
 
+/* =========================
+   🔥  STRONG TYPING EFFECT
+========================= */
+
 async function typeText(el, text){
 
     el.innerHTML = "";
     el.classList.add("typing");
 
-    // force render start
-    await sleep(120);
+    await sleep(160);
 
     for(let i=0;i<text.length;i++){
 
         el.innerHTML += text[i];
 
-        // force browser repaint (IMPORTANT FIX)
-        el.scrollTop = el.scrollHeight;
-
-        let delay = 8;
+        let delay = 9;
 
         if(text[i] === "\n") delay = 70;
-        if(text[i] === ":") delay = 35;
+        if(text[i] === ":") delay = 40;
         if(text[i] === " ") delay = 12;
+
+        delay += Math.random() * 4;
 
         await sleep(delay);
     }
 
-    await sleep(150);
+    await sleep(160);
+
     el.classList.remove("typing");
 }
 
-/* ========================= */
+/* =========================
+   RENDER
+========================= */
 
 async function render(list, append=false){
 
@@ -247,18 +286,26 @@ ZIP: ${u.zip}`;
     }
 }
 
-/* ========================= */
+/* =========================
+   ACTIONS
+========================= */
 
 function generate(){
     const count = parseInt(bulkInput.value || 5);
     const arr = [];
 
-    for(let i=0;i<count;i++){
-        arr.push(generateUser());
-    }
+    output.innerHTML = `<div class="premium-dots">Generating users</div>`;
 
-    lastData = arr;
-    render(arr,false);
+    setTimeout(() => {
+
+        for(let i=0;i<count;i++){
+            arr.push(generateUser());
+        }
+
+        lastData = arr;
+        render(arr,false);
+
+    }, 350);
 }
 
 function generateMore(){
@@ -275,14 +322,16 @@ function clearAll(){
     lastData=[];
 }
 
-/* ========================= */
+/* =========================
+   EXPORT
+========================= */
 
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
 
 function downloadJSON(){
-    const blob = new Blob([JSON.stringify(lastData,null,2)]);
+    const blob=new Blob([JSON.stringify(lastData,null,2)]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download="users.json";
