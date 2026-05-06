@@ -26,78 +26,55 @@ body {
     padding: 20px;
 }
 
-/* GRID */
 .grid {
     display:grid;
     grid-template-columns:1fr;
     gap:14px;
 }
 
-/* CARD */
 .card {
     background: transparent;
     padding: 10px 0;
 }
 
-/* TEXT */
+/* COLORS */
 .label {
-    color: #7a7a7a;
+    color: #777;
 }
 .value {
-    color: #ffffff;
+    color: #fff;
 }
 
-/* TOP DOTS */
-.idle {
-    position: absolute;
-    top: -30px;
-    left: 0;
-    font-size: 12px;
-    color: #777;
-    letter-spacing: 3px;
-}
-.idle::after {
-    content: "...";
-    animation: blink 1.2s infinite;
-}
-@keyframes blink {
-    0%,100% { opacity:0.2 }
-    50% { opacity:1 }
-}
-
-/* CONTROL PANEL */
+/* CONTROL */
 .topbar {
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    flex-wrap: wrap;
     gap: 12px;
-    justify-content: center;
 }
 
-/* BUTTONS TEXT ONLY */
+/* BUTTONS */
 button {
     background: none;
     border: none;
     color: #fff;
-    cursor:pointer;
-    font-weight:500;
+    cursor: pointer;
+    font-weight: 500;
 }
 
-/* INPUT */
 input {
-    background:none;
-    border:none;
-    color:#fff;
-    width:40px;
-    text-align:center;
+    background: none;
+    border: none;
+    color: #fff;
+    width: 40px;
+    text-align: center;
 }
 
-/* TYPE */
+/* TYPE CURSOR */
 .typing {
-    border-right:1px solid #555;
+    border-right: 1px solid #555;
     white-space: pre-wrap;
 }
 </style>
@@ -106,7 +83,6 @@ input {
 <body>
 
 <div class="wrapper">
-    <div class="idle" id="idle"></div>
     <div id="output" class="grid"></div>
 </div>
 
@@ -122,7 +98,9 @@ input {
 
 <script>
 
-/* ===== REAL DATA ENGINE (50+) ===== */
+/* =========================
+   50+ COUNTRIES ENGINE
+========================= */
 const countries = [
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
 {country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
@@ -146,39 +124,36 @@ const countries = [
 {country:"Turkey",code:"+90",cities:["Istanbul","Ankara"],zips:["34000","06000"]},
 {country:"Ukraine",code:"+380",cities:["Kyiv","Lviv"],zips:["01001","79000"]},
 {country:"Romania",code:"+40",cities:["Bucharest"],zips:["010000"]},
-{country:"Czechia",code:"+420",cities:["Prague"],zips:["11000"]},
-    {country:"Hungary",code:"+36",cities:["Budapest"],zips:["1000"]},
+{country:"Hungary",code:"+36",cities:["Budapest"],zips:["1000"]},
 {country:"Austria",code:"+43",cities:["Vienna"],zips:["1010"]},
 {country:"Switzerland",code:"+41",cities:["Zurich"],zips:["8001"]},
 {country:"Belgium",code:"+32",cities:["Brussels"],zips:["1000"]},
 {country:"Portugal",code:"+351",cities:["Lisbon"],zips:["1000-001"]},
 {country:"Greece",code:"+30",cities:["Athens"],zips:["10552"]},
 {country:"Israel",code:"+972",cities:["Tel Aviv"],zips:["61000"]},
-{country:"UAE",code:"+971",cities:["Dubai"],zips:["00000"]},
+    {country:"UAE",code:"+971",cities:["Dubai"],zips:["00000"]},
 {country:"South Africa",code:"+27",cities:["Cape Town"],zips:["8000"]},
 {country:"Argentina",code:"+54",cities:["Buenos Aires"],zips:["C1000"]},
 {country:"Chile",code:"+56",cities:["Santiago"],zips:["8320000"]},
-{country:"Colombia",code:"+57",cities:["Bogota"],zips:["110111"]},
-{country:"Peru",code:"+51",cities:["Lima"],zips:["15001"]},
 {country:"Thailand",code:"+66",cities:["Bangkok"],zips:["10100"]},
 {country:"Vietnam",code:"+84",cities:["Hanoi"],zips:["100000"]},
 {country:"Indonesia",code:"+62",cities:["Jakarta"],zips:["10110"]},
-{country:"Philippines",code:"+63",cities:["Manila"],zips:["1000"]},
 {country:"Malaysia",code:"+60",cities:["Kuala Lumpur"],zips:["50000"]}
 ];
 
-const firstNames = ["Liam","Noah","Oliver","Emma","Olivia","Ava","Sophia","Mia","Lucas","Ethan","Daniel","Leo"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris"];
+const firstNames = ["Noah","Liam","Oliver","Emma","Ava","Sophia","Lucas","Ethan","Daniel","Leo"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Harris"];
 
 const output = document.getElementById("output");
 const bulkInput = document.getElementById("bulkInput");
 let lastData = [];
 
-/* CORE */
+/* PICK */
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
+/* USER */
 function generateUser(){
     const loc = pick(countries);
     const first = pick(firstNames);
@@ -197,16 +172,17 @@ function generateUser(){
     };
 }
 
-/* TYPE EFFECT */
-function typeText(el, text){
+/* FIXED TYPE ENGINE (REAL HTML SAFE) */
+function typeHTML(el, html){
     el.innerHTML = "";
     let i = 0;
+
     function step(){
-        if(i < text.length){
-            el.innerHTML += text[i++];
-            setTimeout(step, 10);
-        }
+        if(i >= html.length) return;
+        el.innerHTML += html[i++];
+        setTimeout(step, 8);
     }
+
     step();
 }
 
@@ -218,9 +194,11 @@ function render(list){
         const card = document.createElement("div");
         card.className = "card";
 
-        const content = document.createElement("div");
+        const el = document.createElement("div");
+        card.appendChild(el);
+        output.appendChild(card);
 
-        const text =
+        const html =
 `<span class="label">Username:</span> <span class="value">${u.username}</span>
 <span class="label">Name:</span> <span class="value">${u.name}</span>
 <span class="label">Email:</span> <span class="value">${u.email}</span>
@@ -229,24 +207,21 @@ function render(list){
 <span class="label">City:</span> <span class="value">${u.city}</span>
 <span class="label">ZIP:</span> <span class="value">${u.zip}</span>`;
 
-        card.appendChild(content);
-        output.appendChild(card);
-
         setTimeout(()=>{
-            typeText(content, text);
-        }, index * 150);
+            typeHTML(el, html);
+        }, index * 120);
     });
 }
 
 /* ACTIONS */
 function generate(){
-    document.getElementById("idle").style.display = "none";
-
     const count = parseInt(bulkInput.value || 1);
     const arr = [];
+
     for(let i=0;i<count;i++){
         arr.push(generateUser());
     }
+
     lastData = arr;
     render(arr);
 }
@@ -263,25 +238,27 @@ function generateMore(){
 function clearAll(){
     output.innerHTML="";
     lastData=[];
-    document.getElementById("idle").style.display = "block";
 }
 
 /* EXPORT */
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
-    function downloadJSON(){
+
+function downloadJSON(){
     const blob=new Blob([JSON.stringify(lastData,null,2)]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download="users.json";
     a.click();
 }
+
 function downloadCSV(){
     const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
     lastData.forEach(u=>{
         rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
     });
+
     const blob=new Blob([rows.join("\n")]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
