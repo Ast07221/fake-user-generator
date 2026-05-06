@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator</title>
+<title>Fake User Generator PRO</title>
 
 <style>
 body {
@@ -21,7 +21,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
-    max-width: 900px; /* 🔥  чуть компактнее (премиум) */
+    max-width: 900px;
     padding: 20px;
 }
 
@@ -38,23 +38,13 @@ body {
     position:relative;
 }
 
-/* 🔥  ПРЕМИУМ ТЕКСТ */
+/* TEXT */
 .card div {
-    font-size: 13.5px;
-    line-height: 1.65;
-    letter-spacing: 0.3px;
+    font-size: 14px;
+    line-height: 1.7;
 }
 
-/* 🔥  КЛЮЧИ */
-.key {
-    color:#8a8a8a;
-}
-
-/* 🔥  ЗНАЧЕНИЯ */
-.value {
-    color:#e6e6e6;
-}
-
+/* COPY */
 .copyBtn {
     position:absolute;
     top:10px;
@@ -64,6 +54,7 @@ body {
     cursor:pointer;
 }
 
+/* TOPBAR */
 .topbar {
     position: fixed;
     bottom: 25px;
@@ -96,15 +87,13 @@ select, input {
     border-radius:8px;
 }
 
-/* LOADER */
 .loader {
     text-align:center;
-    font-size:18px;
-    letter-spacing:6px;
+    font-size:14px;
     opacity:0.6;
 }
 .loader::after {
-    content: ".";
+    content:"...";
     animation: dots 1.4s infinite;
 }
 @keyframes dots {
@@ -135,147 +124,153 @@ select, input {
 
 <script>
 
-/* DATA */
-const countries = [
-{country:"United States",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
-{country:"United Kingdom",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
-{country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
-{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]}
-];
+/* =========================
+   PRO ENGINE (SCALABLE 100+ COUNTRIES)
+========================= */
 
-const firstNames = ["Liam","Noah","Oliver","Emma","Olivia","Ava","Sophia"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson"];
+const DATA = {
+  US:{name:"United States",code:"+1",cities:["New York","Los Angeles","Chicago","Houston","Miami"]},
+  GB:{name:"United Kingdom",code:"+44",cities:["London","Manchester","Birmingham"]},
+  DE:{name:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"]},
+  FR:{name:"France",code:"+33",cities:["Paris","Lyon","Marseille"]},
+  ES:{name:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"]},
+  IT:{name:"Italy",code:"+39",cities:["Rome","Milan","Naples"]},
+  NL:{name:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"]},
+  PL:{name:"Poland",code:"+48",cities:["Warsaw","Krakow","Gdansk"]},
+  UA:{name:"Ukraine",code:"+380",cities:["Kyiv","Lviv","Odesa"]},
+  TR:{name:"Turkey",code:"+90",cities:["Istanbul","Ankara","Izmir"]},
+  JP:{name:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"]},
+  CN:{name:"China",code:"+86",cities:["Beijing","Shanghai","Shenzhen"]},
+  KR:{name:"South Korea",code:"+82",cities:["Seoul","Busan","Incheon"]},
+  IN:{name:"India",code:"+91",cities:["Mumbai","Delhi","Bangalore"]},
+  BR:{name:"Brazil",code:"+55",cities:["São Paulo","Rio","Brasília"]},
+  CA:{name:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"]},
+  AU:{name:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"]}
+};
 
-const output = document.getElementById("output");
-const filter = document.getElementById("countryFilter");
-const bulkInput = document.getElementById("bulkInput");
+/* names */
+const firstNames=["Liam","Noah","Oliver","Emma","Ava","Sophia","James","Mia"];
+const lastNames=["Smith","Johnson","Brown","Taylor","Wilson","Martin","Lee"];
 
-let lastData = [];
+const output=document.getElementById("output");
+const filter=document.getElementById("countryFilter");
+const bulkInput=document.getElementById("bulkInput");
 
-function init(){
-    filter.innerHTML = `<option value="all">All</option>`;
-    countries.forEach(c=>{
-        const o=document.createElement("option");
-        o.value=c.country;
-        o.textContent=c.country;
-        filter.appendChild(o);
-    });
+let lastData=[];
+
+/* init */
+    function init(){
+  filter.innerHTML=`<option value="all">All</option>`;
+  Object.keys(DATA).forEach(k=>{
+    const o=document.createElement("option");
+    o.value=k;
+    o.textContent=DATA[k].name;
+    filter.appendChild(o);
+  });
 }
 init();
 
-function pick(arr){
-    return arr[Math.floor(Math.random()*arr.length)];
-}
+/* utils */
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function zip(){return String(10000+Math.floor(Math.random()*89999));}
 
+/* generator */
 function generateUser(){
-    let pool = countries;
-    if(filter.value !== "all"){
-        pool = countries.filter(c=>c.country===filter.value);
-    }
+  const keys=Object.keys(DATA);
+  const k=filter.value==="all"?pick(keys):filter.value;
+  const c=DATA[k];
 
-    const loc = pick(pool);
-    const first = pick(firstNames);
-    const last = pick(lastNames);
-    const username = (first+"."+last+Math.floor(Math.random()*999)).toLowerCase();
+  const f=pick(firstNames);
+  const l=pick(lastNames);
+  const username=(f+"."+l+Math.floor(Math.random()*999)).toLowerCase();
 
-    return {
-        username,
-        name: first+" "+last,
-        email: username+"@gmail.com",
-        phone: loc.code+" "+Math.floor(100000000+Math.random()*900000000),
-        country: loc.country,
-        city: pick(loc.cities),
-        zip: pick(loc.zips)
-    };
+  return {
+    username,
+    name:`${f} ${l}`,
+    email:`${username}@gmail.com`,
+    phone:`${c.code} ${Math.floor(100000000+Math.random()*900000000)}`,
+    country:c.name,
+    city:pick(c.cities),
+    zip:zip()
+  };
 }
 
-/* 🔥  РЕНДЕР С ПОДСВЕТКОЙ */
-function render(list, append=false){
-    if(!append) output.innerHTML = "";
+/* render */
+function render(list,append=false){
+  if(!append) output.innerHTML="";
 
-    list.forEach(u=>{
-        const card=document.createElement("div");
-        card.className="card";
+  list.forEach(u=>{
+    const card=document.createElement("div");
+    card.className="card";
 
-        const btn=document.createElement("div");
-        btn.className="copyBtn";
-        btn.innerText="copy";
-        btn.onclick=()=>navigator.clipboard.writeText(JSON.stringify(u,null,2));
+    const btn=document.createElement("div");
+    btn.className="copyBtn";
+    btn.innerText="copy";
+    btn.onclick=()=>navigator.clipboard.writeText(JSON.stringify(u,null,2));
 
-        const content=document.createElement("div");
+    const div=document.createElement("div");
+    div.innerHTML=
+`Username: ${u.username}<br>
+Name: ${u.name}<br>
+Email: ${u.email}<br>
+Phone: ${u.phone}<br>
+Country: ${u.country}<br>
+City: ${u.city}<br>
+ZIP: ${u.zip}`;
 
-        content.innerHTML = `
-<span class="key">Username:</span> <span class="value">${u.username}</span><br>
-<span class="key">Name:</span> <span class="value">${u.name}</span><br>
-<span class="key">Email:</span> <span class="value">${u.email}</span><br>
-<span class="key">Phone:</span> <span class="value">${u.phone}</span><br>
-<span class="key">Country:</span> <span class="value">${u.country}</span><br>
-<span class="key">City:</span> <span class="value">${u.city}</span><br>
-<span class="key">ZIP:</span> <span class="value">${u.zip}</span>
-`;
-
-        card.appendChild(btn);
-        card.appendChild(content);
-        output.appendChild(card);
-    });
+    card.appendChild(btn);
+    card.appendChild(div);
+    output.appendChild(card);
+  });
 }
 
-/* ACTIONS */
+/* actions */
 function generate(){
-    output.innerHTML = '<div class="loader">...</div>';
-
-    setTimeout(()=>{
-        const count=parseInt(bulkInput.value||5);
-        const arr=[];
-        for(let i=0;i<count;i++){
-            arr.push(generateUser());
-        }
-        lastData=arr;
-        render(arr,false);
-    },400);
+  const n=parseInt(bulkInput.value||5);
+  const arr=[];
+  for(let i=0;i<n;i++) arr.push(generateUser());
+  lastData=arr;
+  render(arr,false);
 }
 
 function generateMore(){
-    const arr=[];
-    for(let i=0;i<3;i++){
-        arr.push(generateUser());
-    }
-    lastData=lastData.concat(arr);
-    render(arr,true);
+  const arr=[];
+  for(let i=0;i<3;i++) arr.push(generateUser());
+  lastData=lastData.concat(arr);
+  render(arr,true);
 }
 
 function clearAll(){
-    output.innerHTML='<div class="loader">...</div>';
-    lastData=[];
+  output.innerHTML="...";
+  lastData=[];
 }
 
-/* EXPORT */
+/* export */
 function copyAll(){
-    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+  navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
 
 function downloadJSON(){
-    const blob=new Blob([JSON.stringify(lastData,null,2)]);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="users.json";
-    a.click();
+  const blob=new Blob([JSON.stringify(lastData,null,2)]);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="users.json";
+  a.click();
 }
 
 function downloadCSV(){
-    const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
-    lastData.forEach(u=>{
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
-    });
-    const blob=new Blob([rows.join("\n")]);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="users.csv";
-    a.click();
+  const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
+  lastData.forEach(u=>{
+    rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
+  });
+  const blob=new Blob([rows.join("\n")]);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="users.csv";
+  a.click();
 }
 
 </script>
+
 </body>
 </html>
