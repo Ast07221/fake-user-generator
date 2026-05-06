@@ -11,174 +11,142 @@ body {
     font-family: system-ui;
     background: #0b0b0b;
     color: #fff;
-    height: 100vh;
-    overflow: hidden;
 }
 
-/* 🔥  CENTER OUTPUT */
+/* CENTER BLOCK */
 .wrapper {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 1100px;
-    padding: 20px;
+    width: 420px;
 }
 
-/* GRID */
-.grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-    gap:14px;
+/* OUTPUT */
+#output {
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+    white-space: pre-line;
 }
 
-/* CARD */
-.card {
-    background:#151515;
-    padding:16px;
-    border-radius:14px;
-    position:relative;
-    transition:0.2s;
+/* KEY STYLE */
+.key {
+    color: #8f8f8f;
+    font-weight: 500;
 }
 
-.card:hover {
-    background:#1c1c1c;
-}
-
-/* COPY */
-.copyBtn {
-    position:absolute;
-    top:10px;
-    right:10px;
-    font-size:11px;
-    opacity:0.6;
-    cursor:pointer;
-}
-
-/* 🔥  FIXED CONTROL PANEL */
-.topbar {
+/* BOTTOM ACTIONS */
+.actions {
     position: fixed;
-    bottom: 25px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-
-    background: rgba(15,15,15,0.75);
-    backdrop-filter: blur(10px);
-
-    padding: 12px 18px;
-    border-radius: 16px;
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    gap: 16px;
 }
 
 /* PREMIUM BUTTONS */
 button {
-    background:#1a1a1a;
-    border:1px solid #2a2a2a;
-    color:#fff;
-    padding:10px 16px;
-    cursor:pointer;
-    border-radius:12px;
-    font-weight:500;
-    transition:0.25s;
+    background: #151515;
+    border: 1px solid #222;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
 button:hover {
-    background:#2a2a2a;
-    transform:translateY(-1px);
+    background: #222;
 }
 
 /* INPUT */
-select, input {
-    background:#111;
-    color:#fff;
-    border:1px solid #222;
-    padding:8px;
-    border-radius:8px;
+#bulkInput {
+    width: 50px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #333;
+    color: #fff;
+    text-align: center;
+}
+
+/* PREMIUM LOADER */
+.loader {
+    text-align: center;
+    font-size: 18px;
+    letter-spacing: 4px;
+    opacity: 0.8;
+}
+
+.loader::after {
+    content: ".";
+    animation: dots 1.4s infinite;
+}
+
+@keyframes dots {
+    0% { content: "."; }
+    33% { content: ".."; }
+    66% { content: "..."; }
+    100% { content: "."; }
 }
 
 /* TYPE EFFECT */
 .typing {
-    white-space: pre-wrap;
-    border-right: 2px solid #666;
+    border-right: 2px solid #888;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="wrapper">
-    <div id="output" class="grid"></div>
+    <div id="output" class="loader">...</div>
 </div>
 
-<!-- 🔥  CONTROL PANEL -->
-<div class="topbar">
-
-    <button onclick="generate()">Generate</button>
-    <button onclick="generateMore()">More</button>
-    <button onclick="clearAll()">Clear</button>
-
-    <select id="countryFilter"></select>
-    <input id="bulkInput" type="number" value="5">
-
-    <button onclick="copyAll()">Copy</button>
-    <button onclick="downloadJSON()">JSON</button>
-    <button onclick="downloadCSV()">CSV</button>
-
+<div class="actions">
+    <button onclick="generate()">generate</button>
+    <input id="bulkInput" type="number" value="1" min="1" max="50">
+    <button onclick="runBulk()">bulk</button>
+    <button onclick="copy()">copy</button>
+    <button onclick="downloadJSON()">json</button>
+    <button onclick="downloadCSV()">csv</button>
 </div>
 
 <script>
 
-/* DATA */
+/* =========================
+   DATA ENGINE (логика связана)
+========================= */
+
 const countries = [
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
 {country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
 {country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
 {country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
 {country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]}
+{country:"Italy",code:"+39",cities:["Rome","Milan"],zips:["00100","20100"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]},
+{country:"Canada",code:"+1",cities:["Toronto","Vancouver"],zips:["M5H","V5K"]},
+{country:"Australia",code:"+61",cities:["Sydney","Melbourne"],zips:["2000","3000"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],zips:["100-0001","530-0001"]}
 ];
 
-const firstNames = ["Liam","Noah","Oliver","Emma","Olivia","Ava","Sophia"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson"];
+const firstNames = ["Liam","Noah","Oliver","James","Lucas","Emma","Olivia","Ava","Sophia","Mia"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","Thomas","Jackson","White","Harris"];
 
-const output = document.getElementById("output");
-const filter = document.getElementById("countryFilter");
-const bulkInput = document.getElementById("bulkInput");
-
-let lastData = [];
-
-/* INIT */
-function init(){
-    filter.innerHTML = `<option value="all">All</option>`;
-    countries.forEach(c=>{
-        const o=document.createElement("option");
-        o.value=c.country;
-        o.textContent=c.country;
-        filter.appendChild(o);
-    });
-}
-init();
-
-/* CORE */
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
+/* =========================
+   GENERATOR
+========================= */
+
 function generateUser(){
-    let pool = countries;
-
-    if(filter.value !== "all"){
-        pool = countries.filter(c=>c.country===filter.value);
-    }
-
-    const loc = pick(pool);
+    const loc = pick(countries);
     const first = pick(firstNames);
     const last = pick(lastNames);
 
@@ -188,66 +156,77 @@ function generateUser(){
         username,
         name: first + " " + last,
         email: username + "@gmail.com",
-        phone: loc.code + Math.floor(100000000 + Math.random()*900000000),
+        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
         country: loc.country,
         city: pick(loc.cities),
-        address: "Street " + Math.floor(Math.random()*500),
         zip: pick(loc.zips)
     };
 }
 
-/* TYPE EFFECT */
-function typeText(el, text){
-    el.innerHTML = "";
-    let i = 0;
+/* =========================
+   TYPE EFFECT
+========================= */
 
-    function step(){
-        if(i < text.length){
-            el.innerHTML += text[i++];
-            setTimeout(step, 12);
-        }
+function sleep(ms){
+    return new Promise(r => setTimeout(r, ms));
     }
 
-    step();
+async function typeText(text){
+    const el = document.getElementById("output");
+    el.innerHTML = "";
+    el.classList.add("typing");
+
+    for(let i=0;i<text.length;i++){
+        el.innerHTML += text[i];
+
+        let delay = 10;
+        if(text[i] === "\n") delay = 60;
+        if(text[i] === ":") delay = 30;
+
+        await sleep(delay);
+    }
+
+    el.classList.remove("typing");
 }
 
-/* RENDER */
-function render(list, append=false){
-    if(!append) output.innerHTML = "";
+/* =========================
+   FORMAT (структура норм)
+========================= */
 
-    list.forEach((u, index)=>{
-
-        const card = document.createElement("div");
-        card.className = "card";
-
-        const content = document.createElement("div");
-
-        const text =
-`Name: ${u.name}
+function format(u){
+return `Username: ${u.username}
+Name: ${u.name}
 Email: ${u.email}
 Phone: ${u.phone}
 Country: ${u.country}
 City: ${u.city}
 ZIP: ${u.zip}`;
-
-        const btn = document.createElement("div");
-        btn.className = "copyBtn";
-        btn.innerText = "copy";
-        btn.onclick = () => navigator.clipboard.writeText(JSON.stringify(u,null,2));
-
-        card.appendChild(btn);
-        card.appendChild(content);
-        output.appendChild(card);
-
-        setTimeout(()=>{
-            typeText(content, text);
-        }, index * 120);
-    });
 }
 
-/* ACTIONS */
-function generate(){
-    const count = parseInt(bulkInput.value || 5);
+/* =========================
+   ACTIONS
+========================= */
+
+let lastData = [];
+
+async function generate(){
+    const u = generateUser();
+    lastData = [u];
+
+    document.getElementById("output").innerHTML = '<div class="loader">...</div>';
+
+    await sleep(400);
+
+    await typeText(format(u));
+}
+
+async function runBulk(){
+    const count = parseInt(document.getElementById("bulkInput").value || 1);
+
+    document.getElementById("output").innerHTML = '<div class="loader">...</div>';
+
+    await sleep(400);
+
     const arr = [];
 
     for(let i=0;i<count;i++){
@@ -255,30 +234,22 @@ function generate(){
     }
 
     lastData = arr;
-    render(arr,false);
+
+    const text = arr.map(format).join("\n\n");
+
+    await typeText(text);
 }
 
-function generateMore(){
-    const arr=[];
-    for(let i=0;i<3;i++){
-        arr.push(generateUser());
-    }
-    lastData = lastData.concat(arr);
-    render(arr,true);
-}
+/* =========================
+   EXPORT
+========================= */
 
-function clearAll(){
-    output.innerHTML="";
-    lastData=[];
-}
-
-/* EXPORT */
-function copyAll(){
+function copy(){
     navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
 }
 
 function downloadJSON(){
-    const blob=new Blob([JSON.stringify(lastData,null,2)],{type:"application/json"});
+    const blob=new Blob([JSON.stringify(lastData,null,2)]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download="users.json";
@@ -286,13 +257,11 @@ function downloadJSON(){
 }
 
 function downloadCSV(){
-    const rows=["Username,Name,Email,Phone,Country,City,Address,ZIP"];
-
+    const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
     lastData.forEach(u=>{
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
+        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
     });
-
-    const blob=new Blob([rows.join("\n")],{type:"text/csv"});
+    const blob=new Blob([rows.join("\n")]);
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
     a.download="users.csv";
@@ -300,6 +269,5 @@ function downloadCSV(){
 }
 
 </script>
-
 </body>
 </html>
