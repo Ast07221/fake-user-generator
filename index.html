@@ -3,307 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake Identity Generator Pro</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>FakeUserGeneratorPro</title>
 
 <style>
 body {
     margin: 0;
-    font-family: Inter, system-ui;
-    background: #0b0b0b;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
     color: #fff;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.wrapper {
+/* Заголовок */
+#app-title {
     position: absolute;
-    top: 42%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 460px;
-}
-
-#status {
-    font-size: 12px;
-    opacity: 0.6;
-    margin-bottom: 10px;
-}
-
-#output {
-    font-size: 14px;
-}
-
-.card {
-    background: #111;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    transition: 0.2s;
-}
-.card:hover {
-    background: #171717;
-}
-
-.key {
-    color: #888;
-}
-
-/* bottom bar */
-.actions {
-    position: fixed;
-    bottom: 25px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
+    font-size: 28px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
 }
 
-.actions span {
-    cursor: pointer;
-    padding: 6px 10px;
-    background: #151515;
-    border-radius: 8px;
+#app-title.visible {
+    opacity: 1;
 }
 
-#bulkInput {
-    width: 50px;
+/* Генератор */
+#generator {
     background: transparent;
     border: none;
-    border-bottom: 1px solid #333;
-    color: #fff;
+    box-shadow: none;
     text-align: center;
 }
 
-.dots::after {
-    content: "...";
+/* Кнопка — только текст */
+button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.6;
+}
+
+/* Вывод */
+#output {
+    margin-top: 20px;
+    white-space: pre-line;
+    min-height: 60px;
+}
+
+/* Точки */
+#dots {
+    margin-top: 20px;
+    font-size: 22px;
+    opacity: 0;
+}
+
+#dots.active {
+    opacity: 1;
+}
+
+#dots::after {
+    content: '...';
     animation: blink 1.2s infinite;
 }
+
 @keyframes blink {
-    0%,100% { opacity: 0.2; }
+    0%, 100% { opacity: 0.2; }
     50% { opacity: 1; }
 }
 </style>
 </head>
-
 <body>
 
-<div class="wrapper">
-    <div id="status"><span class="dots">idle</span></div>
+<div id="app-title">FakeUserGeneratorPro</div>
+
+<div id="generator">
+    <button onclick="generateUser()">Generate User</button>
+    <div id="dots"></div>
     <div id="output"></div>
 </div>
 
-<div class="actions">
-    <span onclick="generate()">generate</span>
-
-    <span>
-        bulk <input id="bulkInput" type="number" value="5">
-    </span>
-
-    <span onclick="runBulk()">run</span>
-    <span onclick="copy()">copy</span>
-    <span onclick="downloadJSON()">json</span>
-    <span onclick="downloadCSV()">csv</span>
-</div>
-
 <script>
-
-/* ===== DATA ENGINE ===== */
-
-const countries = [
-{c:"USA",city:"New York",zip:"10001",code:"+1"},
-{c:"USA",city:"Los Angeles",zip:"90001",code:"+1"},
-{c:"UK",city:"London",zip:"EC1A 1BB",code:"+44"},
-{c:"Germany",city:"Berlin",zip:"10115",code:"+49"},
-{c:"France",city:"Paris",zip:"75001",code:"+33"},
-{c:"Italy",city:"Rome",zip:"00100",code:"+39"},
-{c:"Spain",city:"Madrid",zip:"28001",code:"+34"},
-{c:"Netherlands",city:"Amsterdam",zip:"1012 JS",code:"+31"},
-{c:"Poland",city:"Warsaw",zip:"00-001",code:"+48"},
-{c:"Sweden",city:"Stockholm",zip:"11120",code:"+46"},
-{c:"Norway",city:"Oslo",zip:"0010",code:"+47"},
-{c:"Denmark",city:"Copenhagen",zip:"1000",code:"+45"},
-{c:"Finland",city:"Helsinki",zip:"00100",code:"+358"},
-{c:"Canada",city:"Toronto",zip:"M5H 2N2",code:"+1"},
-{c:"Australia",city:"Sydney",zip:"2000",code:"+61"},
-{c:"Brazil",city:"São Paulo",zip:"01000-000",code:"+55"},
-{c:"Japan",city:"Tokyo",zip:"100-0001",code:"+81"},
-{c:"India",city:"Delhi",zip:"110001",code:"+91"},
-{c:"China",city:"Beijing",zip:"100000",code:"+86"},
-{c:"Mexico",city:"Mexico City",zip:"01000",code:"+52"},
-{c:"Turkey",city:"Istanbul",zip:"34000",code:"+90"},
-{c:"UAE",city:"Dubai",zip:"00000",code:"+971"},
-{c:"South Africa",city:"Cape Town",zip:"8000",code:"+27"},
-{c:"Argentina",city:"Buenos Aires",zip:"C1000",code:"+54"},
-{c:"Indonesia",city:"Jakarta",zip:"10110",code:"+62"},
-{c:"Thailand",city:"Bangkok",zip:"10100",code:"+66"},
-{c:"Vietnam",city:"Hanoi",zip:"100000",code:"+84"},
-{c:"South Korea",city:"Seoul",zip:"04524",code:"+82"}
-];
-
-const firstNames = [
-"James","Mary","Robert","Patricia","John","Jennifer","Michael","Linda",
-"David","Elizabeth","William","Barbara","Richard","Susan","Joseph","Jessica"
-];
-
-const lastNames = [
-"Smith","Johnson","Williams","Brown","Jones","Garcia",
-"Miller","Davis","Rodriguez","Martinez","Hernandez"
-];
-
-const streets = [
-"Main Street","High Street","Broadway","Maple Avenue",
-"Park Avenue","Sunset Boulevard","King Street",
-"Oxford Street","Wall Street","Baker Street",
-"Fifth Avenue","Elm Street"
-];
-
-/* ===== HELPERS ===== */
-
-function pick(arr){
-    return arr[Math.floor(Math.random()*arr.length)];
-}
-
-let lastGenerated = "";
-
-/* ===== GENERATOR ===== */
-
-function generateUser(){
-
-    let user;
-
-    do {
-        const loc = pick(countries);
-        const first = pick(firstNames);
-        const last = pick(lastNames);
-
-        const username = (first + last + Math.floor(Math.random()*999)).toLowerCase();
-
-        const emailFormats = [
-            `${first}.${last}@gmail.com`,
-            `${first}${last}@yahoo.com`,
-            `${last}.${first}@outlook.com`,
-            `${username}@hotmail.com`
-        ];
-
-        user = {
-            username,
-            name: first + " " + last,
-            email: pick(emailFormats).toLowerCase(),
-            phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
-            country: loc.c,
-            city: loc.city,
-            address: pick(streets) + " " + Math.floor(Math.random()*200),
-            zip: loc.zip
-        };
-
-    } while(user.name === lastGenerated); // анти повтор
-
-    lastGenerated = user.name;
-
-    return user;
-}
-
-/* ===== UI ===== */
-
+const title = document.getElementById("app-title");
 const output = document.getElementById("output");
-const statusEl = document.getElementById("status");
-const bulkInput = document.getElementById("bulkInput");
+const dots = document.getElementById("dots");
 
-let lastData = [];
-let running = false;
+/* Плавное появление заголовка */
+setTimeout(() => {
+    title.classList.add("visible");
+}, 500);
 
-async function render(arr){
+/* Печать текста */
+function typeText(element, text, speed = 25) {
+    element.innerHTML = "";
+    let i = 0;
 
+    function typing() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typing, speed);
+        }
+    }
+
+    typing();
+}
+
+/* Генерация */
+function generateUser() {
+    dots.classList.add("active");
     output.innerHTML = "";
 
-    for(let u of arr){
+    setTimeout(() => {
+        dots.classList.remove("active");
 
-        const div = document.createElement("div");
-        div.className = "card";
+        const users = [
+            "Name: John Doe\nEmail: john@example.com",
+            "Name: Alice Smith\nEmail: alice@example.com",
+            "Name: Mark Johnson\nEmail: mark@example.com"
+        ];
 
-        div.innerHTML = `
-        <div><span class="key">Name:</span> ${u.name}</div>
-        <div><span class="key">Email:</span> ${u.email}</div>
-        <div><span class="key">Phone:</span> ${u.phone}</div>
-        <div><span class="key">Country:</span> ${u.country}</div>
-        <div><span class="key">City:</span> ${u.city}</div>
-        <div><span class="key">Address:</span> ${u.address}</div>
-        <div><span class="key">ZIP:</span> ${u.zip}</div>
-        `;
+        const randomUser = users[Math.floor(Math.random() * users.length)];
 
-        output.appendChild(div);
-
-        await new Promise(r => setTimeout(r, 10));
-    }
+        typeText(output, randomUser);
+    }, 1500);
 }
-
-/* ===== ACTIONS ===== */
-
-async function generate(){
-    if(running) return;
-    running = true;
-
-    statusEl.innerHTML = `<span class="dots">processing</span>`;
-
-    const u = generateUser();
-    lastData = [u];
-
-    await render([u]);
-
-    statusEl.innerHTML = `<span class="dots">idle</span>`;
-    running = false;
-}
-
-async function runBulk(){
-    if(running) return;
-    running = true;
-
-    statusEl.innerHTML = `<span class="dots">processing</span>`;
-
-    const count = Math.min(50, parseInt(bulkInput.value || 5));
-    const arr = [];
-
-    for(let i=0;i<count;i++){
-        arr.push(generateUser());
-    }
-
-    lastData = arr;
-
-    await render(arr);
-
-    statusEl.innerHTML = `<span class="dots">idle</span>`;
-    running = false;
-}
-
-/* ===== EXPORT ===== */
-
-function copy(){
-    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
-}
-
-function downloadJSON(){
-    const blob = new Blob([JSON.stringify(lastData,null,2)]);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.json";
-    a.click();
-}
-
-function downloadCSV(){
-    const rows = ["Name,Email,Phone,Country,City,Address,ZIP"];
-
-    lastData.forEach(u=>{
-        rows.push(`${u.name},${u.email},${u.phone},${u.country},${u.city},${u.address},${u.zip}`);
-    });
-
-    const blob = new Blob([rows.join("\n")]);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.csv";
-    a.click();
-}
-
 </script>
 
 </body>
