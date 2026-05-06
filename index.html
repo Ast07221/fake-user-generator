@@ -15,6 +15,7 @@ body {
     overflow: hidden;
 }
 
+/* центр */
 .wrapper {
     position: absolute;
     top: 50%;
@@ -25,76 +26,87 @@ body {
     padding: 20px;
 }
 
+/* сетка */
 .grid {
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
     gap:14px;
+    text-align:left;
 }
 
+/* карточки */
 .card {
-    background:#151515;
-    padding:16px;
-    border-radius:14px;
+    background: transparent; /* 🔥 убрали фон */
+    padding:12px 0;
+    border-radius:0;
     position:relative;
 }
 
-/* TEXT */
+/* текст */
 .card div {
     font-size: 14px;
     line-height: 1.7;
 }
 
-/* COPY */
+/* copy */
 .copyBtn {
     position:absolute;
-    top:10px;
-    right:10px;
+    top:0;
+    right:0;
     font-size:11px;
-    opacity:0.6;
+    opacity:0.5;
     cursor:pointer;
 }
 
-/* TOPBAR */
+/* панель */
 .topbar {
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    gap: 14px;
     flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    background: rgba(15,15,15,0.75);
-    backdrop-filter: blur(10px);
-    padding: 12px 18px;
-    border-radius: 16px;
 }
 
+/* 🔥 кнопки как текст */
 button {
-    background:#1a1a1a;
-    border:1px solid #2a2a2a;
-    color:#fff;
-    padding:10px 16px;
+    background: none;
+    border: none;
+    color: #aaa;
+    padding: 0;
     cursor:pointer;
-    border-radius:12px;
+    font-size:13px;
 }
 
-select, input {
-    background:#111;
+button:hover {
     color:#fff;
-    border:1px solid #222;
-    padding:8px;
-    border-radius:8px;
 }
 
-.loader {
+/* 🔥 инпут */
+select, input {
+    background: none;
+    border: none;
+    color:#fff;
+    border-bottom:1px solid #333;
+    padding:4px;
+}
+
+/* 🔥 короткое поле */
+input {
+    width: 35px;
     text-align:center;
+}
+
+/* loader */
+.loader {
+    text-align:left;
     font-size:14px;
-    opacity:0.6;
+    opacity:0.5;
 }
 .loader::after {
-    content:"...";
-    animation: dots 1.4s infinite;
+    content:".";
+    animation:dots 1.4s infinite;
 }
 @keyframes dots {
     0%{content:".";}
@@ -112,45 +124,31 @@ select, input {
 </div>
 
 <div class="topbar">
-    <button onclick="generate()">Generate</button>
-    <button onclick="generateMore()">More</button>
-    <button onclick="clearAll()">Clear</button>
+    <button onclick="generate()">generate</button>
+    <button onclick="generateMore()">more</button>
+    <button onclick="clearAll()">clear</button>
     <select id="countryFilter"></select>
-    <input id="bulkInput" type="number" value="5">
-    <button onclick="copyAll()">Copy</button>
-    <button onclick="downloadJSON()">JSON</button>
-    <button onclick="downloadCSV()">CSV</button>
+    <input id="bulkInput" type="number" value="1" min="1" max="99">
+    <button onclick="copyAll()">copy</button>
+    <button onclick="downloadJSON()">json</button>
+    <button onclick="downloadCSV()">csv</button>
 </div>
 
 <script>
 
-/* =========================
-   PRO ENGINE (SCALABLE 100+ COUNTRIES)
-========================= */
-
+/* DATA */
 const DATA = {
-  US:{name:"United States",code:"+1",cities:["New York","Los Angeles","Chicago","Houston","Miami"]},
-  GB:{name:"United Kingdom",code:"+44",cities:["London","Manchester","Birmingham"]},
-  DE:{name:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"]},
-  FR:{name:"France",code:"+33",cities:["Paris","Lyon","Marseille"]},
-  ES:{name:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"]},
-  IT:{name:"Italy",code:"+39",cities:["Rome","Milan","Naples"]},
-  NL:{name:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"]},
-  PL:{name:"Poland",code:"+48",cities:["Warsaw","Krakow","Gdansk"]},
-  UA:{name:"Ukraine",code:"+380",cities:["Kyiv","Lviv","Odesa"]},
-  TR:{name:"Turkey",code:"+90",cities:["Istanbul","Ankara","Izmir"]},
-  JP:{name:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"]},
-  CN:{name:"China",code:"+86",cities:["Beijing","Shanghai","Shenzhen"]},
-  KR:{name:"South Korea",code:"+82",cities:["Seoul","Busan","Incheon"]},
-  IN:{name:"India",code:"+91",cities:["Mumbai","Delhi","Bangalore"]},
-  BR:{name:"Brazil",code:"+55",cities:["São Paulo","Rio","Brasília"]},
-  CA:{name:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"]},
-  AU:{name:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"]}
+  US:{name:"United States",code:"+1",cities:["New York","Los Angeles","Chicago"]},
+  GB:{name:"United Kingdom",code:"+44",cities:["London","Manchester"]},
+  DE:{name:"Germany",code:"+49",cities:["Berlin","Munich"]},
+  FR:{name:"France",code:"+33",cities:["Paris","Lyon"]},
+  ES:{name:"Spain",code:"+34",cities:["Madrid","Barcelona"]},
+  NL:{name:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"]}
 };
 
 /* names */
-const firstNames=["Liam","Noah","Oliver","Emma","Ava","Sophia","James","Mia"];
-const lastNames=["Smith","Johnson","Brown","Taylor","Wilson","Martin","Lee"];
+const firstNames=["Liam","Noah","Oliver","Emma","Ava","Sophia"];
+const lastNames=["Smith","Johnson","Brown","Taylor","Wilson"];
 
 const output=document.getElementById("output");
 const filter=document.getElementById("countryFilter");
@@ -159,8 +157,8 @@ const bulkInput=document.getElementById("bulkInput");
 let lastData=[];
 
 /* init */
-    function init(){
-  filter.innerHTML=`<option value="all">All</option>`;
+function init(){
+  filter.innerHTML=`<option value="all">all</option>`;
   Object.keys(DATA).forEach(k=>{
     const o=document.createElement("option");
     o.value=k;
@@ -194,8 +192,7 @@ function generateUser(){
     zip:zip()
   };
 }
-
-/* render */
+    /* render */
 function render(list,append=false){
   if(!append) output.innerHTML="";
 
@@ -226,7 +223,7 @@ ZIP: ${u.zip}`;
 
 /* actions */
 function generate(){
-  const n=parseInt(bulkInput.value||5);
+  const n=parseInt(bulkInput.value||1);
   const arr=[];
   for(let i=0;i<n;i++) arr.push(generateUser());
   lastData=arr;
