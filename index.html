@@ -16,16 +16,15 @@ body{
 }
 
 /* CENTER */
-.wrapper{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:100%;
-    max-width:720px;
-    padding:20px;
-    display:flex;
-    justify-content:center;
+.wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 /* OUTPUT */
@@ -36,6 +35,11 @@ body{
     width:100%;
     justify-items:start;
     text-align:left;
+
+    /* FIX: защита от наезда на кнопки */
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    padding-bottom: 120px;
 }
 
 /* CARD */
