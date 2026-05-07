@@ -16,30 +16,34 @@ body{
 }
 
 /* CENTER */
-.wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+.wrapper{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:100%;
+    max-width:900px;
+    padding:20px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
 }
 
 /* OUTPUT */
 .grid{
     display:grid;
     grid-template-columns:1fr;
-    gap:16px;
+    gap:6px; /* было 16px */
     width:100%;
     justify-items:start;
     text-align:left;
 
     max-height: calc(100vh - 160px);
-    overflow-y: auto;
-    padding-bottom: 140px;
-    box-sizing: border-box;
+    overflow-y:auto;
+    padding-bottom:140px;
+    box-sizing:border-box;
 }
 
 /* CARD */
