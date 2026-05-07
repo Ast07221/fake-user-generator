@@ -11,26 +11,27 @@ body{
     font-family:system-ui;
     background:#0b0b0b;
     color:#fff;
-    height:100vh;
-    overflow:hidden;
-}
 
-/* CENTER */
-.wrapper{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:100%;
-    max-width:900px;
-    padding:20px;
+    min-height:100vh;
 
     display:flex;
     justify-content:center;
     align-items:center;
-    flex-direction:column;
+
+    overflow-x:hidden;
 }
 
+/* CENTER */
+.wrapper{
+    width:100%;
+    max-width:1000px;
+    padding:20px;
+    margin:auto;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
 /* OUTPUT */
 .grid{
     display:grid;
