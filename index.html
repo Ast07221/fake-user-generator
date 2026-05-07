@@ -6,76 +6,137 @@
 <title>Fake User Generator</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: system-ui;
-    background: #0b0b0b;
-    color: #fff;
-    height: 100vh;
-    overflow: hidden;
+body{
+    margin:0;
+    font-family:system-ui;
+    background:#0b0b0b;
+    color:#fff;
+    height:100vh;
+    overflow:hidden;
 }
 
 /* CENTER */
-.wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 900px;
-    padding: 20px;
+.wrapper{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:100%;
+    max-width:900px;
+    padding:20px;
 }
 
-.grid {
+/* OUTPUT */
+.grid{
     display:grid;
     grid-template-columns:1fr;
-    gap:14px;
+    gap:16px;
+    justify-items:start;
 }
 
-.card {
-    background: transparent;
-    padding: 10px 0;
+/* CARD */
+.card{
+    width:100%;
+    background:transparent;
+    padding:4px 0;
 }
 
-/* COLORS */
-.label {
-    color: #777;
-}
-.value {
-    color: #fff;
+/* TEXT */
+.line{
+    margin:4px 0;
+    line-height:1.7;
+    font-size:15px;
+    letter-spacing:.2px;
 }
 
-/* CONTROL */
-.topbar {
-    position: fixed;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
+.label{
+    color:#6f6f6f;
+}
+
+.value{
+    color:#fff;
+}
+
+/* PREMIUM DOTS */
+.loader{
+    position:absolute;
+    top:-70px;
+    left:0;
+    font-size:11px;
+    color:#7a7a7a;
+    letter-spacing:6px;
+}
+
+.loader span{
+    animation:pulse 1.4s infinite;
+}
+
+.loader span:nth-child(2){
+    animation-delay:.2s;
+}
+
+.loader span:nth-child(3){
+    animation-delay:.4s;
+}
+
+@keyframes pulse{
+    0%{opacity:.2;}
+    50%{opacity:1;}
+    100%{opacity:.2;}
+}
+
+/* CONTROL PANEL */
+.topbar{
+    position:fixed;
+    bottom:25px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:22px;
 }
 
 /* BUTTONS */
-button {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    font-weight: 500;
+button{
+    background:none;
+    border:none;
+    color:#fff;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.3px;
+    padding:0;
 }
 
-input {
-    background: none;
-    border: none;
-    color: #fff;
-    width: 40px;
-    text-align: center;
+button:hover{
+    opacity:.7;
 }
 
-/* TYPE CURSOR */
-.typing {
-    border-right: 1px solid #555;
-    white-space: pre-wrap;
+/* INPUT */
+input{
+    width:28px;
+    background:none;
+    border:none;
+    color:#fff;
+    text-align:center;
+    outline:none;
+    font-size:14px;
+}
+
+/* CURSOR */
+.typingCursor{
+    display:inline-block;
+    width:1px;
+    height:14px;
+    background:#666;
+    margin-left:2px;
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    0%{opacity:0;}
+    50%{opacity:1;}
+    100%{opacity:0;}
 }
 </style>
 </head>
@@ -83,14 +144,25 @@ input {
 <body>
 
 <div class="wrapper">
+
+    <!-- PREMIUM DOTS -->
+    <div class="loader" id="loader">
+        <span>•</span>
+        <span>•</span>
+        <span>•</span>
+    </div>
+
     <div id="output" class="grid"></div>
 </div>
 
+<!-- CONTROLS -->
 <div class="topbar">
     <button onclick="generate()">generate</button>
     <button onclick="generateMore()">more</button>
     <button onclick="clearAll()">clear</button>
-    <input id="bulkInput" type="number" value="1">
+
+    <input id="bulkInput" type="number" value="1" min="1" max="99">
+
     <button onclick="copyAll()">copy</button>
     <button onclick="downloadJSON()">json</button>
     <button onclick="downloadCSV()">csv</button>
@@ -99,123 +171,204 @@ input {
 <script>
 
 /* =========================
-   50+ COUNTRIES ENGINE
+   HUGE REALISTIC DATABASE
 ========================= */
+
 const countries = [
+
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
-{country:"UK",code:"+44",cities:["London","Manchester"],zips:["SW1A","M1"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich"],zips:["10115","80331"]},
-{country:"France",code:"+33",cities:["Paris","Lyon"],zips:["75001","69001"]},
-{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],zips:["28001","08001"]},
-{country:"Italy",code:"+39",cities:["Rome","Milan"],zips:["00100","20100"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],zips:["1012","3011"]},
-{country:"Poland",code:"+48",cities:["Warsaw","Krakow"],zips:["00-001","30-001"]},
+{country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
+{country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],zips:["SW1A","M1","L1"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
+{country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"],zips:["28001","08001","46001"]},
+{country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
+{country:"Belgium",code:"+32",cities:["Brussels","Antwerp"],zips:["1000","2000"]},
+{country:"Switzerland",code:"+41",cities:["Zurich","Geneva"],zips:["8001","1201"]},
+{country:"Austria",code:"+43",cities:["Vienna","Salzburg"],zips:["1010","5020"]},
 {country:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"],zips:["11120","41101"]},
 {country:"Norway",code:"+47",cities:["Oslo","Bergen"],zips:["0001","5003"]},
-{country:"Denmark",code:"+45",cities:["Copenhagen"],zips:["1000"]},
-{country:"Finland",code:"+358",cities:["Helsinki"],zips:["00100"]},
-{country:"Canada",code:"+1",cities:["Toronto","Vancouver"],zips:["M5H","V5K"]},
-{country:"Australia",code:"+61",cities:["Sydney","Melbourne"],zips:["2000","3000"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],zips:["100-0001","530-0001"]},
-{country:"Brazil",code:"+55",cities:["Sao Paulo","Rio"],zips:["01000","20000"]},
-{country:"Mexico",code:"+52",cities:["Mexico City"],zips:["01000"]},
-{country:"India",code:"+91",cities:["Delhi","Mumbai"],zips:["110001","400001"]},
-{country:"China",code:"+86",cities:["Beijing","Shanghai"],zips:["100000","200000"]},
-{country:"Turkey",code:"+90",cities:["Istanbul","Ankara"],zips:["34000","06000"]},
+    {country:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"],zips:["1000","8000"]},
+{country:"Finland",code:"+358",cities:["Helsinki","Turku"],zips:["00100","20100"]},
+{country:"Poland",code:"+48",cities:["Warsaw","Krakow"],zips:["00-001","30-001"]},
+{country:"Portugal",code:"+351",cities:["Lisbon","Porto"],zips:["1000-001","4000-001"]},
+{country:"Greece",code:"+30",cities:["Athens","Thessaloniki"],zips:["10552","54621"]},
+{country:"Ireland",code:"+353",cities:["Dublin","Cork"],zips:["D01","T12"]},
 {country:"Ukraine",code:"+380",cities:["Kyiv","Lviv"],zips:["01001","79000"]},
-{country:"Romania",code:"+40",cities:["Bucharest"],zips:["010000"]},
-{country:"Hungary",code:"+36",cities:["Budapest"],zips:["1000"]},
-{country:"Austria",code:"+43",cities:["Vienna"],zips:["1010"]},
-{country:"Switzerland",code:"+41",cities:["Zurich"],zips:["8001"]},
-{country:"Belgium",code:"+32",cities:["Brussels"],zips:["1000"]},
-{country:"Portugal",code:"+351",cities:["Lisbon"],zips:["1000-001"]},
-{country:"Greece",code:"+30",cities:["Athens"],zips:["10552"]},
-{country:"Israel",code:"+972",cities:["Tel Aviv"],zips:["61000"]},
-    {country:"UAE",code:"+971",cities:["Dubai"],zips:["00000"]},
-{country:"South Africa",code:"+27",cities:["Cape Town"],zips:["8000"]},
-{country:"Argentina",code:"+54",cities:["Buenos Aires"],zips:["C1000"]},
-{country:"Chile",code:"+56",cities:["Santiago"],zips:["8320000"]},
-{country:"Thailand",code:"+66",cities:["Bangkok"],zips:["10100"]},
-{country:"Vietnam",code:"+84",cities:["Hanoi"],zips:["100000"]},
-{country:"Indonesia",code:"+62",cities:["Jakarta"],zips:["10110"]},
-{country:"Malaysia",code:"+60",cities:["Kuala Lumpur"],zips:["50000"]}
+{country:"Romania",code:"+40",cities:["Bucharest","Cluj"],zips:["010011","400000"]},
+{country:"Hungary",code:"+36",cities:["Budapest","Debrecen"],zips:["1000","4000"]},
+{country:"Czech Republic",code:"+420",cities:["Prague","Brno"],zips:["11000","60200"]},
+{country:"Slovakia",code:"+421",cities:["Bratislava","Kosice"],zips:["81101","04001"]},
+{country:"Croatia",code:"+385",cities:["Zagreb","Split"],zips:["10000","21000"]},
+{country:"Serbia",code:"+381",cities:["Belgrade","Novi Sad"],zips:["11000","21000"]},
+{country:"Turkey",code:"+90",cities:["Istanbul","Ankara"],zips:["34000","06000"]},
+{country:"Israel",code:"+972",cities:["Tel Aviv","Jerusalem"],zips:["61000","91000"]},
+{country:"UAE",code:"+971",cities:["Dubai","Abu Dhabi"],zips:["00000","00000"]},
+{country:"Saudi Arabia",code:"+966",cities:["Riyadh","Jeddah"],zips:["11564","21442"]},
+{country:"India",code:"+91",cities:["Delhi","Mumbai","Bangalore"],zips:["110001","400001","560001"]},
+{country:"China",code:"+86",cities:["Beijing","Shanghai","Shenzhen"],zips:["100000","200000","518000"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],zips:["100-0001","530-0001","600-0001"]},
+{country:"South Korea",code:"+82",cities:["Seoul","Busan"],zips:["04524","48939"]},
+{country:"Thailand",code:"+66",cities:["Bangkok","Chiang Mai"],zips:["10100","50000"]},
+{country:"Vietnam",code:"+84",cities:["Hanoi","Ho Chi Minh"],zips:["100000","700000"]},
+{country:"Indonesia",code:"+62",cities:["Jakarta","Bandung"],zips:["10110","40111"]},
+{country:"Malaysia",code:"+60",cities:["Kuala Lumpur","Johor Bahru"],zips:["50000","80000"]},
+{country:"Singapore",code:"+65",cities:["Singapore"],zips:["018989"]},
+{country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"],zips:["2000","3000","4000"]},
+{country:"New Zealand",code:"+64",cities:["Auckland","Wellington"],zips:["1010","6011"]},
+{country:"Brazil",code:"+55",cities:["Sao Paulo","Rio"],zips:["01000","20000"]},
+{country:"Argentina",code:"+54",cities:["Buenos Aires","Cordoba"],zips:["C1000","X5000"]},
+{country:"Chile",code:"+56",cities:["Santiago","Valparaiso"],zips:["8320000","2340000"]},
+{country:"Mexico",code:"+52",cities:["Mexico City","Guadalajara"],zips:["01000","44100"]},
+{country:"South Africa",code:"+27",cities:["Cape Town","Johannesburg"],zips:["8000","2000"]}
+
 ];
 
-const firstNames = ["Noah","Liam","Oliver","Emma","Ava","Sophia","Lucas","Ethan","Daniel","Leo"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Harris"];
+/* NAMES */
+
+const firstNames = [
+"Noah","Liam","Oliver","James","Lucas","Henry","Leo","Daniel","Jack","Ethan",
+"Emma","Olivia","Sophia","Ava","Mia","Charlotte","Emily","Amelia","Ella","Grace"
+];
+
+const lastNames = [
+"Smith","Johnson","Brown","Taylor","Anderson","White","Harris","Martin",
+"Jackson","Moore","Clark","Walker","Hall","Allen","Young","King","Wright"
+];
+
+/* DOM */
 
 const output = document.getElementById("output");
 const bulkInput = document.getElementById("bulkInput");
+const loader = document.getElementById("loader");
+
 let lastData = [];
 
-/* PICK */
+/* HELPERS */
+
 function pick(arr){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* USER */
+/* USER GENERATOR */
+
 function generateUser(){
+
     const loc = pick(countries);
+
     const first = pick(firstNames);
     const last = pick(lastNames);
 
-    const username = (first + last + Math.floor(Math.random()*999)).toLowerCase();
+    const username =
+        (first + last + Math.floor(Math.random()*999)).toLowerCase();
 
     return {
         username,
-        name: first + " " + last,
-        email: username + "@gmail.com",
-        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
-        country: loc.country,
-        city: pick(loc.cities),
-        zip: pick(loc.zips)
+        name:first + " " + last,
+        email:username + "@gmail.com",
+        phone:loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
+        country:loc.country,
+        city:pick(loc.cities),
+        zip:pick(loc.zips)
     };
 }
 
-/* FIXED TYPE ENGINE (REAL HTML SAFE) */
-function typeHTML(el, html){
-    el.innerHTML = "";
-    let i = 0;
+/* TYPE ENGINE */
 
-    function step(){
-        if(i >= html.length) return;
-        el.innerHTML += html[i++];
-        setTimeout(step, 8);
+function typeHTML(el, user){
+
+    el.innerHTML = "";
+
+    const rows = [
+        ["Username", user.username],
+        ["Name", user.name],
+        ["Email", user.email],
+        ["Phone", user.phone],
+        ["Country", user.country],
+        ["City", user.city],
+        ["ZIP", user.zip]
+    ];
+
+    let rowIndex = 0;
+
+    function typeRow(){
+
+        if(rowIndex >= rows.length) return;
+
+        const [label, value] = rows[rowIndex++];
+
+        const line = document.createElement("div");
+        line.className = "line";
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "label";
+        labelSpan.textContent = label + ": ";
+
+        const valueSpan = document.createElement("span");
+        valueSpan.className = "value";
+
+        line.appendChild(labelSpan);
+        line.appendChild(valueSpan);
+
+        const cursor = document.createElement("span");
+        cursor.className = "typingCursor";
+
+        line.appendChild(cursor);
+
+        el.appendChild(line);
+
+        let i = 0;
+
+        function typeChar(){
+
+            if(i < value.length){
+
+                valueSpan.textContent += value[i++];
+                setTimeout(typeChar, 12);
+
+            } else {
+
+                cursor.remove();
+                setTimeout(typeRow, 50);
+
+            }
+        }
+
+        typeChar();
     }
 
-    step();
+    typeRow();
 }
 
 /* RENDER */
+
 function render(list){
+
     output.innerHTML = "";
 
-    list.forEach((u, index)=>{
+    list.forEach((u,index)=>{
+
         const card = document.createElement("div");
         card.className = "card";
 
-        const el = document.createElement("div");
-        card.appendChild(el);
         output.appendChild(card);
 
-        const html =
-`<span class="label">Username:</span> <span class="value">${u.username}</span>
-<span class="label">Name:</span> <span class="value">${u.name}</span>
-<span class="label">Email:</span> <span class="value">${u.email}</span>
-<span class="label">Phone:</span> <span class="value">${u.phone}</span>
-<span class="label">Country:</span> <span class="value">${u.country}</span>
-<span class="label">City:</span> <span class="value">${u.city}</span>
-<span class="label">ZIP:</span> <span class="value">${u.zip}</span>`;
-
         setTimeout(()=>{
-            typeHTML(el, html);
+            typeHTML(card,u);
         }, index * 120);
+
     });
 }
 
 /* ACTIONS */
+
 function generate(){
+
+    loader.style.display = "none";
+
     const count = parseInt(bulkInput.value || 1);
+
     const arr = [];
 
     for(let i=0;i<count;i++){
@@ -223,46 +376,80 @@ function generate(){
     }
 
     lastData = arr;
+
     render(arr);
 }
 
 function generateMore(){
-    const arr=[];
+
+    const arr = [];
+
     for(let i=0;i<2;i++){
         arr.push(generateUser());
     }
+
     lastData = lastData.concat(arr);
+
     render(lastData);
 }
 
 function clearAll(){
-    output.innerHTML="";
-    lastData=[];
+
+    output.innerHTML = "";
+
+    lastData = [];
+
+    loader.style.display = "block";
 }
 
 /* EXPORT */
+
 function copyAll(){
-    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+
+    navigator.clipboard.writeText(
+        JSON.stringify(lastData,null,2)
+    );
 }
 
 function downloadJSON(){
-    const blob=new Blob([JSON.stringify(lastData,null,2)]);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="users.json";
+
+    const blob = new Blob(
+        [JSON.stringify(lastData,null,2)],
+        {type:"application/json"}
+    );
+
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.json";
+
     a.click();
 }
 
 function downloadCSV(){
-    const rows=["Username,Name,Email,Phone,Country,City,ZIP"];
+
+    const rows = [
+        "Username,Name,Email,Phone,Country,City,ZIP"
+    ];
+
     lastData.forEach(u=>{
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
+
+        rows.push(
+`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`
+        );
+
     });
 
-    const blob=new Blob([rows.join("\n")]);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="users.csv";
+    const blob = new Blob(
+        [rows.join("\n")],
+        {type:"text/csv"}
+    );
+
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.csv";
+
     a.click();
 }
 
