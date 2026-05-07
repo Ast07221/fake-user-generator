@@ -387,7 +387,7 @@ function render(list){
 
 function generate(){
 
-    loader.style.display = "none";
+    loader.style.display = "flex";
 
     const count = parseInt(bulkInput.value || 1);
 
@@ -400,6 +400,7 @@ function generate(){
     lastData = arr;
 
     render(arr);
+    loader.style.display = "none";
 }
 
 function generateMore(){
