@@ -15,7 +15,9 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    overflow:hidden;
+
+    /* FIX */
+    overflow-x:hidden;
 }
 
 /* CENTER */
@@ -25,14 +27,13 @@ body{
     height:100vh;
     padding:20px;
     box-sizing:border-box;
-
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-
     position:relative;
 }
+
 /* OUTPUT */
 .grid{
     display:grid;
@@ -57,6 +58,10 @@ body{
     padding:0;
     margin:0;
     min-height:170px;
+
+    /* PERFORMANCE */
+    transform:translateZ(0);
+    will-change:transform;
 }
 
 /* TEXT */
@@ -81,12 +86,10 @@ body{
     top:50%;
     left:50%;
     transform:translate(-50%, -120px);
-
     font-size:7px;
     color:#8a8a8a;
     letter-spacing:2px;
     opacity:.75;
-
     pointer-events:none;
 }
 
@@ -185,7 +188,7 @@ input{
     <button onclick="generateMore()">more</button>
     <button onclick="clearAll()">clear</button>
 
-    <input id="bulkInput" type="number" value="1" min="1" max="99">
+    <input id="bulkInput" type="number" value="1" min="1" max="200">
 
     <button onclick="copyAll()">copy</button>
     <button onclick="downloadJSON()">json</button>
@@ -199,21 +202,20 @@ input{
 ========================= */
 
 const countries = [
-
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
 {country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
 {country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],zips:["SW1A","M1","L1"]},
 {country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
 {country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
 {country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"],zips:["28001","08001","46001"]},
-{country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
+    {country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
 {country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
 {country:"Belgium",code:"+32",cities:["Brussels","Antwerp"],zips:["1000","2000"]},
 {country:"Switzerland",code:"+41",cities:["Zurich","Geneva"],zips:["8001","1201"]},
 {country:"Austria",code:"+43",cities:["Vienna","Salzburg"],zips:["1010","5020"]},
 {country:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"],zips:["11120","41101"]},
 {country:"Norway",code:"+47",cities:["Oslo","Bergen"],zips:["0001","5003"]},
-    {country:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"],zips:["1000","8000"]},
+{country:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"],zips:["1000","8000"]},
 {country:"Finland",code:"+358",cities:["Helsinki","Turku"],zips:["00100","20100"]},
 {country:"Poland",code:"+48",cities:["Warsaw","Krakow"],zips:["00-001","30-001"]},
 {country:"Portugal",code:"+351",cities:["Lisbon","Porto"],zips:["1000-001","4000-001"]},
@@ -246,7 +248,6 @@ const countries = [
 {country:"Chile",code:"+56",cities:["Santiago","Valparaiso"],zips:["8320000","2340000"]},
 {country:"Mexico",code:"+52",cities:["Mexico City","Guadalajara"],zips:["01000","44100"]},
 {country:"South Africa",code:"+27",cities:["Cape Town","Johannesburg"],zips:["8000","2000"]}
-
 ];
 
 /* NAMES */
@@ -265,7 +266,7 @@ const lastNames = [
 
 const output = document.getElementById("output");
 const bulkInput = document.getElementById("bulkInput");
-const loader = document.getElementById("loader");
+    const loader = document.getElementById("loader");
 
 let lastData = [];
 
@@ -303,8 +304,6 @@ function generateUser(){
 function typeHTML(el, user){
 
     el.innerHTML = "";
-    el.style.opacity = "0.95";
-el.style.transform = "translateY(0px)";
 
     const rows = [
         ["Username", user.username],
@@ -351,15 +350,14 @@ el.style.transform = "translateY(0px)";
             if(i < value.length){
 
                 valueSpan.textContent += value[i++];
+
                 setTimeout(typeChar, 12);
 
             } else {
 
                 cursor.remove();
-                requestAnimationFrame(() => {
-    setTimeout(typeRow, 18);
-});
 
+                setTimeout(typeRow, 18);
             }
         }
 
@@ -373,19 +371,21 @@ el.style.transform = "translateY(0px)";
 
 function render(list){
 
-    output.sHTML = "";
+    output.innerHTML = "";
 
     list.forEach((u,index)=>{
 
         const card = document.createElement("div");
+
         card.className = "card";
 
         output.appendChild(card);
 
         setTimeout(()=>{
-            typeHTML(card,u);
-        }, index * 120);
 
+            typeHTML(card,u);
+
+        }, index * 120);
     });
 }
 
@@ -395,18 +395,26 @@ function generate(){
 
     loader.style.display = "flex";
 
-    const count = parseInt(bulkInput.value || 1);
+    setTimeout(()=>{
 
-    const arr = [];
+        const count = Math.min(
+            parseInt(bulkInput.value || 1),
+            200
+        );
 
-    for(let i=0;i<count;i++){
-        arr.push(generateUser());
-    }
+        const arr = [];
 
-    lastData = arr;
+        for(let i=0;i<count;i++){
+            arr.push(generateUser());
+        }
 
-    render(arr);
-    loader.style.display = "none";
+        lastData = arr;
+
+        render(arr);
+
+        loader.style.display = "none";
+
+    }, 250);
 }
 
 function generateMore(){
@@ -419,7 +427,20 @@ function generateMore(){
 
     lastData = lastData.concat(arr);
 
-    render(lastData);
+    arr.forEach((u,index)=>{
+
+        const card = document.createElement("div");
+
+        card.className = "card";
+
+        output.appendChild(card);
+
+        setTimeout(()=>{
+
+            typeHTML(card,u);
+
+        }, index * 120);
+    });
 }
 
 function clearAll(){
@@ -450,6 +471,7 @@ function downloadJSON(){
     const a = document.createElement("a");
 
     a.href = URL.createObjectURL(blob);
+
     a.download = "users.json";
 
     a.click();
@@ -466,7 +488,6 @@ function downloadCSV(){
         rows.push(
 `${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`
         );
-
     });
 
     const blob = new Blob(
@@ -477,6 +498,7 @@ function downloadCSV(){
     const a = document.createElement("a");
 
     a.href = URL.createObjectURL(blob);
+
     a.download = "users.csv";
 
     a.click();
