@@ -91,33 +91,27 @@ body{
 /* PREMIUM DOTS */
 .loader{
     position:absolute;
+
     top:50%;
     left:50%;
+
     transform:translate(-50%, -120px);
-    font-size:7px;
-    color:#8a8a8a;
-    letter-spacing:2px;
-    opacity:.75;
+
+    font-family:monospace;
+
+    font-size:11px;
+
+    letter-spacing:4px;
+
+    color:#7a7a7a;
+
+    opacity:.72;
+
     pointer-events:none;
-}
 
-.loader span{
-    animation:pulse 1.6s infinite;
-    filter:blur(.2px);
-}
+    text-transform:uppercase;
 
-.loader span:nth-child(2){
-    animation-delay:.2s;
-}
-
-.loader span:nth-child(3){
-    animation-delay:.4s;
-}
-
-@keyframes pulse{
-    0%{opacity:.2;}
-    50%{opacity:1;}
-    100%{opacity:.2;}
+    user-select:none;
 }
 
 /* CONTROL PANEL */
@@ -161,11 +155,17 @@ input{
 /* CURSOR */
 .typingCursor{
     display:inline-block;
+
     width:1px;
-    height:14px;
-    background:#666;
-    margin-left:2px;
-    animation:blink .8s infinite;
+    height:12px;
+
+    background:#888;
+
+    margin-left:4px;
+
+    vertical-align:middle;
+
+    animation:blink .9s infinite;
 }
 
 @keyframes blink{
@@ -182,10 +182,8 @@ input{
 
     <!-- PREMIUM DOTS -->
     <div class="loader" id="loader">
-        <span>•</span>
-        <span>•</span>
-        <span>•</span>
-    </div>
+    INITIALIZING<span class="typingCursor"></span>
+</div>
 
     <div id="output" class="grid"></div>
 </div>
