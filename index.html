@@ -24,30 +24,38 @@ body{
 .wrapper{
     width:100%;
     max-width:760px;
-    height:100vh;
-    padding:20px;
-    box-sizing:border-box;
+
     display:flex;
     flex-direction:column;
+
     justify-content:center;
     align-items:center;
-    position:relative;
-}
 
+    position:relative;
+
+    margin:auto;
+
+    min-height:100vh;
+}
 /* OUTPUT */
 .grid{
     display:grid;
     grid-template-columns:1fr;
+
     gap:2px;
+
     width:100%;
     max-width:520px;
-    margin:auto;
+
     justify-items:start;
     text-align:left;
-    max-height: calc(100vh - 160px);
+
+    max-height:420px;
+
     overflow-y:auto;
-    padding-bottom:140px;
+
     box-sizing:border-box;
+
     align-content:start;
 }
 
