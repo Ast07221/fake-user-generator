@@ -92,17 +92,28 @@ body{
     justify-content:center;
 }
 button, select{
-    background:none;
+    background:#0b0b0b;
     border:none;
     color:#fff;
     cursor:pointer;
     font-size:14px;
     font-weight:500;
     letter-spacing:.3px;
+    padding:4px 8px;
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
 }
+
+select option{
+    background:#0b0b0b;
+    color:#fff;
+}
+
 button:hover{
     opacity:.7;
 }
+
 input{
     width:36px;
     background:none;
@@ -112,9 +123,11 @@ input{
     outline:none;
     font-size:14px;
 }
+
 select{
     outline:none;
 }
+
 .typingCursor{
     display:inline-block;
     width:1px;
@@ -124,6 +137,7 @@ select{
     vertical-align:middle;
     animation:blink .9s infinite;
 }
+
 .notice{
     position:fixed;
     top:18px;
@@ -135,6 +149,7 @@ select{
     transition:.25s;
     pointer-events:none;
 }
+
 @keyframes blink{
     0%{opacity:0;}
     50%{opacity:1;}
