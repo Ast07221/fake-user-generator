@@ -227,21 +227,57 @@ function render(arr){
     arr.forEach((u,i)=>{
         const c = document.createElement("div");
         c.className = "card";
-
         output.appendChild(c);
 
+        const lines = [
+            ["User", u.username],
+            ["Name", u.name],
+            ["Email", u.email],
+            ["Phone", u.phone],
+            ["Country", u.country],
+            ["City", u.city],
+            ["Street", u.street],
+            ["ZIP", u.zip]
+        ];
+
+        let lineIndex = 0;
+
+        function typeLine(){
+            if(lineIndex >= lines.length) return;
+
+            const [label, value] = lines[lineIndex++];
+
+            const row = document.createElement("div");
+            row.className = "line";
+
+            const labelEl = document.createElement("span");
+            labelEl.className = "label";
+            labelEl.textContent = label + ": ";
+
+            const valueEl = document.createElement("span");
+            valueEl.className = "value";
+
+            row.appendChild(labelEl);
+            row.appendChild(valueEl);
+            c.appendChild(row);
+
+            let i = 0;
+
+            function typeChar(){
+                if(i < value.length){
+                    valueEl.textContent += value[i++];
+                    setTimeout(typeChar, 10);
+                } else {
+                    setTimeout(typeLine, 40);
+                }
+            }
+
+            typeChar();
+        }
+
         setTimeout(()=>{
-            c.innerHTML = `
-                <div class="line"><span class="label">User:</span> <span class="value">${u.username}</span></div>
-                <div class="line"><span class="label">Name:</span> <span class="value">${u.name}</span></div>
-                <div class="line"><span class="label">Email:</span> <span class="value">${u.email}</span></div>
-                <div class="line"><span class="label">Phone:</span> <span class="value">${u.phone}</span></div>
-                <div class="line"><span class="label">Country:</span> <span class="value">${u.country}</span></div>
-                <div class="line"><span class="label">City:</span> <span class="value">${u.city}</span></div>
-                <div class="line"><span class="label">Street:</span> <span class="value">${u.street}</span></div>
-                <div class="line"><span class="label">ZIP:</span> <span class="value">${u.zip}</span></div>
-            `;
-        }, i * 20);
+            typeLine();
+        }, i * 60);
     });
 }
 
