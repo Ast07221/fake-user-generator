@@ -17,7 +17,7 @@ body{
     min-height:100vh;
 }
 
-/* CENTER FIX */
+/* CENTER WRAPPER */
 .wrapper{
     width:100%;
     max-width:900px;
@@ -26,19 +26,17 @@ body{
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    margin:0 auto;
 }
 
+/* OUTPUT */
 .grid{
     width:100%;
     max-width:700px;
     max-height:650px;
     overflow-y:auto;
-
     display:flex;
     flex-direction:column;
     align-items:center;
-    margin:0 auto;
 }
 
 /* CARD */
@@ -53,38 +51,33 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    font-size:15px;
     font-family:monospace;
+    font-size:15px;
     line-height:1.6;
 }
 
-.label{
-    color:#777;
-}
+.label{ color:#777; }
+.value{ color:#f2f2f2; }
 
-.value{
-    color:#f2f2f2;
-}
-
-/* COPY BUTTON */
 .copy{
     font-size:11px;
     color:#777;
     cursor:pointer;
-    margin-left:12px;
+    margin-left:10px;
 }
 .copy:hover{ color:#fff; }
 
-/* LOADER */
+/* LOADER (FIXED TOP) */
 .loader{
     position:fixed;
-    top:20px;
+    top:15px;
     left:50%;
     transform:translateX(-50%);
     font-size:11px;
     letter-spacing:4px;
     color:#777;
     font-family:monospace;
+    z-index:999;
 }
 
 /* DOTS */
@@ -100,14 +93,7 @@ body{
     100%{opacity:0;}
 }
 
-button, input, select{
-    background:#0b0b0b;
-    border:none;
-    color:#fff;
-    font-size:14px;
-    padding:6px 10px;
-}
-
+/* TOPBAR */
 .topbar{
     position:fixed;
     bottom:20px;
@@ -116,11 +102,20 @@ button, input, select{
     display:flex;
     gap:10px;
 }
+
+button, select, input{
+    background:#0b0b0b;
+    border:none;
+    color:#fff;
+    font-size:14px;
+    padding:6px 10px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOADER (SAFE + ALWAYS ON TOP) -->
 <div class="loader" id="loader">
     INITIALIZING ENGINE <span class="dots"><span>.</span><span>.</span><span>.</span></span>
 </div>
@@ -132,33 +127,42 @@ button, input, select{
 <div class="topbar">
     <button onclick="generate()">generate</button>
     <button onclick="more()">more</button>
-    <input id="count" type="number" value="1" min="1" max="200">
+    <input id="count" type="number" value="1" min="1" max="100">
     <select id="country"></select>
 </div>
 
 <script>
 
-/* ===== SAFE ENGINE ===== */
+"use strict";
+
+/* ================= SAFE DATA ================= */
+
 const ENGINE = [
-{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],streets:["Main St","Oak Ave"],area:["201","305"]},
-{country:"UK",code:"+44",cities:["London","Manchester"],streets:["High St","Oxford St"],area:["74","77"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich"],streets:["Hauptstr","Bahnhofstr"],area:["151","160"]},
-{country:"France",code:"+33",cities:["Paris","Lyon"],streets:["Rue Victor Hugo","Rue Lafayette"],area:["6","7"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],streets:["Damrak","Kalverstraat"],area:["6","20"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],streets:["Shibuya","Ginza"],area:["70","80"]}
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago","Houston","Miami"],streets:["Main St","Oak Ave","Sunset Blvd"],area:["201","305","312"]},
+{country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],streets:["High St","Oxford St"],area:["74","77","78"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],streets:["Hauptstr","Bahnhofstr"],area:["151","160"]},
+{country:"France",code:"+33",cities:["Paris","Lyon","Nice"],streets:["Rue Victor Hugo","Rue Lafayette"],area:["6","7"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],streets:["Damrak","Kalverstraat"],area:["6","20"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],streets:["Shibuya","Ginza"],area:["70","80"]},
+{country:"Italy",code:"+39",cities:["Rome","Milan"],streets:["Via Roma","Corso Italia"],area:["3","6"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona"],streets:["Gran Via","Calle Mayor"],area:["6","7"]}
 ];
 
-const firstNames=["Alex","John","Emma","Noah","Liam","Olivia","Mia"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Lee","Walker"];
+const firstNames=["Alex","John","Emma","Noah","Liam","Mia","Olivia","Sophia"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Lee","Walker","Martin"];
 
-const output=document.getElementById("output");
-const select=document.getElementById("country");
-const loader=document.getElementById("loader");
+let output, select, loader;
+let last = [];
 
-let last=[];
+/* ================= INIT ================= */
 
-/* INIT */
-function init(){
+function safeInit(){
+    output = document.getElementById("output");
+    select = document.getElementById("country");
+    loader = document.getElementById("loader");
+
+    if(!output || !select || !loader) return;
+
     select.innerHTML=`<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
         const o=document.createElement("option");
@@ -168,44 +172,50 @@ function init(){
     });
 }
 
-/* RANDOM */
+/* ================= CORE ================= */
+
 function pick(a){
     return a[Math.floor(Math.random()*a.length)];
 }
 
-/* USER */
 function user(){
-    const d = select.value==="all" ? pick(ENGINE) : ENGINE.find(x=>x.country===select.value);
+    const d = (!select || select.value==="all")
+        ? pick(ENGINE)
+        : ENGINE.find(x=>x.country===select.value) || pick(ENGINE);
 
     const first=pick(firstNames);
     const last=pick(lastNames);
 
-    const username=(first+last+Math.random()*999|0).toLowerCase();
+    const username=(first+last+(Math.random()*999|0)).toLowerCase();
+
     return{
         username,
         name:first+" "+last,
         email:username+"@gmail.com",
-        phone:`${d.code} ${pick(d.area)} ${Math.random()*9000000|0+1000000}`,
+        phone:`${d.code} ${pick(d.area)} ${Math.floor(1000000+Math.random()*9000000)}`,
         country:d.country,
         city:pick(d.cities),
-        street:pick(d.streets)+" "+(Math.random()*200|0)
+        street:pick(d.streets)+" "+(Math.floor(Math.random()*200))
     };
 }
 
-/* TYPE EFFECT (FIXED SPEED) */
-function typeText(el,text,cb){
+/* ================= TYPE EFFECT ================= */
+
+function type(el,text,cb){
     let i=0;
-    function t(){
+    function step(){
         if(i<text.length){
-            el.textContent += text[i++];
-            setTimeout(t,18); // slower + stable
+            el.textContent+=text[i++];
+            setTimeout(step,14);
         } else if(cb) cb();
     }
-    t();
+    step();
 }
 
-/* RENDER */
+/* ================= RENDER ================= */
+
 function render(arr){
+    if(!output) return;
     output.innerHTML="";
 
     arr.forEach((u,i)=>{
@@ -233,54 +243,66 @@ function render(arr){
             const row=document.createElement("div");
             row.className="line";
 
-            const left=document.createElement("span");
-            left.className="label";
-            left.textContent=l+": ";
+            const label=document.createElement("span");
+            label.className="label";
+            label.textContent=l+": ";
 
-            const val=document.createElement("span");
-            val.className="value";
+            const value=document.createElement("span");
+            value.className="value";
 
             const copy=document.createElement("span");
             copy.className="copy";
             copy.textContent="copy";
             copy.onclick=()=>navigator.clipboard.writeText(v);
 
-            row.appendChild(left);
-            row.appendChild(val);
+            row.appendChild(label);
+            row.appendChild(value);
             row.appendChild(copy);
 
             c.appendChild(row);
 
-            typeText(val,v,next);
+            type(value,v,next);
         }
 
-        setTimeout(next,i*40);
+        setTimeout(next,i*30);
     });
 }
 
-/* FAST GENERATE (NO DELAY) */
+/* ================= ACTIONS ================= */
+
 function generate(){
-    loader.style.display="block";
+    try{
+        if(loader) loader.style.display="block";
 
-    const n=parseInt(document.getElementById("count").value||1);
+        const n=Math.min(100,parseInt((document.getElementById("count")||{}).value||1));
 
-    last=Array.from({length:n},user);
+        last=Array.from({length:n},user);
 
-    render(last);
+        render(last);
 
-    loader.style.display="none";
+        setTimeout(()=>{
+            if(loader) loader.style.display="none";
+        },300);
+
+    } catch(e){
+        console.error("GEN ERROR:",e);
+    }
 }
 
-/* MORE */
 function more(){
     const extra=Array.from({length:3},user);
     last=last.concat(extra);
     render(last);
 }
 
-init();
-window.onload=generate;
+/* ================= BOOT ================= */
+
+window.onload=function(){
+    safeInit();
+    generate();
+};
 
 </script>
+
 </body>
 </html>
