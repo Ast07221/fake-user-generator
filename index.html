@@ -4,292 +4,426 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fake User Generator</title>
-
 <style>
 body{
     margin:0;
+    font-family:system-ui;
     background:#0b0b0b;
     color:#fff;
-    font-family: ui-monospace, monospace;
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    min-height:100vh;
+    overflow-x:hidden;
 }
-
-/* CENTER WRAPPER */
 .wrapper{
     width:100%;
-    max-width:520px;
-}
-
-/* OUTPUT */
-.grid{
+    max-width:760px;
     display:flex;
     flex-direction:column;
-    gap:10px;
-}
-
-/* CARD */
-.card{
+    justify-content:center;
+    align-items:center;
     position:relative;
-    padding:8px 12px;
+    margin:auto;
+    min-height:100vh;
+}
+.grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:2px;
+    width:100%;
+    max-width:520px;
+    justify-items:start;
+    text-align:left;
+    max-height:420px;
+    overflow-y:auto;
+    box-sizing:border-box;
+    align-content:start;
+}
+.card{
+    width:100%;
     background:transparent;
+    padding:8px 26px 8px 0;
+    margin:0;
+    min-height:170px;
+
+    position:relative;
+    box-sizing:border-box;
+
+    cursor:pointer;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+
+    overflow:hidden; /* 🔥  убирает горизонтальный скролл */
 }
 
-/* LINES */
+.copySingle{
+    position:absolute;
+    right:4px;   /* максимально близко к краю */
+    top:6px;     /* первая строка (username) */
+    font-size:11px;
+    color:#666;
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+}
+
+.copySingle:hover{
+    color:#fff;
+}
+
+.card:hover{
+    opacity:.82;
+}
+
 .line{
-    display:flex;
-    gap:6px;
+    margin:1px 0;
+    line-height:1.28;
     font-size:14px;
-    line-height:1.3;
+    letter-spacing:.1px;
 }
 
 .label{
-    color:#8a8a8a;
-    min-width:70px;
+    color:#6f6f6f;
 }
 
 .value{
     color:#fff;
 }
 
-/* COPY */
-.copy{
+.loader{
     position:absolute;
-    right:6px;
-    top:6px;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -120px);
+    font-family:monospace;
     font-size:11px;
-    color:#777;
-    cursor:pointer;
+    letter-spacing:4px;
+    color:#7a7a7a;
+    opacity:.72;
+    pointer-events:none;
+    text-transform:uppercase;
+    user-select:none;
 }
-.copy:hover{
-    color:#fff;
-}
-
-/* TOPBAR */
 .topbar{
     position:fixed;
-    bottom:18px;
+    bottom:25px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap:10px;
+    align-items:center;
+    gap:22px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+button, select{
+    background:#0b0b0b;
+    border:none;
+    color:#fff;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.3px;
+    padding:4px 8px;
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
 }
 
-/* BUTTONS */
-button{
-    background:none;
-    border:none;
-    color:#aaa;
-    cursor:pointer;
+select option{
+    background:#0b0b0b;
+    color:#fff;
 }
-button:hover{ color:#fff; }
+
+button:hover{
+    opacity:.7;
+}
 
 input{
-    width:30px;
+    width:36px;
     background:none;
     border:none;
     color:#fff;
     text-align:center;
+    outline:none;
+    font-size:14px;
 }
 
 select{
-    background:#000;
+    outline:none;
+    padding-right:18px;
+    background:#0b0b0b;
     color:#fff;
-    border:none;
+    cursor:pointer;
 }
 
-/* LOADER */
-.loader{
-    width:100%;
-    text-align:center;
-    margin-bottom:10px;
+.typingCursor{
+    display:inline-block;
+    width:1px;
+    height:12px;
+    background:#888;
+    margin-left:4px;
+    vertical-align:middle;
+    animation:blink .9s infinite;
+}
+
+.notice{
+    position:fixed;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
     font-size:12px;
-    color:#777;
-    display:none;
+    color:#888;
+    opacity:0;
+    transition:.25s;
+    pointer-events:none;
 }
-
-/* DOTS */
-.dots span{
-    animation:blink 1s infinite;
-}
-.dots span:nth-child(2){animation-delay:.2s;}
-.dots span:nth-child(3){animation-delay:.4s;}
 
 @keyframes blink{
-    0%,100%{opacity:0;}
+    0%{opacity:0;}
     50%{opacity:1;}
+    100%{opacity:0;}
 }
 </style>
 </head>
-
 <body>
+<div class="notice" id="notice">copied</div>
 
 <div class="wrapper">
-
-    <!-- ONLY ONE LOADER (FIXED) -->
     <div class="loader" id="loader">
-        INITIALIZING ENGINE
-        <span class="dots">
-            <span>.</span><span>.</span><span>.</span>
-        </span>
+        INITIALIZING<span class="typingCursor"></span>
     </div>
-
-    <!-- ONLY ONE OUTPUT (FIXED) -->
-    <div class="grid" id="out"></div>
-
+    <div id="output" class="grid"></div>
 </div>
 
 <div class="topbar">
     <button onclick="generate()">generate</button>
-    <input id="count" type="number" value="1" min="1" max="50">
-    <select id="country"></select>
+    <button onclick="clearAll()">clear</button>
+    <input id="bulkInput" type="number" value="1" min="1" max="200">
+    <select id="countryFilter"></select>
+    <button onclick="copyAll()">copy</button>
+    <button onclick="downloadJSON()">json</button>
+    <button onclick="downloadCSV()">csv</button>
 </div>
 
 <script>
-
-/* DATA */
-const DATA = [
-{c:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],area:["201","305","312"]},
-{c:"UK",code:"+44",cities:["London","Manchester"],area:["74","75"]},
-{c:"Germany",code:"+49",cities:["Berlin","Munich"],area:["151","160"]},
-{c:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],area:["6","20"]},
-{c:"Japan",code:"+81",cities:["Tokyo","Osaka"],area:["70","80"]},
-{c:"France",code:"+33",cities:["Paris","Lyon"],area:["6","7"]}
+const countries = [
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago","Houston","Miami","Seattle","Boston"],zips:["10001","90001","60601","77001","33101"]},
+{country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal","Calgary","Ottawa"],zips:["M5H","V5K","H2X","T2P","K1A"]},
+{country:"UK",code:"+44",cities:["London","Manchester","Liverpool","Birmingham","Leeds"],zips:["SW1A","M1","L1","B1","LS1"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg","Frankfurt","Cologne"],zips:["10115","80331","20095","60311","50667"]},
+{country:"France",code:"+33",cities:["Paris","Lyon","Marseille","Nice","Toulouse"],zips:["75001","69001","13001","06000","31000"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht","Eindhoven","The Hague"],zips:["1012","3011","3511","5611","2511"]},
+{country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia","Seville"],zips:["28001","08001","46001","41001"]},
+{country:"Italy",code:"+39",cities:["Rome","Milan","Naples","Turin"],zips:["00100","20100","80100","10100"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto","Nagoya"],zips:["100-0001","530-0001","600-0001","450-0001"]},
+{country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane","Perth"],zips:["2000","3000","4000","6000"]},
+{country:"India",code:"+91",cities:["Delhi","Mumbai","Bangalore","Chennai"],zips:["110001","400001","560001","600001"]},
+{country:"Brazil",code:"+55",cities:["São Paulo","Rio de Janeiro","Brasília"],zips:["01000","20000","70000"]},
+{country:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"],zips:["11120","41101"]},
+{country:"Norway",code:"+47",cities:["Oslo","Bergen"],zips:["0001","5003"]},
+{country:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"],zips:["1000","8000"]},
+{country:"Finland",code:"+358",cities:["Helsinki","Turku"],zips:["00100","20100"]},
+{country:"Belgium",code:"+32",cities:["Brussels","Antwerp"],zips:["1000","2000"]},
+{country:"Switzerland",code:"+41",cities:["Zurich","Geneva"],zips:["8001","1201"]}
 ];
 
-const first=["Alex","John","Emma","Noah","Liam","Mia"];
-const last=["Smith","Brown","Lee","Taylor","Wilson"];
+const firstNames = ["Noah","Liam","Oliver","James","Lucas","Henry","Leo","Daniel","Jack","Ethan","Emma","Olivia","Sophia","Ava","Mia","Charlotte","Emily","Amelia","Ella","Grace"];
+const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Harris","Martin","Jackson","Moore","Clark","Walker","Hall","Allen","Young","King","Wright"];
 
-const out=document.getElementById("out");
-const loader=document.getElementById("loader");
-const sel=document.getElementById("country");
+const output = document.getElementById("output");
+const bulkInput = document.getElementById("bulkInput");
+const loader = document.getElementById("loader");
+const notice = document.getElementById("notice");
+const countryFilter = document.getElementById("countryFilter");
 
-let cache=[];
+let lastData = [];
 
-/* INIT */
-function init(){
-    sel.innerHTML=`<option value="all">any country</option>`;
-    DATA.forEach(d=>{
-        let o=document.createElement("option");
-        o.value=d.c;
-        o.textContent=d.c;
-        sel.appendChild(o);
+function pick(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function showNotice(text){
+    notice.textContent = text;
+    notice.style.opacity = 1;
+    setTimeout(()=> notice.style.opacity = 0, 1200);
+}
+
+function initCountries(){
+    countryFilter.innerHTML = `<option value="all">any country ▼</option>`;
+    countries.forEach(c=>{
+        const opt = document.createElement("option");
+        opt.value = c.country;
+        opt.textContent = c.country;
+        countryFilter.appendChild(opt);
     });
 }
 
-/* PICK */
-function pick(a){
-    return a[Math.floor(Math.random()*a.length)];
-}
+function generateUser(){
+    let selected = countryFilter.value;
+    let loc = selected === "all"
+        ? pick(countries)
+        : countries.find(c => c.country === selected) || pick(countries);
 
-/* USER */
-function user(){
-    const d = sel.value==="all"
-        ? pick(DATA)
-        : DATA.find(x=>x.c===sel.value) || pick(DATA);
+    const first = pick(firstNames);
+    const last = pick(lastNames);
+    const username = (first + last + Math.floor(Math.random()*9999)).toLowerCase();
 
-    const fn=pick(first);
-    const ln=pick(last);
+    const phoneLength = {
+        "+1": 10, "+44": 10, "+49": 11, "+33": 9, "+31": 9,
+        "+81": 10, "+91": 10, "+61": 9, "+55": 11
+    };
 
-    const username=(fn+ln+(Math.random()*999|0)).toLowerCase();
+    const len = phoneLength[loc.code] || 9;
+    let phoneDigits = "";
+    for(let i=0;i<len;i++){
+        phoneDigits += Math.floor(Math.random()*10);
+    }
 
-    return{
+    return {
         username,
-        name:fn+" "+ln,
-        email:username+"@mail.com",
-        phone:`${d.code}${pick(d.area)} ${Math.floor(Math.random()*9000000+1000000)}`,
-        country:d.c,
-        city:pick(d.cities)
+        name:first + " " + last,
+        email:username + "@" + pick(["gmail.com","outlook.com","yahoo.com","proton.me"]),
+        phone:loc.code + " " + phoneDigits,
+        country:loc.country,
+        city:pick(loc.cities),
+        zip:pick(loc.zips)
     };
 }
 
-/* TYPE EFFECT */
-function typeLine(parent,label,value,cb){
-    const row=document.createElement("div");
-    row.className="line";
-    const l=document.createElement("span");
-    l.className="label";
-    l.textContent=label;
+function typeHTML(el, user){
+    const oldCopy = el.querySelector(".copySingle");
+    el.innerHTML = "";
+    if(oldCopy) el.appendChild(oldCopy);
 
-    const v=document.createElement("span");
-    v.className="value";
+    const rows = [
+        ["Username", user.username],
+        ["Name", user.name],
+        ["Email", user.email],
+        ["Phone", user.phone],
+        ["Country", user.country],
+        ["City", user.city],
+        ["ZIP", user.zip]
+    ];
 
-    row.appendChild(l);
-    row.appendChild(v);
-    parent.appendChild(row);
+    let rowIndex = 0;
 
-    let i=0;
-    function t(){
-        if(i<value.length){
-            v.textContent+=value[i++];
-            setTimeout(t,10);
-        } else cb && cb();
+    function typeRow(){
+        if(rowIndex >= rows.length) return;
+
+        const [label, value] = rows[rowIndex++];
+        const line = document.createElement("div");
+        line.className = "line";
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "label";
+        labelSpan.textContent = label + ": ";
+
+        const valueSpan = document.createElement("span");
+        valueSpan.className = "value";
+
+        line.appendChild(labelSpan);
+        line.appendChild(valueSpan);
+
+        const cursor = document.createElement("span");
+        cursor.className = "typingCursor";
+        line.appendChild(cursor);
+
+        el.appendChild(line);
+
+        let i = 0;
+        function typeChar(){
+            if(i < value.length){
+                valueSpan.textContent += value[i++];
+                setTimeout(typeChar, 12);
+} else {
+                cursor.remove();
+                setTimeout(typeRow, 18);
+            }
+        }
+        typeChar();
     }
-    t();
+
+    typeRow();
 }
 
-/* RENDER */
-function render(arr){
-    out.innerHTML="";
+function render(list){
+    output.innerHTML = "";
 
-    arr.forEach((u,i)=>{
-        const card=document.createElement("div");
-        card.className="card";
+    list.forEach((u,index)=>{
+        const card = document.createElement("div");
+        card.className = "card";
 
-        const copy=document.createElement("div");
-        copy.className="copy";
-        copy.textContent="copy";
-        copy.onclick=()=>{
-            navigator.clipboard.writeText(JSON.stringify(u,null,2));
+        const copyBtn = document.createElement("div");
+        copyBtn.className = "copySingle";
+        copyBtn.textContent = "copy";
+
+        copyBtn.onclick = (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(JSON.stringify(u, null, 2));
+            showNotice("profile copied");
         };
 
-        card.appendChild(copy);
-        out.appendChild(card);
+        card.appendChild(copyBtn);
+        output.appendChild(card);
 
         setTimeout(()=>{
-            const fields=[
-                ["User:",u.username],
-                ["Name:",u.name],
-                ["Email:",u.email],
-                ["Phone:",u.phone],
-                ["Country:",u.country],
-                ["City:",u.city]
-            ];
-
-            let i=0;
-
-            function next(){
-                if(i>=fields.length) return;
-                typeLine(card,fields[i][0],fields[i][1],()=>{
-                    i++;
-                    next();
-                });
-            }
-
-            next();
-        },i*25);
+            typeHTML(card,u);
+        }, index * 120);
     });
 }
 
-/* GENERATE */
 function generate(){
-    loader.style.display="block";
+    loader.style.display = "flex";
 
     setTimeout(()=>{
-        const n=Math.max(1,Math.min(50,parseInt(document.getElementById("count").value||1)));
-        cache=Array.from({length:n},user);
-        render(cache);
-        loader.style.display="none";
-    },150);
+        const count = Math.min(parseInt(bulkInput.value || 1), 200);
+        const arr = [];
+
+        for(let i=0;i<count;i++){
+            arr.push(generateUser());
+        }
+
+        lastData = arr;
+        render(arr);
+        loader.style.display = "none";
+    }, 250);
 }
 
-/* INIT */
-init();
-window.onload=generate;
+function clearAll(){
+    output.innerHTML = "";
+    lastData = [];
+    loader.style.display = "none";
+}
 
+function copyAll(){
+    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
+    showNotice("all copied");
+}
+
+function downloadJSON(){
+    const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.json";
+    a.click();
+}
+
+function downloadCSV(){
+    const rows = ["Username,Name,Email,Phone,Country,City,ZIP"];
+
+    lastData.forEach(u=>{
+        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
+    });
+
+    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.csv";
+    a.click();
+}
+
+initCountries();
+window.onload = () => generate();
 </script>
-
 </body>
 </html>
