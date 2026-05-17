@@ -15,9 +15,9 @@ body{
     justify-content:center;
     align-items:center;
     min-height:100vh;
-    overflow-x:hidden;
 }
 
+/* CENTER FIX */
 .wrapper{
     width:100%;
     max-width:900px;
@@ -37,37 +37,70 @@ body{
 
     display:flex;
     flex-direction:column;
-    align-items:center;   /* 🔥  центр карточек */
+    align-items:center;
     margin:0 auto;
 }
 
+/* CARD */
 .card{
-    padding:12px 0;
+    width:100%;
+    padding:14px 0;
     border-bottom:1px solid rgba(255,255,255,0.06);
-    cursor:pointer;
 }
 
-.card:hover{ opacity:.85; }
-
+/* ROW */
 .line{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     font-size:15px;
-    line-height:1.5;
+    font-family:monospace;
+    line-height:1.6;
 }
 
-.label{ color:#8a8a8a; font-family:monospace; }
-.value{ color:#f2f2f2; font-family:monospace; }
+.label{
+    color:#777;
+}
 
-.topbar{
+.value{
+    color:#f2f2f2;
+}
+
+/* COPY BUTTON */
+.copy{
+    font-size:11px;
+    color:#777;
+    cursor:pointer;
+    margin-left:12px;
+}
+.copy:hover{ color:#fff; }
+
+/* LOADER */
+.loader{
     position:fixed;
-    bottom:20px;
+    top:20px;
     left:50%;
     transform:translateX(-50%);
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
+    font-size:11px;
+    letter-spacing:4px;
+    color:#777;
+    font-family:monospace;
 }
 
-button, select, input{
+/* DOTS */
+.dots span{
+    animation:blink 1.2s infinite;
+}
+.dots span:nth-child(2){ animation-delay:0.2s; }
+.dots span:nth-child(3){ animation-delay:0.4s; }
+
+@keyframes blink{
+    0%,20%{opacity:0;}
+    50%{opacity:1;}
+    100%{opacity:0;}
+}
+
+button, input, select{
     background:#0b0b0b;
     border:none;
     color:#fff;
@@ -75,62 +108,13 @@ button, select, input{
     padding:6px 10px;
 }
 
-button:hover{ opacity:.7; }
-
-.loader{
+.topbar{
     position:fixed;
-    top:15px;
+    bottom:20px;
     left:50%;
     transform:translateX(-50%);
-    font-size:11px;
-    letter-spacing:4px;
-    color:#777;
-    font-family:monospace;
-    transition:opacity .3s ease;
-}
-
-.dots span{
-    animation:blinkDots 1.2s infinite;
-}
-.dots span:nth-child(2){ animation-delay:0.2s; }
-.dots span:nth-child(3){ animation-delay:0.4s; }
-
-@keyframes blinkDots{
-    0%,20%{opacity:0;}
-    50%{opacity:1;}
-    100%{opacity:0;}
-}
-    .value{
-    color:#f2f2f2;
-    font-family:monospace;
-
-    display:inline-block;   /* 🔥  фикс ширины поведения */
-    min-width:200px;        /* 🔥  убирает скачки */
-    white-space:nowrap;     /* 🔥  не переносит строку */
-}
-    .line{
-    font-size:15px;
-    line-height:1.5;
     display:flex;
-    gap:8px;
-    align-items:baseline;
-}
-    .loader{
-    opacity:1;
-    transition:opacity .3s ease;
-}
-
-.dots span{
-    animation:blinkDots 1.2s infinite;
-}
-
-.dots span:nth-child(2){ animation-delay:0.2s; }
-.dots span:nth-child(3){ animation-delay:0.4s; }
-
-@keyframes blinkDots{
-    0%,20%{opacity:0;}
-    50%{opacity:1;}
-    100%{opacity:0;}
+    gap:10px;
 }
 </style>
 </head>
@@ -138,10 +122,7 @@ button:hover{ opacity:.7; }
 <body>
 
 <div class="loader" id="loader">
-    <span id="loaderText"></span>
-    <span class="dots">
-        <span>.</span><span>.</span><span>.</span>
-    </span>
+    INITIALIZING ENGINE <span class="dots"><span>.</span><span>.</span><span>.</span></span>
 </div>
 
 <div class="wrapper">
@@ -151,74 +132,34 @@ button:hover{ opacity:.7; }
 <div class="topbar">
     <button onclick="generate()">generate</button>
     <button onclick="more()">more</button>
-    <button onclick="clearAll()">clear</button>
     <input id="count" type="number" value="1" min="1" max="200">
     <select id="country"></select>
-    <button onclick="copyAll()">copy</button>
 </div>
 
 <script>
 
-/* ================= SAFE ENGINE ================= */
-
+/* ===== SAFE ENGINE ===== */
 const ENGINE = [
-{
-country:"USA", code:"+1",
-cities:["New York","Los Angeles","Chicago","Houston","Miami","Seattle","Dallas"],
-streets:["Main St","Oak Ave","Pine Rd","Broadway","5th Ave","Sunset Blvd"],
-zip:()=>String(10000 + (Math.random()*89999|0)),
-area:["201","202","305","312","415","646"]
-},
-{
-country:"UK", code:"+44",
-cities:["London","Manchester","Birmingham","Liverpool","Leeds"],
-streets:["High St","King Rd","Queen St","Oxford St"],
-zip:()=>["SW1A","M1","L1","B1","EC1"][Math.random()*5|0],
-area:["74","75","77","78"]
-},
-{
-country:"Germany", code:"+49",
-cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt"],
-streets:["Hauptstr","Bahnhofstr","Marktweg"],
-zip:()=>String(10000 + (Math.random()*89999|0)),
-area:["151","160","170"]
-},
-{
-country:"France", code:"+33",
-cities:["Paris","Lyon","Marseille","Nice"],
-streets:["Rue Victor Hugo","Rue Lafayette","Avenue Republique"],
-zip:()=>String(10000 + (Math.random()*89999|0)),
-area:["6","7","1"]
-},
-{
-country:"Netherlands", code:"+31",
-cities:["Amsterdam","Rotterdam","Utrecht"],
-streets:["Damrak","Leidsestraat","Kalverstraat"],
-zip:()=>String(1000 + (Math.random()*8999|0)),
-area:["6","20"]
-},
-{
-country:"Japan", code:"+81",
-cities:["Tokyo","Osaka","Kyoto","Nagoya"],
-streets:["Shibuya","Ginza","Akihabara"],
-zip:()=>String(1000000 + (Math.random()*8999999|0)),
-area:["70","80","90"]
-}
+{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],streets:["Main St","Oak Ave"],area:["201","305"]},
+{country:"UK",code:"+44",cities:["London","Manchester"],streets:["High St","Oxford St"],area:["74","77"]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich"],streets:["Hauptstr","Bahnhofstr"],area:["151","160"]},
+{country:"France",code:"+33",cities:["Paris","Lyon"],streets:["Rue Victor Hugo","Rue Lafayette"],area:["6","7"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],streets:["Damrak","Kalverstraat"],area:["6","20"]},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],streets:["Shibuya","Ginza"],area:["70","80"]}
 ];
 
-const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark"];
+const firstNames=["Alex","John","Emma","Noah","Liam","Olivia","Mia"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Lee","Walker"];
 
 const output=document.getElementById("output");
 const select=document.getElementById("country");
 const loader=document.getElementById("loader");
-    const loaderText=document.getElementById("loaderText");
 
-let last = [];
+let last=[];
 
 /* INIT */
 function init(){
-    select.innerHTML = `<option value="all">any country</option>`;
+    select.innerHTML=`<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
         const o=document.createElement("option");
         o.value=c.country;
@@ -227,208 +168,119 @@ function init(){
     });
 }
 
-/* SAFE PICK */
+/* RANDOM */
 function pick(a){
     return a[Math.floor(Math.random()*a.length)];
 }
 
-/* LOADER ANIMATION */
-function showLoader(){
-    loader.style.opacity = "1";
-    loaderText.innerHTML = "";
-
-    const text = "INITIALIZING ENGINE";
-    let i = 0;
-
-    const t = setInterval(()=>{
-        if(i >= text.length){
-            clearInterval(t);
-            return;
-        }
-        loaderText.innerHTML += text[i++];
-    }, 35);
-}
-
-function hideLoader(){
-    setTimeout(()=>{
-        loader.style.opacity = "0";
-    }, 300);
-    function showLoader(){
-    const el = document.getElementById("loader");
-    const textEl = document.getElementById("loaderText");
-
-    if(!el || !textEl) return;
-
-    el.style.opacity = "1";
-    textEl.innerHTML = "";
-
-    const text = "INITIALIZING ENGINE";
-    let i = 0;
-
-    const t = setInterval(()=>{
-        if(i >= text.length){
-            clearInterval(t);
-            return;
-        }
-        textEl.innerHTML += text[i++];
-    }, 35);
-}
-
-function hideLoader(){
-    const el = document.getElementById("loader");
-    if(!el) return;
-
-    setTimeout(()=>{
-        el.style.opacity = "0";
-    }, 200);
-}
-}
-
-/* USER GEN */
+/* USER */
 function user(){
-    const d = (!select || select.value==="all")
-        ? pick(ENGINE)
-        : ENGINE.find(x=>x.country===select.value) || pick(ENGINE);
+    const d = select.value==="all" ? pick(ENGINE) : ENGINE.find(x=>x.country===select.value);
 
-    const first = pick(firstNames);
-    const last = pick(lastNames);
+    const first=pick(firstNames);
+    const last=pick(lastNames);
 
-    const username = (first + last + (Math.random()*999|0)).toLowerCase();
-
-    return {
+    const username=(first+last+Math.random()*999|0).toLowerCase();
+    return{
         username,
-        name: first + " " + last,
-        email: username + "@" + pick(["gmail.com","outlook.com","proton.me"]),
-        phone: `${d.code} ${pick(d.area)} ${Math.floor(1000000 + Math.random()*9000000)}`,
-        country: d.country,
-        city: pick(d.cities),
-        street: pick(d.streets) + " " + (Math.floor(Math.random()*200)),
-        zip: d.zip()
+        name:first+" "+last,
+        email:username+"@gmail.com",
+        phone:`${d.code} ${pick(d.area)} ${Math.random()*9000000|0+1000000}`,
+        country:d.country,
+        city:pick(d.cities),
+        street:pick(d.streets)+" "+(Math.random()*200|0)
     };
 }
 
-/* TYPE EFFECT */
-function typeText(el, text, speed=18){
-    el.textContent = "";
-
-    let i = 0;
-
-    function step(){
-        if(i < text.length){
+/* TYPE EFFECT (FIXED SPEED) */
+function typeText(el,text,cb){
+    let i=0;
+    function t(){
+        if(i<text.length){
             el.textContent += text[i++];
-            setTimeout(step, speed);
-        }
+            setTimeout(t,18); // slower + stable
+        } else if(cb) cb();
     }
-
-    step();
+    t();
 }
 
 /* RENDER */
 function render(arr){
-    if(!output) return;
-    output.innerHTML = "";
+    output.innerHTML="";
 
     arr.forEach((u,i)=>{
-        const c = document.createElement("div");
-        c.className = "card";
+        const c=document.createElement("div");
+        c.className="card";
         output.appendChild(c);
 
-        setTimeout(()=>{
-            const lines = [
-                ["User", u.username],
-                ["Name", u.name],
-                ["Email", u.email],
-                ["Phone", u.phone],
-                ["Country", u.country],
-                ["City", u.city],
-                ["Street", u.street],
-                ["ZIP", u.zip]
-            ];
+        const lines=[
+            ["User",u.username],
+            ["Name",u.name],
+            ["Email",u.email],
+            ["Phone",u.phone],
+            ["Country",u.country],
+            ["City",u.city],
+            ["Street",u.street]
+        ];
 
-            c.innerHTML = "";
+        let idx=0;
 
-            const header = document.createElement("div");
-            header.style.display = "flex";
-            header.style.justifyContent = "space-between";
-            header.style.marginBottom = "6px";
+        function next(){
+            if(idx>=lines.length) return;
 
-            const btn = document.createElement("button");
-            btn.textContent = "copy";
-            btn.style.fontSize = "11px";
-            btn.style.color = "#888";
-            btn.style.background = "transparent";
-            btn.style.border = "none";
-            btn.style.cursor = "pointer";
+            const [l,v]=lines[idx++];
 
-            btn.onclick = () => {
-                navigator.clipboard.writeText(JSON.stringify(u, null, 2));
-            };
+            const row=document.createElement("div");
+            row.className="line";
 
-            header.appendChild(document.createElement("div"));
-            header.appendChild(btn);
+            const left=document.createElement("span");
+            left.className="label";
+            left.textContent=l+": ";
 
-            c.appendChild(header);
+            const val=document.createElement("span");
+            val.className="value";
 
-            let idx = 0;
+            const copy=document.createElement("span");
+            copy.className="copy";
+            copy.textContent="copy";
+            copy.onclick=()=>navigator.clipboard.writeText(v);
 
-            function renderLine(){
-                if(idx >= lines.length) return;
+            row.appendChild(left);
+            row.appendChild(val);
+            row.appendChild(copy);
 
-                const [label, value] = lines[idx++];
+            c.appendChild(row);
 
-                const row = document.createElement("div");
-                row.className = "line";
+            typeText(val,v,next);
+        }
 
-                const l = document.createElement("span");
-                l.className = "label";
-                l.textContent = label + ": ";
-
-                const v = document.createElement("span");
-                v.className = "value";
-
-                row.appendChild(l);
-                row.appendChild(v);
-                c.appendChild(row);
-
-                typeText(v, value, 10);
-
-                setTimeout(renderLine, 60);
-            }
-
-            renderLine();
-
-        }, i * 60);
+        setTimeout(next,i*40);
     });
 }
 
-/* ACTIONS */
+/* FAST GENERATE (NO DELAY) */
 function generate(){
-    showLoader();
+    loader.style.display="block";
 
-    setTimeout(()=>{
-        const n = Math.min(200, parseInt(document.getElementById("count").value || 10));
-        last = Array.from({length:n}, user);
-        render(last);
-        hideLoader();
-    }, 600);
+    const n=parseInt(document.getElementById("count").value||1);
+
+    last=Array.from({length:n},user);
+
+    render(last);
+
+    loader.style.display="none";
 }
 
+/* MORE */
 function more(){
-    const extra = Array.from({length:5}, user);
-    last = last.concat(extra);
+    const extra=Array.from({length:3},user);
+    last=last.concat(extra);
     render(last);
 }
 
-function clearAll(){
-    output.innerHTML = "";
-    last = [];
-}
-
-/* START */
 init();
-window.onload = generate;
+window.onload=generate;
 
 </script>
-
 </body>
 </html>
