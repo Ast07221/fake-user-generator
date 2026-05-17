@@ -100,6 +100,21 @@ button:hover{ opacity:.7; }
     50%{opacity:1;}
     100%{opacity:0;}
 }
+    .value{
+    color:#f2f2f2;
+    font-family:monospace;
+
+    display:inline-block;   /* 🔥  фикс ширины поведения */
+    min-width:200px;        /* 🔥  убирает скачки */
+    white-space:nowrap;     /* 🔥  не переносит строку */
+}
+    .line{
+    font-size:15px;
+    line-height:1.5;
+    display:flex;
+    gap:8px;
+    align-items:baseline;
+}
 </style>
 </head>
 
@@ -245,15 +260,18 @@ function user(){
 }
 
 /* TYPE EFFECT */
-function typeText(el, text, speed=8){
+function typeText(el, text, speed=18){
     el.textContent = "";
+
     let i = 0;
+
     function step(){
         if(i < text.length){
             el.textContent += text[i++];
             setTimeout(step, speed);
         }
     }
+
     step();
 }
 
@@ -300,7 +318,7 @@ function render(arr){
                 row.appendChild(v);
                 c.appendChild(row);
 
-                typeText(v, value, 6);
+                typeText(v, value, 18);
 
                 setTimeout(renderLine, 80);
             }
