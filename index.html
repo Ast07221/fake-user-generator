@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake Identity Engine v2</title>
+<title>Fake Identity Engine v3</title>
 
 <style>
 body{
@@ -17,6 +17,7 @@ body{
     min-height:100vh;
 }
 
+/* WRAPPER */
 .wrapper{
     width:100%;
     max-width:900px;
@@ -34,19 +35,30 @@ body{
     overflow-y:auto;
 }
 
+/* CARD */
 .card{
     padding:14px 0;
     border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
+/* TEXT */
 .line{
     font-size:15px;
-    line-height:1.5;
+    line-height:1.6;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
-.label{ color:#888; }
-.value{ color:#f2f2f2; }
+.label{
+    color:#777;
+    letter-spacing:0.5px;
+    margin-right:6px;
+}
 
+.value{
+    color:#f2f2f2;
+}
+
+/* TOPBAR */
 .topbar{
     position:fixed;
     bottom:20px;
@@ -65,21 +77,46 @@ button, select, input{
     padding:6px 10px;
 }
 
+/* LOADER */
 .loader{
     position:fixed;
-    top:12px;
+    top:15px;
     left:50%;
     transform:translateX(-50%);
     font-size:11px;
     letter-spacing:3px;
     color:#777;
+    font-family: ui-monospace, monospace;
+    display:flex;
+    align-items:center;
+    gap:6px;
 }
+
+/* DOTS */
+.dots span{
+    animation:blink 1.2s infinite;
+}
+
+.dots span:nth-child(2){ animation-delay:0.2s; }
+.dots span:nth-child(3){ animation-delay:0.4s; }
+
+@keyframes blink{
+    0%,20%{opacity:0;}
+    50%{opacity:1;}
+    100%{opacity:0;}
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="loader" id="loader">INITIALIZING ENGINE</div>
+<div class="loader" id="loader">
+    INITIALIZING ENGINE
+    <span class="dots">
+        <span>.</span><span>.</span><span>.</span>
+    </span>
+</div>
 
 <div class="wrapper">
     <div class="grid" id="output"></div>
@@ -95,59 +132,18 @@ button, select, input{
 
 <script>
 
-/* =========================
-   🌍 EXPANDED ENGINE (SAFE + REALISTIC)
-========================= */
+/* ================= DATA ================= */
 
 const ENGINE = [
-{
-country:"USA", code:"+1",
-cities:["New York","Los Angeles","Chicago","Houston","Miami","Dallas","Boston","Seattle"],
-streets:["Main St","Oak Ave","Pine Rd","Sunset Blvd","Broadway"],
-zip:()=>String(10000 + Math.random()*89999|0),
-area:["201","212","305","312","415","646","718"]
-},
-{
-country:"UK", code:"+44",
-cities:["London","Manchester","Birmingham","Liverpool","Leeds"],
-streets:["High St","King Rd","Queen St","Oxford St"],
-zip:()=>["SW1A","M1","L1","B1","EC1"][Math.random()*5|0],
-area:["74","75","77","78"]
-},
-{
-country:"Germany", code:"+49",
-cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt"],
-streets:["Hauptstr","Bahnhofstr","Marktweg"],
-zip:()=>String(10000 + Math.random()*89999|0),
-area:["151","160","170","175"]
-},
-{
-country:"France", code:"+33",
-cities:["Paris","Lyon","Marseille","Nice"],
-streets:["Rue Victor Hugo","Rue de Paris","Rue Lafayette"],
-zip:()=>String(10000 + Math.random()*89999|0),
-area:["6","7","1"]
-},
-{
-country:"Netherlands", code:"+31",
-cities:["Amsterdam","Rotterdam","Utrecht"],
-streets:["Damrak","Leidsestraat","Herengracht"],
-zip:()=>String(1000 + Math.random()*8999|0),
-area:["6","20"]
-},
-{
-country:"Japan", code:"+81",
-cities:["Tokyo","Osaka","Kyoto"],
-streets:["Shibuya","Ginza","Shinjuku"],
-zip:()=>String(1000000 + Math.random()*8999999|0),
-area:["70","80","90"]
-}
+{country:"USA", code:"+1", cities:["New York","Los Angeles","Chicago"], streets:["Main St","Oak Ave"], zip:()=>String(10000+Math.random()*89999|0), area:["201","305","312"]},
+{country:"UK", code:"+44", cities:["London","Manchester"], streets:["High St","Queen St"], zip:()=>["SW1A","M1","L1"][Math.random()*3|0], area:["74","75"]},
+{country:"Germany", code:"+49", cities:["Berlin","Munich"], streets:["Hauptstr","Bahnhofstr"], zip:()=>String(10000+Math.random()*89999|0), area:["151","160"]},
+{country:"France", code:"+33", cities:["Paris","Lyon"], streets:["Rue Victor Hugo","Rue de Paris"], zip:()=>String(10000+Math.random()*89999|0), area:["6","7"]},
+{country:"Netherlands", code:"+31", cities:["Amsterdam","Rotterdam"], streets:["Damrak","Herengracht"], zip:()=>String(1000+Math.random()*8999|0), area:["6"]},
 ];
 
-/* ========================= */
-
-const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Clark","Walker","Hall"];
+const firstNames=["Alex","John","Emma","Olivia","Liam","Noah","Mia","Ava"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Clark","Walker"];
 
 const output=document.getElementById("output");
 const select=document.getElementById("country");
@@ -155,7 +151,7 @@ const loader=document.getElementById("loader");
 
 let last=[];
 
-/* SAFE INIT */
+/* INIT */
 function init(){
     select.innerHTML=`<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
@@ -166,79 +162,109 @@ function init(){
     });
 }
 
-/* SAFE PICK */
-function pick(a){
-    return a[Math.floor(Math.random()*a.length)];
-}
+/* PICK */
+function pick(a){ return a[Math.floor(Math.random()*a.length)] }
 
-/* PHONE (REALISTIC STYLE) */
-function phone(d){
-    return `${d.code} ${pick(d.area)} ${Math.floor(1000000 + Math.random()*9000000)}`;
-}
-
-/* EMAIL */
-    function email(name){
-    return name+"@"+pick(["gmail.com","outlook.com","yahoo.com","proton.me"]);
-}
-
-/* CORE SAFE GENERATOR */
+/* USER */
 function user(){
     const d = (select.value==="all")
         ? pick(ENGINE)
-        : (ENGINE.find(x=>x.country===select.value) || pick(ENGINE));
+        : ENGINE.find(x=>x.country===select.value) || pick(ENGINE);
 
     const first=pick(firstNames);
     const last=pick(lastNames);
+    const username=(first+last+Math.random()*999|0).toLowerCase();
 
-    const username=(first+last+Math.floor(Math.random()*999)).toLowerCase();
-
-    return{
+    return {
         username,
-        name:first+" "+last,
-        email:email(username),
-        phone:phone(d),
-        country:d.country,
-        city:pick(d.cities),
-        street:pick(d.streets)+" "+Math.floor(Math.random()*200),
-        zip:d.zip()
+        email: username+"@"+pick(["gmail.com","outlook.com","proton.me"]),
+        phone: `${d.code} ${pick(d.area)} ${Math.random()*9000000+1000000|0}`,
+        country: d.country,
+        city: pick(d.cities),
+        street: pick(d.streets)+" "+(Math.random()*200|0),
+        zip: d.zip()
     };
 }
 
-/* RENDER (OPTIMIZED) */
-function render(arr){
-    output.innerHTML="";
-    const frag=document.createDocumentFragment();
+/* TYPE EFFECT */
+function typeLine(el, label, value, cb){
+    const line=document.createElement("div");
+    line.className="line";
 
-    arr.forEach((u,i)=>{
-        const c=document.createElement("div");
-        c.className="card";
+    const l=document.createElement("span");
+    l.className="label";
+    const v=document.createElement("span");
+    v.className="value";
 
-        c.innerHTML=`
-            <div class="line">User: ${u.username}</div>
-            <div class="line">Name: ${u.name}</div>
-            <div class="line">Email: ${u.email}</div>
-            <div class="line">Phone: ${u.phone}</div>
-            <div class="line">Country: ${u.country}</div>
-            <div class="line">City: ${u.city}</div>
-            <div class="line">Street: ${u.street}</div>
-            <div class="line">ZIP: ${u.zip}</div>
-        `;
+    line.appendChild(l);
+    line.appendChild(v);
+    el.appendChild(line);
 
-        frag.appendChild(c);
-    });
-
-    output.appendChild(frag);
+    let i=0;
+    function type(){
+        if(i<label.length){
+            l.textContent+=label[i++];
+            setTimeout(type,10);
+        } else {
+            let j=0;
+            function typeVal(){
+                if(j<value.length){
+                    v.textContent+=value[j++];
+                    setTimeout(typeVal,10);
+                } else {
+                    cb && cb();
+                }
+            }
+            typeVal();
+        }
+    }
+    type();
 }
 
-/* ACTIONS */
+/* RENDER */
+function render(arr){
+    output.innerHTML="";
+
+    arr.forEach((u,i)=>{
+        const card=document.createElement("div");
+        card.className="card";
+        output.appendChild(card);
+
+        setTimeout(()=>{
+            const fields=[
+                ["Username: ",u.username],
+                ["Email: ",u.email],
+                ["Phone: ",u.phone],
+                ["Country: ",u.country],
+                ["City: ",u.city],
+                ["Street: ",u.street],
+                ["ZIP: ",u.zip]
+            ];
+
+            let k=0;
+            function next(){
+                if(k<fields.length){
+                    typeLine(card,fields[k][0],fields[k][1],()=>{
+                        k++;
+                        next();
+                    });
+                }
+            }
+            next();
+        },i*60);
+    });
+}
+
+/* GENERATE */
 function generate(){
-    loader.innerText="INITIALIZING ENGINE...";
+    loader.style.display="flex";
 
     setTimeout(()=>{
         const n=Math.min(500,document.getElementById("count").value||10);
         last=Array.from({length:n},user);
+        loader.style.display="none";
         render(last);
-    },300);
+    },900);
 }
 
 function more(){
