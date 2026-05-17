@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enterprise Fake Data Engine</title>
+<title>Fake Identity Engine</title>
 
 <style>
 body{
@@ -30,8 +30,8 @@ body{
 
 .grid{
     width:100%;
-    max-width:650px;
-    max-height:600px;
+    max-width:700px;
+    max-height:650px;
     overflow-y:auto;
 }
 
@@ -41,9 +41,7 @@ body{
     cursor:pointer;
 }
 
-.card:hover{
-    opacity:.85;
-}
+.card:hover{ opacity:.85; }
 
 .line{
     font-size:15px;
@@ -74,20 +72,35 @@ button, select, input{
 button:hover{ opacity:.7; }
 
 .loader{
-    position:absolute;
-    top:45%;
+    position:fixed;
+    top:15px;
     left:50%;
-    transform:translate(-50%,-50%);
+    transform:translateX(-50%);
     font-size:11px;
     letter-spacing:4px;
     color:#777;
 }
-</style>
 
+.cursor{
+    display:inline-block;
+    width:8px;
+    height:14px;
+    background:#777;
+    margin-left:4px;
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    0%{opacity:0;}
+    50%{opacity:1;}
+    100%{opacity:0;}
+}
+</style>
 </head>
+
 <body>
 
-<div class="loader" id="loader">INITIALIZING ENGINE...</div>
+<div class="loader" id="loader">INITIALIZING ENGINE</div>
 
 <div class="wrapper">
     <div id="output" class="grid"></div>
@@ -105,124 +118,157 @@ button:hover{ opacity:.7; }
 <script>
 
 /* =========================
-   🌍 GLOBAL DATA ENGINE
+   🌍 BIG REALISTIC DATA PACK (30+ COUNTRIES)
 ========================= */
 
 const ENGINE = [
 {
 country:"USA", code:"+1",
-cities:["New York","Los Angeles","Chicago","Houston","Miami","Dallas"],
-streets:["Main St","Oak Ave","Pine Rd","Maple Dr","Broadway"],
-domains:["gmail.com","yahoo.com","outlook.com"],
-zip:()=>String(10000+Math.floor(Math.random()*89999)),
-area:["201","202","305","312","415","646"]
+cities:["New York","Los Angeles","Chicago","Houston","Miami","Seattle","Dallas","Boston"],
+streets:["Main St","Oak Ave","Pine Rd","Broadway","5th Avenue","Sunset Blvd"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["201","202","305","312","415","646","718"]
 },
-
 {
 country:"UK", code:"+44",
-cities:["London","Manchester","Birmingham","Liverpool","Leeds"],
-streets:["High St","King Rd","Queen St","Church Ln"],
-domains:["gmail.com","hotmail.co.uk","outlook.com"],
-zip:()=>["SW1A","M1","L1","B1","EC1"][Math.floor(Math.random()*5)],
-area:["74","75","77","78"]
+cities:["London","Manchester","Birmingham","Liverpool","Leeds","Bristol"],
+streets:["High St","King Rd","Queen St","Church Ln","Oxford St"],
+zip:()=>["SW1A","M1","L1","B1","EC1","W1"][Math.random()*6|0],
+area:["74","75","77","78","79"]
 },
-
 {
 country:"Germany", code:"+49",
-cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt"],
+cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt","Stuttgart"],
 streets:["Hauptstr","Bahnhofstr","Alexanderplatz","Marktweg"],
-domains:["gmail.com","web.de","gmx.de"],
-zip:()=>String(10000+Math.floor(Math.random()*89999)),
-area:["151","160","170","175"]
+zip:()=>String(10000+Math.random()*89999|0),
+area:["151","160","170","175","176"]
 },
-
 {
 country:"France", code:"+33",
-cities:["Paris","Lyon","Marseille","Nice","Toulouse"],
-streets:["Rue de Paris","Rue Victor Hugo","Avenue République"],
-domains:["gmail.com","orange.fr","laposte.net"],
-zip:()=>String(10000+Math.floor(Math.random()*89999)),
-area:["6","7"]
+cities:["Paris","Lyon","Marseille","Nice","Toulouse","Bordeaux"],
+streets:["Rue Victor Hugo","Rue de Paris","Avenue République","Rue Lafayette"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["6","7","1","2"]
 },
-
 {
 country:"Netherlands", code:"+31",
-cities:["Amsterdam","Rotterdam","Utrecht","Eindhoven"],
-streets:["Damrak","Leidsestraat","Kalverstraat"],
-domains:["gmail.com","ziggo.nl","outlook.com"],
-zip:()=>String(1000+Math.floor(Math.random()*8999)),
-area:["6"]
+cities:["Amsterdam","Rotterdam","Utrecht","Eindhoven","The Hague"],
+streets:["Damrak","Leidsestraat","Kalverstraat","Herengracht"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["6","20"]
 },
-
 {
 country:"Japan", code:"+81",
-cities:["Tokyo","Osaka","Kyoto","Nagoya"],
-streets:["Shibuya","Ginza","Akihabara","Umeda"],
-domains:["gmail.com","yahoo.co.jp","icloud.com"],
-zip:()=>String(1000000+Math.floor(Math.random()*8999999)),
+cities:["Tokyo","Osaka","Kyoto","Nagoya","Yokohama"],
+streets:["Shibuya","Ginza","Akihabara","Shinjuku"],
+zip:()=>String(1000000+Math.random()*8999999|0),
 area:["70","80","90"]
 },
-
-{
-country:"Australia", code:"+61",
-cities:["Sydney","Melbourne","Brisbane","Perth"],
-streets:["George St","King St","Collins St"],
-domains:["gmail.com","outlook.com","bigpond.com"],
-zip:()=>String(2000+Math.floor(Math.random()*6000)),
-area:["4"]
-},
-
 {
 country:"Canada", code:"+1",
-cities:["Toronto","Vancouver","Montreal","Calgary"],
-    streets:["Bloor St","King St","Queen St"],
-domains:["gmail.com","hotmail.ca","outlook.com"],
-zip:()=> "M" + Math.floor(Math.random()*9),
+cities:["Toronto","Vancouver","Montreal","Calgary","Ottawa"],
+streets:["King St","Queen St","Bloor St","Dundas St"],
+zip:()=> "M" + (Math.random()*9|0),
 area:["416","437","604","778"]
 },
-
+{
+country:"Australia", code:"+61",
+cities:["Sydney","Melbourne","Brisbane","Perth","Adelaide"],
+    streets:["George St","King St","Collins St","Elizabeth St"],
+zip:()=>String(2000+Math.random()*6000|0),
+area:["4","2"]
+},
 {
 country:"Italy", code:"+39",
-cities:["Rome","Milan","Naples","Turin"],
-streets:["Via Roma","Via Milano","Corso Italia"],
-domains:["gmail.com","libero.it","outlook.com"],
-zip:()=>String(10000+Math.floor(Math.random()*89999)),
+cities:["Rome","Milan","Naples","Turin","Florence"],
+streets:["Via Roma","Via Milano","Corso Italia","Via Napoli"],
+zip:()=>String(10000+Math.random()*89999|0),
 area:["3"]
 },
-
 {
 country:"Spain", code:"+34",
-cities:["Madrid","Barcelona","Valencia","Seville"],
+cities:["Madrid","Barcelona","Valencia","Seville","Bilbao"],
 streets:["Calle Mayor","Gran Via","Calle Real"],
-domains:["gmail.com","hotmail.es","outlook.com"],
-zip:()=>String(10000+Math.floor(Math.random()*89999)),
+zip:()=>String(10000+Math.random()*89999|0),
 area:["6","7"]
 },
-
 {
 country:"India", code:"+91",
-cities:["Delhi","Mumbai","Bangalore","Pune"],
-streets:["MG Road","Park Street","MG Marg"],
-domains:["gmail.com","yahoo.in","outlook.com"],
-zip:()=>String(100000+Math.floor(Math.random()*899999)),
+cities:["Delhi","Mumbai","Bangalore","Pune","Chennai"],
+streets:["MG Road","Park Street","MG Marg","Link Road"],
+zip:()=>String(100000+Math.random()*899999|0),
 area:["7","8","9"]
+},
+{
+country:"Sweden", code:"+46",
+cities:["Stockholm","Gothenburg","Malmo"],
+streets:["Drottninggatan","Kungsgatan"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["7"]
+},
+{
+country:"Norway", code:"+47",
+cities:["Oslo","Bergen","Trondheim"],
+streets:["Karl Johans gate","Storgata"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["9"]
+},
+{
+country:"Poland", code:"+48",
+cities:["Warsaw","Krakow","Gdansk"],
+streets:["Nowy Swiat","Dluga"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["5"]
+},
+{
+country:"Switzerland", code:"+41",
+cities:["Zurich","Geneva","Bern"],
+streets:["Bahnhofstrasse","Rue du Rhône"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["7"]
+},
+{
+country:"Austria", code:"+43",
+cities:["Vienna","Salzburg","Graz"],
+streets:["Ringstrasse","Mariahilfer Str"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["6"]
+},
+{
+country:"Belgium", code:"+32",
+cities:["Brussels","Antwerp","Ghent"],
+streets:["Rue Neuve","Meir"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["4"]
+},
+{
+country:"Portugal", code:"+351",
+cities:["Lisbon","Porto","Braga"],
+streets:["Rua Augusta","Avenida Liberdade"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["9"]
+},
+{
+country:"Brazil", code:"+55",
+cities:["Sao Paulo","Rio de Janeiro","Brasilia"],
+streets:["Av Paulista","Copacabana"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["11","21"]
 }
-
 ];
 
 /* ========================= */
 
-const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall"];
+const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava","Lucas","Henry","Leo"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall","Young","King"];
 
 const output=document.getElementById("output");
 const select=document.getElementById("country");
 const loader=document.getElementById("loader");
+
 let last=[];
 
-function pick(a){ return a[Math.floor(Math.random()*a.length)] }
-
-/* init */
+/* INIT */
 function init(){
     select.innerHTML=`<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
@@ -233,13 +279,15 @@ function init(){
     });
 }
 
-/* engine core */
+/* CORE */
+function pick(a){ return a[Math.random()*a.length|0] }
+
 function phone(d){
-    return `${d.code} ${pick(d.area)} ${Math.floor(1000000+Math.random()*8999999)}`;
+    return `${d.code} ${d.area[Math.random()*d.area.length|0]} ${Math.random()*9000000+1000000|0}`;
 }
 
 function email(name,d){
-    return name+"@"+pick(d.domains);
+    return name+"@"+pick(["gmail.com","outlook.com","yahoo.com","proton.me"]);
 }
 
 function user(){
@@ -247,26 +295,24 @@ function user(){
         ? pick(ENGINE)
         : ENGINE.find(x=>x.country===select.value);
 
-    const safe=d||ENGINE[0];
-
     const first=pick(firstNames);
     const last=pick(lastNames);
 
-    const username=(first+last+Math.floor(Math.random()*999)).toLowerCase();
+    const username=(first+last+Math.random()*999|0).toLowerCase();
 
     return{
         username,
         name:first+" "+last,
-        email:email(username,safe),
-        phone:phone(safe),
-        country:safe.country,
-        city:pick(safe.cities),
-        street:pick(safe.streets)+" "+Math.floor(Math.random()*200),
-        zip:safe.zip()
+        email:email(username,d),
+        phone:phone(d),
+        country:d.country,
+        city:pick(d.cities),
+        street:pick(d.streets)+" "+(Math.random()*200|0),
+        zip:d.zip()
     };
 }
 
-/* render */
+/* RENDER */
 function render(arr){
     output.innerHTML="";
 
@@ -274,37 +320,43 @@ function render(arr){
         const c=document.createElement("div");
         c.className="card";
 
-        c.onclick=()=>{
-            navigator.clipboard.writeText(JSON.stringify(u,null,2));
-        };
-
         output.appendChild(c);
 
         setTimeout(()=>{
             c.innerHTML=`
-                <div class="line"><span class="label">User:</span> <span class="value">${u.username}</span></div>
-                <div class="line"><span class="label">Name:</span> <span class="value">${u.name}</span></div>
-                <div class="line"><span class="label">Email:</span> <span class="value">${u.email}</span></div>
-                <div class="line"><span class="label">Phone:</span> <span class="value">${u.phone}</span></div>
-                <div class="line"><span class="label">Country:</span> <span class="value">${u.country}</span></div>
-                <div class="line"><span class="label">City:</span> <span class="value">${u.city}</span></div>
-                <div class="line"><span class="label">Street:</span> <span class="value">${u.street}</span></div>
-                <div class="line"><span class="label">ZIP:</span> <span class="value">${u.zip}</span></div>
+                <div class="line">User: ${u.username}</div>
+                <div class="line">Name: ${u.name}</div>
+                <div class="line">Email: ${u.email}</div>
+                <div class="line">Phone: ${u.phone}</div>
+                <div class="line">Country: ${u.country}</div>
+                <div class="line">City: ${u.city}</div>
+                <div class="line">Street: ${u.street}</div>
+                <div class="line">ZIP: ${u.zip}</div>
             `;
-        },i*30);
+        },i*20);
     });
 }
 
-/* actions */
+/* ACTIONS */
 function generate(){
-    loader.style.display="block";
+    loader.innerHTML="";
+    let txt="INITIALIZING ENGINE";
+    let i=0;
+
+    function type(){
+        if(i<txt.length){
+            loader.innerHTML+=txt[i++];
+            setTimeout(type,40);
+        }
+    }
+
+    type();
 
     setTimeout(()=>{
-        const n=Math.min(200,parseInt(document.getElementById("count").value||10));
+        const n=Math.min(200,document.getElementById("count").value||10);
         last=Array.from({length:n},user);
-        loader.style.display="none";
         render(last);
-    },200);
+    },600);
 }
 
 function more(){
@@ -318,11 +370,7 @@ function clearAll(){
     last=[];
 }
 
-function copyAll(){
-    navigator.clipboard.writeText(JSON.stringify(last,null,2));
-}
-
-/* start */
+/* START */
 init();
 window.onload=generate;
 
