@@ -86,7 +86,6 @@ button:hover{ opacity:.7; }
 .dots span{
     animation:blinkDots 1.2s infinite;
 }
-
 .dots span:nth-child(2){ animation-delay:0.2s; }
 .dots span:nth-child(3){ animation-delay:0.4s; }
 
@@ -120,16 +119,14 @@ button:hover{ opacity:.7; }
 
 <script>
 
-/* =========================
-   SAFE ENGINE (NO CRASH VERSION)
-========================= */
+/* ================= SAFE ENGINE ================= */
 
 const ENGINE = [
 {
 country:"USA", code:"+1",
 cities:["New York","Los Angeles","Chicago","Houston","Miami","Seattle","Dallas"],
 streets:["Main St","Oak Ave","Pine Rd","Broadway","5th Ave","Sunset Blvd"],
-zip:()=>String(10000+Math.random()*89999|0),
+zip:()=>String(10000 + (Math.random()*89999|0)),
 area:["201","202","305","312","415","646"]
 },
 {
@@ -143,28 +140,28 @@ area:["74","75","77","78"]
 country:"Germany", code:"+49",
 cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt"],
 streets:["Hauptstr","Bahnhofstr","Marktweg"],
-zip:()=>String(10000+Math.random()*89999|0),
+zip:()=>String(10000 + (Math.random()*89999|0)),
 area:["151","160","170"]
 },
 {
 country:"France", code:"+33",
 cities:["Paris","Lyon","Marseille","Nice"],
 streets:["Rue Victor Hugo","Rue Lafayette","Avenue Republique"],
-zip:()=>String(10000+Math.random()*89999|0),
+zip:()=>String(10000 + (Math.random()*89999|0)),
 area:["6","7","1"]
 },
 {
 country:"Netherlands", code:"+31",
 cities:["Amsterdam","Rotterdam","Utrecht"],
 streets:["Damrak","Leidsestraat","Kalverstraat"],
-zip:()=>String(1000+Math.random()*8999|0),
+zip:()=>String(1000 + (Math.random()*8999|0)),
 area:["6","20"]
 },
 {
 country:"Japan", code:"+81",
 cities:["Tokyo","Osaka","Kyoto","Nagoya"],
 streets:["Shibuya","Ginza","Akihabara"],
-zip:()=>String(1000000+Math.random()*8999999|0),
+zip:()=>String(1000000 + (Math.random()*8999999|0)),
 area:["70","80","90"]
 }
 ];
@@ -175,13 +172,13 @@ const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Cla
 const output=document.getElementById("output");
 const select=document.getElementById("country");
 const loader=document.getElementById("loader");
+    const loaderText=document.getElementById("loaderText");
 
-let last=[];
-    /* INIT SAFE */
+let last = [];
+
+/* INIT */
 function init(){
-    if(!select) return;
-
-    select.innerHTML=`<option value="all">any country</option>`;
+    select.innerHTML = `<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
         const o=document.createElement("option");
         o.value=c.country;
@@ -193,6 +190,29 @@ function init(){
 /* SAFE PICK */
 function pick(a){
     return a[Math.floor(Math.random()*a.length)];
+}
+
+/* LOADER ANIMATION */
+function showLoader(){
+    loader.style.opacity = "1";
+    loaderText.innerHTML = "";
+
+    const text = "INITIALIZING ENGINE";
+    let i = 0;
+
+    const t = setInterval(()=>{
+        if(i >= text.length){
+            clearInterval(t);
+            return;
+        }
+        loaderText.innerHTML += text[i++];
+    }, 35);
+}
+
+function hideLoader(){
+    setTimeout(()=>{
+        loader.style.opacity = "0";
+    }, 300);
 }
 
 /* USER GEN */
@@ -218,10 +238,22 @@ function user(){
     };
 }
 
-/* RENDER SAFE */
+/* TYPE EFFECT */
+function typeText(el, text, speed=8){
+    el.textContent = "";
+    let i = 0;
+    function step(){
+        if(i < text.length){
+            el.textContent += text[i++];
+            setTimeout(step, speed);
+        }
+    }
+    step();
+}
+
+/* RENDER */
 function render(arr){
     if(!output) return;
-
     output.innerHTML = "";
 
     arr.forEach((u,i)=>{
@@ -229,75 +261,47 @@ function render(arr){
         c.className = "card";
         output.appendChild(c);
 
-        const lines = [
-            ["User", u.username],
-            ["Name", u.name],
-            ["Email", u.email],
-            ["Phone", u.phone],
-            ["Country", u.country],
-            ["City", u.city],
-            ["Street", u.street],
-            ["ZIP", u.zip]
-        ];
+        setTimeout(()=>{
+            const lines = [
+                ["User", u.username],
+                ["Name", u.name],
+                ["Email", u.email],
+                ["Phone", u.phone],
+                ["Country", u.country],
+                ["City", u.city],
+                ["Street", u.street],
+                ["ZIP", u.zip]
+            ];
 
-        let lineIndex = 0;
+            let idx = 0;
 
-        function typeLine(){
-            if(lineIndex >= lines.length) return;
+            function renderLine(){
+                if(idx >= lines.length) return;
 
-            const [label, value] = lines[lineIndex++];
+                const [label, value] = lines[idx++];
 
-            const row = document.createElement("div");
-            row.className = "line";
+                const row = document.createElement("div");
+                row.className = "line";
 
-            const labelEl = document.createElement("span");
-            labelEl.className = "label";
-            labelEl.textContent = label + ": ";
+                const l = document.createElement("span");
+                l.className = "label";
+                l.textContent = label + ": ";
 
-            const valueEl = document.createElement("span");
-            valueEl.className = "value";
+                const v = document.createElement("span");
+                v.className = "value";
 
-            row.appendChild(labelEl);
-            row.appendChild(valueEl);
-            c.appendChild(row);
+                row.appendChild(l);
+                row.appendChild(v);
+                c.appendChild(row);
 
-            let i = 0;
+                typeText(v, value, 6);
 
-            function typeChar(){
-                if(i < value.length){
-                    valueEl.textContent += value[i++];
-                    setTimeout(typeChar, 10);
-                } else {
-                    setTimeout(typeLine, 40);
-                }
+                setTimeout(renderLine, 80);
             }
 
-            typeChar();
-        }
-
-        setTimeout(()=>{
-            typeLine();
-        }, i * 60);
+            renderLine();
+        }, i * 80);
     });
-}
-
-/* LOADER SAFE (USED WITH showLoader/hideLoader) */
-function typeLoader(){
-    const el = loader;
-    if(!el) return;
-
-    const text = "INITIALIZING ENGINE...";
-    let i = 0;
-
-    el.innerHTML = "";
-
-    const t = setInterval(()=>{
-        if(i >= text.length){
-            clearInterval(t);
-            return;
-        }
-        el.innerHTML += text[i++];
-    }, 35);
 }
 
 /* ACTIONS */
@@ -305,14 +309,9 @@ function generate(){
     showLoader();
 
     setTimeout(()=>{
-        const n = Math.min(
-            200,
-            parseInt((document.getElementById("count") || {}).value || 10)
-        );
-
+        const n = Math.min(200, parseInt(document.getElementById("count").value || 10));
         last = Array.from({length:n}, user);
         render(last);
-
         hideLoader();
     }, 500);
 }
@@ -324,13 +323,13 @@ function more(){
 }
 
 function clearAll(){
-    if(output) output.innerHTML = "";
+    output.innerHTML = "";
     last = [];
 }
 
-/* START SAFE */
+/* START */
 init();
-window.onload=generate;
+window.onload = generate;
 
 </script>
 
