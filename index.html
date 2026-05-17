@@ -80,6 +80,7 @@ button:hover{ opacity:.7; }
     letter-spacing:4px;
     color:#777;
     font-family:monospace;
+    transition:opacity .3s ease;
 }
 
 .dots span{
@@ -100,7 +101,7 @@ button:hover{ opacity:.7; }
 <body>
 
 <div class="loader" id="loader">
-    INITIALIZING ENGINE
+    <span id="loaderText"></span>
     <span class="dots"><span>.</span><span>.</span><span>.</span></span>
 </div>
 
@@ -200,20 +201,20 @@ function user(){
         ? pick(ENGINE)
         : ENGINE.find(x=>x.country===select.value) || pick(ENGINE);
 
-    const first=pick(firstNames);
-    const last=pick(lastNames);
+    const first = pick(firstNames);
+    const last = pick(lastNames);
 
-    const username=(first+last+(Math.random()*999|0)).toLowerCase();
+    const username = (first + last + (Math.random()*999|0)).toLowerCase();
 
-    return{
+    return {
         username,
-        name:first+" "+last,
-        email:username+"@"+pick(["gmail.com","outlook.com","proton.me"]),
-        phone:`${d.code} ${d.area[pick(Object.keys(d.area).map(()=>0))]} ${Math.random()*9000000+1000000|0}`,
-        country:d.country,
-        city:pick(d.cities),
-        street:pick(d.streets)+" "+(Math.random()*200|0),
-        zip:d.zip()
+        name: first + " " + last,
+        email: username + "@" + pick(["gmail.com","outlook.com","proton.me"]),
+        phone: `${d.code} ${pick(d.area)} ${Math.floor(1000000 + Math.random()*9000000)}`,
+        country: d.country,
+        city: pick(d.cities),
+        street: pick(d.streets) + " " + (Math.floor(Math.random()*200)),
+        zip: d.zip()
     };
 }
 
@@ -221,15 +222,16 @@ function user(){
 function render(arr){
     if(!output) return;
 
-    output.innerHTML="";
+    output.innerHTML = "";
 
     arr.forEach((u,i)=>{
-        const c=document.createElement("div");
-        c.className="card";
+        const c = document.createElement("div");
+        c.className = "card";
+
         output.appendChild(c);
 
         setTimeout(()=>{
-            c.innerHTML=`
+            c.innerHTML = `
                 <div class="line"><span class="label">User:</span> <span class="value">${u.username}</span></div>
                 <div class="line"><span class="label">Name:</span> <span class="value">${u.name}</span></div>
                 <div class="line"><span class="label">Email:</span> <span class="value">${u.email}</span></div>
@@ -239,49 +241,55 @@ function render(arr){
                 <div class="line"><span class="label">Street:</span> <span class="value">${u.street}</span></div>
                 <div class="line"><span class="label">ZIP:</span> <span class="value">${u.zip}</span></div>
             `;
-        },i*20);
+        }, i * 20);
     });
 }
 
-/* LOADER SAFE (NO OVERWRITE BUG) */
+/* LOADER SAFE (USED WITH showLoader/hideLoader) */
 function typeLoader(){
-    const el=loader;
+    const el = loader;
     if(!el) return;
 
-    const text="INITIALIZING ENGINE...";
-    let i=0;
-    el.innerHTML="";
+    const text = "INITIALIZING ENGINE...";
+    let i = 0;
 
-    const t=setInterval(()=>{
-        if(i>=text.length){
+    el.innerHTML = "";
+
+    const t = setInterval(()=>{
+        if(i >= text.length){
             clearInterval(t);
             return;
         }
-        el.innerHTML+=text[i++];
-    },35);
+        el.innerHTML += text[i++];
+    }, 35);
 }
 
 /* ACTIONS */
 function generate(){
-    typeLoader();
+    showLoader();
 
     setTimeout(()=>{
-        const n=Math.min(200,parseInt((document.getElementById("count")||{}).value||10));
+        const n = Math.min(
+            200,
+            parseInt((document.getElementById("count") || {}).value || 10)
+        );
 
-        last=Array.from({length:n},user);
+        last = Array.from({length:n}, user);
         render(last);
-    },500);
+
+        hideLoader();
+    }, 500);
 }
 
 function more(){
-    const extra=Array.from({length:5},user);
-    last=last.concat(extra);
+    const extra = Array.from({length:5}, user);
+    last = last.concat(extra);
     render(last);
 }
 
 function clearAll(){
-    output.innerHTML="";
-    last=[];
+    if(output) output.innerHTML = "";
+    last = [];
 }
 
 /* START SAFE */
