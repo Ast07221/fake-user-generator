@@ -8,37 +8,34 @@
 <style>
 body{
     margin:0;
-    font-family:system-ui, monospace;
     background:#0b0b0b;
     color:#fff;
-    min-height:100vh;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     display:flex;
     justify-content:center;
     align-items:center;
+    min-height:100vh;
 }
 
-/* CENTER CONTAINER */
+/* CENTER SYSTEM */
 .wrapper{
     width:100%;
     max-width:900px;
-    min-height:100vh;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    margin:0 auto;
+    padding:80px 20px 100px;
+    box-sizing:border-box;
 }
 
+/* OUTPUT */
 .grid{
     width:100%;
     max-width:700px;
-    max-height:650px;
-    overflow-y:auto;
-
     display:flex;
     flex-direction:column;
-    align-items:center;   /* 🔥  центр карточек */
-    margin:0 auto;
+    align-items:stretch;
 }
 
 /* CARD */
@@ -48,26 +45,26 @@ body{
     border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
-/* LINE STYLE */
+/* LINE */
 .line{
-    font-size:15px;
-    line-height:1.4;
     display:flex;
-    gap:6px;
+    gap:8px;
+    font-size:14px;
+    line-height:1.6;
 }
 
-/* LABELS */
+/* LABEL */
 .label{
     color:#777;
-    min-width:80px;
+    min-width:90px;
 }
 
-/* VALUES */
+/* VALUE */
 .value{
     color:#f2f2f2;
 }
 
-/* LOADER TOP */
+/* LOADER */
 .loader{
     position:fixed;
     top:18px;
@@ -76,10 +73,9 @@ body{
     font-size:11px;
     letter-spacing:4px;
     color:#777;
-    font-family:monospace;
 }
 
-/* DOTS ANIMATION */
+/* DOTS */
 .dots span{
     animation:blink 1.2s infinite;
 }
@@ -91,26 +87,51 @@ body{
     50%{opacity:1}
 }
 
-/* TOPBAR */
+/* TOP MENU (TEXT STYLE BUTTONS) */
 .topbar{
     position:fixed;
     bottom:20px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap:10px;
+    gap:14px;
     align-items:center;
 }
 
-button,select,input{
-    background:#0b0b0b;
-    border:1px solid rgba(255,255,255,0.08);
+/* PREMIUM TEXT BUTTONS */
+.btn{
+    background:transparent;
+    border:none;
     color:#fff;
-    padding:6px 10px;
     font-size:13px;
+    letter-spacing:.5px;
+    cursor:pointer;
+    opacity:.8;
+    transition:.2s;
 }
 
-button:hover{opacity:.7}
+.btn:hover{
+    opacity:1;
+}
+
+/* INPUT */
+input{
+    width:28px;
+    background:transparent;
+    border:none;
+    color:#fff;
+    text-align:center;
+    font-size:13px;
+    outline:none;
+}
+
+select{
+    background:transparent;
+    border:none;
+    color:#fff;
+    font-size:13px;
+    outline:none;
+}
 </style>
 </head>
 
@@ -126,66 +147,67 @@ button:hover{opacity:.7}
     <div id="output" class="grid"></div>
 </div>
 
-<!-- CONTROLS -->
+<!-- TOPBAR -->
 <div class="topbar">
-    <button onclick="generate()">generate</button>
-    <input id="count" type="number" value="1" min="1" max="100">
+    <button class="btn" onclick="generate()">generate</button>
+    <input id="count" type="number" value="5" min="1" max="50">
     <select id="country"></select>
-    <button onclick="copyAll()">copy</button>
+    <button class="btn" onclick="copyAll()">copy</button>
 </div>
 
 <script>
 
-/* ========= SAFE DATA ========= */
-const DATA=[
+/* ================= REALISTIC ENGINE ================= */
+
+const DATA = [
 {
-country:"USA",code:"+1",
+country:"USA", code:"+1",
 cities:["New York","Los Angeles","Chicago","Miami","Dallas"],
-streets:["Main St","Oak Ave","Pine Rd","5th Ave","Sunset Blvd"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["201","305","312","415","646"]
+streets:["Main St","Oak Ave","Pine Rd","Sunset Blvd"],
+area:["201","305","312","415"],
+zip:()=>String(10000+Math.random()*89999|0)
 },
 {
-country:"UK",code:"+44",
-cities:["London","Manchester","Liverpool","Leeds"],
-streets:["High St","King Rd","Queen St","Oxford St"],
-zip:()=>["SW1A","M1","L1","B1"][Math.random()*4|0],
-area:["74","75","77","78"]
+country:"UK", code:"+44",
+cities:["London","Manchester","Liverpool","Birmingham"],
+streets:["High St","Oxford St","Queen St"],
+area:["74","77","78"],
+zip:()=>["SW1A","M1","L1","B1"][Math.random()*4|0]
 },
 {
-country:"Germany",code:"+49",
+country:"Germany", code:"+49",
 cities:["Berlin","Munich","Hamburg","Frankfurt"],
 streets:["Hauptstr","Bahnhofstr","Marktweg"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["151","160","170"]
+area:["151","160","170"],
+zip:()=>String(10000+Math.random()*89999|0)
 },
 {
-country:"France",code:"+33",
+country:"France", code:"+33",
 cities:["Paris","Lyon","Marseille"],
-streets:["Rue Victor Hugo","Rue Lafayette","Avenue Republique"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["6","7","1"]
+streets:["Rue Victor Hugo","Rue Lafayette"],
+area:["6","7"],
+zip:()=>String(10000+Math.random()*89999|0)
 },
 {
-country:"Netherlands",code:"+31",
+country:"Netherlands", code:"+31",
 cities:["Amsterdam","Rotterdam","Utrecht"],
-streets:["Damrak","Kalverstraat","Leidsestraat"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["6","20"]
+streets:["Damrak","Kalverstraat"],
+area:["6","20"],
+zip:()=>String(1000+Math.random()*8999|0)
 }
 ];
 
-const FIRST=["Alex","John","Mike","Emma","Olivia","Liam","Noah","Sophia"];
-const LAST=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee"];
+const FIRST=["Alex","John","Emma","Noah","Liam","Olivia","Mia","Sophia"];
+const LAST=["Smith","Brown","Johnson","Taylor","Lee","Walker"];
 
-const output=document.getElementById("output");
-const loader=document.getElementById("loader");
-const select=document.getElementById("country");
-
-let last=[];
+let output, select, loader, last=[];
 
 /* INIT */
 function init(){
+    output=document.getElementById("output");
+    select=document.getElementById("country");
+    loader=document.getElementById("loader");
+
     select.innerHTML=`<option value="all">any country</option>`;
     DATA.forEach(c=>{
         const o=document.createElement("option");
@@ -227,8 +249,8 @@ function type(el,text,cb){
     function run(){
         if(i<text.length){
             el.textContent+=text[i++];
-            setTimeout(run,8);
-        } else if(cb) cb();
+            setTimeout(run,10);
+        } else cb && cb();
     }
     run();
 }
@@ -242,7 +264,7 @@ function render(arr){
         card.className="card";
         output.appendChild(card);
 
-        const lines=[
+        const rows=[
             ["User",u.username],
             ["Name",u.name],
             ["Email",u.email],
@@ -256,32 +278,32 @@ function render(arr){
         let idx=0;
 
         function next(){
-            if(idx>=lines.length) return;
+            if(idx>=rows.length) return;
 
-            const [label,value]=lines[idx++];
+            const [l,v]=rows[idx++];
 
             const row=document.createElement("div");
             row.className="line";
 
-            const l=document.createElement("span");
-            l.className="label";
-            l.textContent=label+":";
+            const label=document.createElement("span");
+            label.className="label";
+            label.textContent=l+":";
 
-            const v=document.createElement("span");
-            v.className="value";
+            const value=document.createElement("span");
+            value.className="value";
 
-            row.appendChild(l);
-            row.appendChild(v);
+            row.appendChild(label);
+            row.appendChild(value);
             card.appendChild(row);
 
-            type(v,value,next);
+            type(value,v,next);
         }
 
-        setTimeout(next,i*30);
+        setTimeout(next,i*25);
     });
 }
 
-/* GENERATE (FAST) */
+/* GENERATE */
 function generate(){
     loader.style.display="block";
 
@@ -290,12 +312,7 @@ function generate(){
         last=Array.from({length:n},user);
         render(last);
         loader.style.display="none";
-    },200);
-}
-
-/* COPY ALL */
-function copyAll(){
-    navigator.clipboard.writeText(JSON.stringify(last,null,2));
+    },180);
 }
 
 /* START */
@@ -303,5 +320,6 @@ init();
 window.onload=generate;
 
 </script>
+
 </body>
 </html>
