@@ -26,6 +26,7 @@ body{
     flex-direction:column;
     align-items:center;
     justify-content:center;
+    margin:0 auto;
 }
 
 .grid{
@@ -33,6 +34,11 @@ body{
     max-width:700px;
     max-height:650px;
     overflow-y:auto;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;   /* 🔥  центр карточек */
+    margin:0 auto;
 }
 
 .card{
@@ -112,7 +118,7 @@ button:hover{ opacity:.7; }
     <button onclick="generate()">generate</button>
     <button onclick="more()">more</button>
     <button onclick="clearAll()">clear</button>
-    <input id="count" type="number" value="10" min="1" max="200">
+    <input id="count" type="number" value="1" min="1" max="200">
     <select id="country"></select>
     <button onclick="copyAll()">copy</button>
 </div>
