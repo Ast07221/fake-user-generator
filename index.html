@@ -3,40 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake Identity Engine</title>
+<title>Fake User Generator</title>
 
 <style>
 body{
     margin:0;
-    font-family:system-ui;
+    font-family:system-ui, monospace;
     background:#0b0b0b;
     color:#fff;
     min-height:100vh;
     display:flex;
     justify-content:center;
-    align-items:flex-start;
+    align-items:center;
 }
 
-/* MAIN CENTER WRAPPER */
+/* CENTER CONTAINER */
 .wrapper{
     width:100%;
     max-width:900px;
-    min-height:100vh;
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding-top:70px;
-    padding-bottom:120px;
-    box-sizing:border-box;
+    justify-content:center;
+    margin:0 auto;
+    padding-bottom:90px;
 }
 
-/* OUTPUT BLOCK */
+/* OUTPUT CENTERED */
 .grid{
     width:100%;
-    max-width:720px;
+    max-width:650px;
     display:flex;
     flex-direction:column;
-    align-items:stretch;
+    align-items:center;
+    gap:0;
+    max-height:70vh;
+    overflow-y:auto;
 }
 
 /* CARD */
@@ -46,84 +48,69 @@ body{
     border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
-/* ROW */
+/* LINE STYLE */
 .line{
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
-    gap:10px;
-    font-family:monospace;
     font-size:15px;
-    line-height:1.6;
+    line-height:1.4;
+    display:flex;
+    gap:6px;
 }
 
-/* LABEL */
+/* LABELS */
 .label{
     color:#777;
-    min-width:90px;
+    min-width:80px;
 }
 
-/* VALUE */
+/* VALUES */
 .value{
     color:#f2f2f2;
-    flex:1;
-}
-
-/* COPY BUTTON */
-.copy{
-    margin-left:auto;
-    font-size:11px;
-    color:#777;
-    cursor:pointer;
-}
-.copy:hover{
-    color:#fff;
 }
 
 /* LOADER TOP */
 .loader{
     position:fixed;
-    top:12px;
+    top:18px;
     left:50%;
     transform:translateX(-50%);
     font-size:11px;
-    letter-spacing:3px;
+    letter-spacing:4px;
     color:#777;
     font-family:monospace;
-    z-index:999;
 }
 
-/* DOTS */
+/* DOTS ANIMATION */
 .dots span{
     animation:blink 1.2s infinite;
 }
-.dots span:nth-child(2){ animation-delay:0.2s; }
-.dots span:nth-child(3){ animation-delay:0.4s; }
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
 
 @keyframes blink{
-    0%,20%{opacity:0;}
-    50%{opacity:1;}
-    100%{opacity:0;}
+    0%,100%{opacity:0}
+    50%{opacity:1}
 }
 
-/* TOP BAR */
+/* TOPBAR */
 .topbar{
     position:fixed;
     bottom:20px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap:8px;
+    gap:10px;
     align-items:center;
 }
 
-button, select, input{
+button,select,input{
     background:#0b0b0b;
-    border:none;
+    border:1px solid rgba(255,255,255,0.08);
     color:#fff;
-    font-size:14px;
     padding:6px 10px;
+    font-size:13px;
 }
+
+button:hover{opacity:.7}
 </style>
 </head>
 
@@ -131,10 +118,10 @@ button, select, input{
 
 <!-- LOADER -->
 <div class="loader" id="loader">
-    INITIALIZING ENGINE <span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    INITIALIZING ENGINE
+    <span class="dots"><span>.</span><span>.</span><span>.</span></span>
 </div>
 
-<!-- CENTER WRAPPER -->
 <div class="wrapper">
     <div id="output" class="grid"></div>
 </div>
@@ -142,36 +129,65 @@ button, select, input{
 <!-- CONTROLS -->
 <div class="topbar">
     <button onclick="generate()">generate</button>
-    <input id="count" type="number" value="1" min="1" max="50">
+    <input id="count" type="number" value="5" min="1" max="100">
     <select id="country"></select>
+    <button onclick="copyAll()">copy</button>
 </div>
 
 <script>
 
-/* ===== DATA ===== */
-const ENGINE = [
-{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago","Miami"],streets:["Main St","Oak Ave","Sunset Blvd"],area:["201","305","312"]},
-{country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],streets:["High St","Oxford St"],area:["74","77"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich"],streets:["Hauptstr","Bahnhofstr"],area:["151","160"]},
-{country:"France",code:"+33",cities:["Paris","Lyon"],streets:["Rue Hugo","Rue Lafayette"],area:["6","7"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],streets:["Damrak","Kalverstraat"],area:["6","20"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],streets:["Shibuya","Ginza"],area:["70","80"]}
+/* ========= SAFE DATA ========= */
+const DATA=[
+{
+country:"USA",code:"+1",
+cities:["New York","Los Angeles","Chicago","Miami","Dallas"],
+streets:["Main St","Oak Ave","Pine Rd","5th Ave","Sunset Blvd"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["201","305","312","415","646"]
+},
+{
+country:"UK",code:"+44",
+cities:["London","Manchester","Liverpool","Leeds"],
+streets:["High St","King Rd","Queen St","Oxford St"],
+zip:()=>["SW1A","M1","L1","B1"][Math.random()*4|0],
+area:["74","75","77","78"]
+},
+{
+country:"Germany",code:"+49",
+cities:["Berlin","Munich","Hamburg","Frankfurt"],
+streets:["Hauptstr","Bahnhofstr","Marktweg"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["151","160","170"]
+},
+{
+country:"France",code:"+33",
+cities:["Paris","Lyon","Marseille"],
+streets:["Rue Victor Hugo","Rue Lafayette","Avenue Republique"],
+zip:()=>String(10000+Math.random()*89999|0),
+area:["6","7","1"]
+},
+{
+country:"Netherlands",code:"+31",
+cities:["Amsterdam","Rotterdam","Utrecht"],
+streets:["Damrak","Kalverstraat","Leidsestraat"],
+zip:()=>String(1000+Math.random()*8999|0),
+area:["6","20"]
+}
 ];
 
-const firstNames=["Alex","John","Emma","Noah","Liam","Olivia","Mia","Sophia"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Lee","Walker"];
+const FIRST=["Alex","John","Mike","Emma","Olivia","Liam","Noah","Sophia"];
+const LAST=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee"];
 
-let output, select, loader;
-let last = [];
+const output=document.getElementById("output");
+const loader=document.getElementById("loader");
+const select=document.getElementById("country");
+
+let last=[];
 
 /* INIT */
 function init(){
-    output=document.getElementById("output");
-    select=document.getElementById("country");
-    loader=document.getElementById("loader");
-
     select.innerHTML=`<option value="all">any country</option>`;
-    ENGINE.forEach(c=>{
+    DATA.forEach(c=>{
         const o=document.createElement("option");
         o.value=c.country;
         o.textContent=c.country;
@@ -179,19 +195,17 @@ function init(){
     });
 }
 
-/* RANDOM */
-function pick(a){
-    return a[Math.floor(Math.random()*a.length)];
-}
+/* PICK */
+const pick=a=>a[Math.random()*a.length|0];
 
 /* USER */
 function user(){
     const d = select.value==="all"
-    ? pick(ENGINE)
-        : ENGINE.find(x=>x.country===select.value) || pick(ENGINE);
+        ? pick(DATA)
+        : DATA.find(x=>x.country===select.value) || pick(DATA);
 
-    const first=pick(firstNames);
-    const last=pick(lastNames);
+    const first=pick(FIRST);
+    const last=pick(LAST);
 
     const username=(first+last+(Math.random()*999|0)).toLowerCase();
 
@@ -199,23 +213,24 @@ function user(){
         username,
         name:first+" "+last,
         email:username+"@gmail.com",
-        phone:`${d.code} ${pick(d.area)} ${Math.floor(1000000+Math.random()*9000000)}`,
+        phone:`${d.code} ${pick(d.area)} ${Math.random()*9000000|0+1000000}`,
         country:d.country,
         city:pick(d.cities),
-        street:pick(d.streets)+" "+(Math.floor(Math.random()*200))
+        street:pick(d.streets)+" "+(Math.random()*200|0),
+        zip:d.zip()
     };
 }
 
 /* TYPE EFFECT */
 function type(el,text,cb){
     let i=0;
-    function step(){
+    function run(){
         if(i<text.length){
             el.textContent+=text[i++];
-            setTimeout(step,12);
+            setTimeout(run,8);
         } else if(cb) cb();
     }
-    step();
+    run();
 }
 
 /* RENDER */
@@ -223,68 +238,64 @@ function render(arr){
     output.innerHTML="";
 
     arr.forEach((u,i)=>{
-        const c=document.createElement("div");
-        c.className="card";
-        output.appendChild(c);
+        const card=document.createElement("div");
+        card.className="card";
+        output.appendChild(card);
 
-        const rows=[
+        const lines=[
             ["User",u.username],
             ["Name",u.name],
             ["Email",u.email],
             ["Phone",u.phone],
             ["Country",u.country],
             ["City",u.city],
-            ["Street",u.street]
+            ["Street",u.street],
+            ["ZIP",u.zip]
         ];
 
         let idx=0;
 
         function next(){
-            if(idx>=rows.length) return;
+            if(idx>=lines.length) return;
 
-            const [l,v]=rows[idx++];
+            const [label,value]=lines[idx++];
 
             const row=document.createElement("div");
             row.className="line";
 
-            const label=document.createElement("span");
-            label.className="label";
-            label.textContent=l+":";
+            const l=document.createElement("span");
+            l.className="label";
+            l.textContent=label+":";
 
-            const value=document.createElement("span");
-            value.className="value";
+            const v=document.createElement("span");
+            v.className="value";
 
-            const copy=document.createElement("span");
-            copy.className="copy";
-            copy.textContent="copy";
-            copy.onclick=()=>navigator.clipboard.writeText(v);
+            row.appendChild(l);
+            row.appendChild(v);
+            card.appendChild(row);
 
-            row.appendChild(label);
-            row.appendChild(value);
-            row.appendChild(copy);
-
-            c.appendChild(row);
-
-            type(value,v,next);
+            type(v,value,next);
         }
 
-        setTimeout(next,i*25);
+        setTimeout(next,i*30);
     });
 }
 
-/* GENERATE */
+/* GENERATE (FAST) */
 function generate(){
     loader.style.display="block";
 
-    const n=Math.min(50,parseInt(document.getElementById("count").value||1));
-
-    last=Array.from({length:n},user);
-
-    render(last);
-
     setTimeout(()=>{
+        const n=Math.min(50,parseInt(count.value||5));
+        last=Array.from({length:n},user);
+        render(last);
         loader.style.display="none";
     },200);
+}
+
+/* COPY ALL */
+function copyAll(){
+    navigator.clipboard.writeText(JSON.stringify(last,null,2));
 }
 
 /* START */
@@ -292,6 +303,5 @@ init();
 window.onload=generate;
 
 </script>
-
 </body>
 </html>
