@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fake Identity Engine</title>
+
 <style>
 body{
     margin:0;
@@ -16,6 +17,7 @@ body{
     min-height:100vh;
     overflow-x:hidden;
 }
+
 .wrapper{
     width:100%;
     max-width:900px;
@@ -25,24 +27,30 @@ body{
     align-items:center;
     justify-content:center;
 }
+
 .grid{
     width:100%;
     max-width:700px;
     max-height:650px;
     overflow-y:auto;
 }
+
 .card{
     padding:12px 0;
     border-bottom:1px solid rgba(255,255,255,0.06);
     cursor:pointer;
 }
+
 .card:hover{ opacity:.85; }
+
 .line{
     font-size:15px;
     line-height:1.5;
 }
+
 .label{ color:#8a8a8a; }
 .value{ color:#f2f2f2; }
+
 .topbar{
     position:fixed;
     bottom:20px;
@@ -52,6 +60,7 @@ body{
     gap:12px;
     flex-wrap:wrap;
 }
+
 button, select, input{
     background:#0b0b0b;
     border:none;
@@ -59,7 +68,9 @@ button, select, input{
     font-size:14px;
     padding:6px 10px;
 }
+
 button:hover{ opacity:.7; }
+
 .loader{
     position:fixed;
     top:15px;
@@ -69,6 +80,7 @@ button:hover{ opacity:.7; }
     letter-spacing:4px;
     color:#777;
 }
+
 .cursor{
     display:inline-block;
     width:8px;
@@ -77,6 +89,7 @@ button:hover{ opacity:.7; }
     margin-left:4px;
     animation:blink .8s infinite;
 }
+
 @keyframes blink{
     0%{opacity:0;}
     50%{opacity:1;}
@@ -84,11 +97,15 @@ button:hover{ opacity:.7; }
 }
 </style>
 </head>
+
 <body>
+
 <div class="loader" id="loader">INITIALIZING ENGINE</div>
+
 <div class="wrapper">
     <div id="output" class="grid"></div>
 </div>
+
 <div class="topbar">
     <button onclick="generate()">generate</button>
     <button onclick="more()">more</button>
@@ -97,10 +114,13 @@ button:hover{ opacity:.7; }
     <select id="country"></select>
     <button onclick="copyAll()">copy</button>
 </div>
+
 <script>
+
 /* =========================
-   🌍 BIG REALISTIC DATA PACK (30+ COUNTRIES)
+   🌍 DATA
 ========================= */
+
 const ENGINE = [
 {
 country:"USA", code:"+1",
@@ -143,108 +163,24 @@ cities:["Tokyo","Osaka","Kyoto","Nagoya","Yokohama"],
 streets:["Shibuya","Ginza","Akihabara","Shinjuku"],
 zip:()=>String(1000000+Math.random()*8999999|0),
 area:["70","80","90"]
-},
-{
-country:"Canada", code:"+1",
-cities:["Toronto","Vancouver","Montreal","Calgary","Ottawa"],
-streets:["King St","Queen St","Bloor St","Dundas St"],
-zip:()=> "M" + (Math.random()*9|0),
-area:["416","437","604","778"]
-},
-{
-country:"Australia", code:"+61",
-cities:["Sydney","Melbourne","Brisbane","Perth","Adelaide"],
-    streets:["George St","King St","Collins St","Elizabeth St"],
-zip:()=>String(2000+Math.random()*6000|0),
-area:["4","2"]
-},
-{
-country:"Italy", code:"+39",
-cities:["Rome","Milan","Naples","Turin","Florence"],
-streets:["Via Roma","Via Milano","Corso Italia","Via Napoli"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["3"]
-},
-{
-country:"Spain", code:"+34",
-cities:["Madrid","Barcelona","Valencia","Seville","Bilbao"],
-streets:["Calle Mayor","Gran Via","Calle Real"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["6","7"]
-},
-{
-country:"India", code:"+91",
-cities:["Delhi","Mumbai","Bangalore","Pune","Chennai"],
-streets:["MG Road","Park Street","MG Marg","Link Road"],
-zip:()=>String(100000+Math.random()*899999|0),
-area:["7","8","9"]
-},
-{
-country:"Sweden", code:"+46",
-cities:["Stockholm","Gothenburg","Malmo"],
-streets:["Drottninggatan","Kungsgatan"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["7"]
-},
-{
-country:"Norway", code:"+47",
-cities:["Oslo","Bergen","Trondheim"],
-streets:["Karl Johans gate","Storgata"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["9"]
-},
-{
-country:"Poland", code:"+48",
-cities:["Warsaw","Krakow","Gdansk"],
-streets:["Nowy Swiat","Dluga"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["5"]
-},
-{
-country:"Switzerland", code:"+41",
-cities:["Zurich","Geneva","Bern"],
-streets:["Bahnhofstrasse","Rue du Rhône"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["7"]
-},
-{
-country:"Austria", code:"+43",
-cities:["Vienna","Salzburg","Graz"],
-streets:["Ringstrasse","Mariahilfer Str"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["6"]
-},
-{
-country:"Belgium", code:"+32",
-cities:["Brussels","Antwerp","Ghent"],
-streets:["Rue Neuve","Meir"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["4"]
-},
-{
-country:"Portugal", code:"+351",
-cities:["Lisbon","Porto","Braga"],
-streets:["Rua Augusta","Avenida Liberdade"],
-zip:()=>String(1000+Math.random()*8999|0),
-area:["9"]
-},
-{
-country:"Brazil", code:"+55",
-cities:["Sao Paulo","Rio de Janeiro","Brasilia"],
-streets:["Av Paulista","Copacabana"],
-zip:()=>String(10000+Math.random()*89999|0),
-area:["11","21"]
 }
 ];
+
 /* ========================= */
-const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava","Lucas","Henry","Leo"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall","Young","King"];
+
+const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall"];
+
 const output=document.getElementById("output");
 const select=document.getElementById("country");
-const loader=document.getElementById("loader");
+    const loader=document.getElementById("loader");
+
 let last=[];
-/* INIT */
+
+/* INIT SAFE */
 function init(){
+    if(!select) return;
+
     select.innerHTML=`<option value="all">any country</option>`;
     ENGINE.forEach(c=>{
         const o=document.createElement("option");
@@ -253,29 +189,37 @@ function init(){
         select.appendChild(o);
     });
 }
-/* CORE */
-function pick(a){ return a[Math.random()*a.length|0] }
+
+/* SAFE PICK */
+function pick(a){
+    return a[Math.floor(Math.random()*a.length)];
+}
+
+/* PHONE */
 function phone(d){
-    return `${d.code} ${d.area[Math.random()*d.area.length|0]} ${Math.random()*9000000+1000000|0}`;
+    return `${d.code} ${pick(d.area)} ${Math.random()*9000000+1000000|0}`;
 }
-function email(name,d){
-    return name+"@"+pick(["gmail.com
-","outlook.com
-","yahoo.com
-","proton.me
-"]);
+
+/* EMAIL */
+function email(name){
+    return name+"@"+pick(["gmail.com","outlook.com","yahoo.com"]);
 }
+
+/* FIXED USER GENERATOR */
 function user(){
-    const d = select.value==="all"
+    const d = (select.value==="all")
         ? pick(ENGINE)
-        : ENGINE.find(x=>x.country===select.value);
+        : (ENGINE.find(x=>x.country===select.value) || pick(ENGINE));
+
     const first=pick(firstNames);
     const last=pick(lastNames);
+
     const username=(first+last+Math.random()*999|0).toLowerCase();
+
     return{
         username,
         name:first+" "+last,
-        email:email(username,d),
+        email:email(username),
         phone:phone(d),
         country:d.country,
         city:pick(d.cities),
@@ -283,63 +227,69 @@ function user(){
         zip:d.zip()
     };
 }
+
 /* RENDER */
 function render(arr){
     output.innerHTML="";
+
     arr.forEach((u,i)=>{
         const c=document.createElement("div");
         c.className="card";
         output.appendChild(c);
+
         setTimeout(()=>{
             c.innerHTML=`
                 <div class="line">User: ${u.username}</div>
-                <div class="line">Name: ${u.name
-}</div>
-                <div class="line">Email: ${u.email
-}</div>
-                <div class="line">Phone: ${u.phone
-}</div>
-                <div class="line">Country: ${u.country
-}</div>
-                <div class="line">City: ${u.city
-}</div>
+                <div class="line">Name: ${u.name}</div>
+                <div class="line">Email: ${u.email}</div>
+                <div class="line">Phone: ${u.phone}</div>
+                <div class="line">Country: ${u.country}</div>
+                <div class="line">City: ${u.city}</div>
                 <div class="line">Street: ${u.street}</div>
-                <div class="line">ZIP: ${u.zip
-}</div>
+                <div class="line">ZIP: ${u.zip}</div>
             `;
         },i*20);
     });
 }
+
 /* ACTIONS */
 function generate(){
-    loader.innerHTML="";
     let txt="INITIALIZING ENGINE";
+    loader.innerHTML="";
     let i=0;
+
     function type(){
         if(i<txt.length){
             loader.innerHTML+=txt[i++];
-            setTimeout(type,40);
+            setTimeout(type,35);
         }
     }
+
     type();
+
     setTimeout(()=>{
         const n=Math.min(200,document.getElementById("count").value||10);
         last=Array.from({length:n},user);
         render(last);
-    },600);
+    },500);
 }
+
 function more(){
     const extra=Array.from({length:5},user);
     last=last.concat(extra);
     render(last);
 }
+
 function clearAll(){
     output.innerHTML="";
     last=[];
 }
+
 /* START */
 init();
 window.onload=generate;
+
 </script>
+
 </body>
 </html>
