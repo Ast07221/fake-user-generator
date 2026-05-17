@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fake Identity Engine</title>
-
 <style>
 body{
     margin:0;
@@ -17,7 +16,6 @@ body{
     min-height:100vh;
     overflow-x:hidden;
 }
-
 .wrapper{
     width:100%;
     max-width:900px;
@@ -27,30 +25,24 @@ body{
     align-items:center;
     justify-content:center;
 }
-
 .grid{
     width:100%;
     max-width:700px;
     max-height:650px;
     overflow-y:auto;
 }
-
 .card{
     padding:12px 0;
     border-bottom:1px solid rgba(255,255,255,0.06);
     cursor:pointer;
 }
-
 .card:hover{ opacity:.85; }
-
 .line{
     font-size:15px;
     line-height:1.5;
 }
-
 .label{ color:#8a8a8a; }
 .value{ color:#f2f2f2; }
-
 .topbar{
     position:fixed;
     bottom:20px;
@@ -60,7 +52,6 @@ body{
     gap:12px;
     flex-wrap:wrap;
 }
-
 button, select, input{
     background:#0b0b0b;
     border:none;
@@ -68,9 +59,7 @@ button, select, input{
     font-size:14px;
     padding:6px 10px;
 }
-
 button:hover{ opacity:.7; }
-
 .loader{
     position:fixed;
     top:15px;
@@ -80,7 +69,6 @@ button:hover{ opacity:.7; }
     letter-spacing:4px;
     color:#777;
 }
-
 .cursor{
     display:inline-block;
     width:8px;
@@ -89,7 +77,6 @@ button:hover{ opacity:.7; }
     margin-left:4px;
     animation:blink .8s infinite;
 }
-
 @keyframes blink{
     0%{opacity:0;}
     50%{opacity:1;}
@@ -97,15 +84,11 @@ button:hover{ opacity:.7; }
 }
 </style>
 </head>
-
 <body>
-
 <div class="loader" id="loader">INITIALIZING ENGINE</div>
-
 <div class="wrapper">
     <div id="output" class="grid"></div>
 </div>
-
 <div class="topbar">
     <button onclick="generate()">generate</button>
     <button onclick="more()">more</button>
@@ -114,13 +97,10 @@ button:hover{ opacity:.7; }
     <select id="country"></select>
     <button onclick="copyAll()">copy</button>
 </div>
-
 <script>
-
 /* =========================
    🌍 BIG REALISTIC DATA PACK (30+ COUNTRIES)
 ========================= */
-
 const ENGINE = [
 {
 country:"USA", code:"+1",
@@ -256,18 +236,13 @@ zip:()=>String(10000+Math.random()*89999|0),
 area:["11","21"]
 }
 ];
-
 /* ========================= */
-
 const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava","Lucas","Henry","Leo"];
 const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall","Young","King"];
-
 const output=document.getElementById("output");
 const select=document.getElementById("country");
 const loader=document.getElementById("loader");
-
 let last=[];
-
 /* INIT */
 function init(){
     select.innerHTML=`<option value="all">any country</option>`;
@@ -278,28 +253,25 @@ function init(){
         select.appendChild(o);
     });
 }
-
 /* CORE */
 function pick(a){ return a[Math.random()*a.length|0] }
-
 function phone(d){
     return `${d.code} ${d.area[Math.random()*d.area.length|0]} ${Math.random()*9000000+1000000|0}`;
 }
-
 function email(name,d){
-    return name+"@"+pick(["gmail.com","outlook.com","yahoo.com","proton.me"]);
+    return name+"@"+pick(["gmail.com
+","outlook.com
+","yahoo.com
+","proton.me
+"]);
 }
-
 function user(){
     const d = select.value==="all"
         ? pick(ENGINE)
         : ENGINE.find(x=>x.country===select.value);
-
     const first=pick(firstNames);
     const last=pick(lastNames);
-
     const username=(first+last+Math.random()*999|0).toLowerCase();
-
     return{
         username,
         name:first+" "+last,
@@ -311,70 +283,63 @@ function user(){
         zip:d.zip()
     };
 }
-
 /* RENDER */
 function render(arr){
     output.innerHTML="";
-
     arr.forEach((u,i)=>{
         const c=document.createElement("div");
         c.className="card";
-
         output.appendChild(c);
-
         setTimeout(()=>{
             c.innerHTML=`
                 <div class="line">User: ${u.username}</div>
-                <div class="line">Name: ${u.name}</div>
-                <div class="line">Email: ${u.email}</div>
-                <div class="line">Phone: ${u.phone}</div>
-                <div class="line">Country: ${u.country}</div>
-                <div class="line">City: ${u.city}</div>
+                <div class="line">Name: ${u.name
+}</div>
+                <div class="line">Email: ${u.email
+}</div>
+                <div class="line">Phone: ${u.phone
+}</div>
+                <div class="line">Country: ${u.country
+}</div>
+                <div class="line">City: ${u.city
+}</div>
                 <div class="line">Street: ${u.street}</div>
-                <div class="line">ZIP: ${u.zip}</div>
+                <div class="line">ZIP: ${u.zip
+}</div>
             `;
         },i*20);
     });
 }
-
 /* ACTIONS */
 function generate(){
     loader.innerHTML="";
     let txt="INITIALIZING ENGINE";
     let i=0;
-
     function type(){
         if(i<txt.length){
             loader.innerHTML+=txt[i++];
             setTimeout(type,40);
         }
     }
-
     type();
-
     setTimeout(()=>{
         const n=Math.min(200,document.getElementById("count").value||10);
         last=Array.from({length:n},user);
         render(last);
     },600);
 }
-
 function more(){
     const extra=Array.from({length:5},user);
     last=last.concat(extra);
     render(last);
 }
-
 function clearAll(){
     output.innerHTML="";
     last=[];
 }
-
 /* START */
 init();
 window.onload=generate;
-
 </script>
-
 </body>
 </html>
