@@ -8,68 +8,65 @@
 <style>
 body{
     margin:0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-family: ui-monospace, monospace;
     background:#0b0b0b;
     color:#fff;
     display:flex;
     justify-content:center;
     align-items:center;
     min-height:100vh;
+    overflow:hidden; /* 🚫  убрали лишнюю прокрутку */
 }
 
-/* CENTER CONTAINER */
+/* 🎯  FIXED CENTER + COMPACT WIDTH */
 .wrapper{
     width:100%;
-    max-width:620px;
+    max-width:520px;   /* 🔥  СУЖЕНО */
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
 }
 
 /* OUTPUT */
 .grid{
     width:100%;
-    max-height:60vh;
-    overflow-y:auto;
     display:flex;
     flex-direction:column;
-    gap:14px;
-    align-items:center;
+    gap:12px;
 }
 
 /* CARD */
 .card{
     width:100%;
-    padding:10px 14px;
+    position:relative;
+    padding:10px 12px;
     border:1px solid rgba(255,255,255,0.06);
     border-radius:8px;
     background:rgba(255,255,255,0.02);
-    position:relative;
 }
 
-/* LINES */
+/* TEXT LINE */
 .line{
     font-size:14px;
-    line-height:1.35;
+    line-height:1.3;
     display:flex;
-    gap:8px;
+    gap:6px; /* 🔥  УМЕНЬШЕН РАЗРЫВ */
 }
 
 .label{
     color:#8a8a8a;
-    min-width:80px;
+    min-width:70px;
 }
 
 .value{
     color:#f2f2f2;
 }
 
-/* COPY BUTTON */
+/* COPY BUTTON - ближе к тексту */
 .copyBtn{
     position:absolute;
-    right:10px;
-    top:10px;
+    right:8px;   /* 🔥  БЛИЖЕ */
+    top:8px;
     font-size:11px;
     color:#888;
     cursor:pointer;
@@ -83,29 +80,27 @@ body{
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap:14px;
+    gap:10px;
     align-items:center;
     font-size:13px;
 }
 
-/* TEXT BUTTON STYLE (NO BOX) */
+/* TEXT BUTTONS */
 .btn{
     background:none;
     border:none;
-    color:#bbb;
+    color:#aaa;
     cursor:pointer;
-    font-size:13px;
 }
 .btn:hover{ color:#fff; }
 
-/* INPUT */
+/* INPUT - узкий */
 input{
-    width:34px;
+    width:28px;   /* 🔥  СУЖЕНО */
     background:none;
     border:none;
     color:#fff;
     text-align:center;
-    outline:none;
 }
 
 /* SELECT */
@@ -117,10 +112,10 @@ select{
     padding:2px 6px;
 }
 
-/* LOADER */
+/* LOADER FIX */
 .loader{
     position:fixed;
-    top:18px;
+    top:20px;
     left:50%;
     transform:translateX(-50%);
     font-size:12px;
@@ -128,6 +123,7 @@ select{
     letter-spacing:3px;
     display:none;
 }
+
 .dots span{
     animation:blink 1s infinite;
 }
@@ -161,61 +157,17 @@ select{
 
 <script>
 
-/* ================= BIG REALISTIC DATA ================= */
-
-const DATA = [
-{
-country:"USA", code:"+1",
-cities:["New York","Los Angeles","Chicago","Houston","Miami","Seattle","Boston"],
-area:["201","305","312","415","646","718"],
-zip:()=>String(10000 + Math.random()*89999 | 0)
-},
-{
-country:"UK", code:"+44",
-cities:["London","Manchester","Liverpool","Birmingham"],
-area:["74","75","77","78"],
-zip:()=>["SW1A","EC1","W1","M1"][Math.random()*4|0]
-},
-{
-country:"Germany", code:"+49",
-cities:["Berlin","Munich","Hamburg","Frankfurt"],
-area:["151","160","170"],
-zip:()=>String(10000 + Math.random()*89999 | 0)
-},
-{
-country:"Netherlands", code:"+31",
-cities:["Amsterdam","Rotterdam","Utrecht"],
-area:["6","20"],
-zip:()=>String(1000 + Math.random()*8999 | 0)
-},
-{
-country:"Japan", code:"+81",
-cities:["Tokyo","Osaka","Kyoto"],
-area:["70","80","90"],
-zip:()=>String(1000000 + Math.random()*8999999 | 0)
-},
-{
-country:"France", code:"+33",
-cities:["Paris","Lyon","Marseille"],
-area:["6","7","1"],
-zip:()=>String(10000 + Math.random()*89999 | 0)
-},
-{
-country:"Canada", code:"+1",
-cities:["Toronto","Vancouver","Montreal"],
-area:["416","437","604"],
-zip:()=>String(10000 + Math.random()*89999 | 0)
-},
-{
-    country:"India", code:"+91",
-cities:["Delhi","Mumbai","Bangalore"],
-area:["7","8","9"],
-zip:()=>String(100000 + Math.random()*899999 | 0)
-}
+/* ===== DATA ===== */
+const DATA=[
+{country:"USA",code:"+1",cities:["NY","LA","Chicago"],area:["201","305","312"],zip:()=>String(10000+Math.random()*89999|0)},
+{country:"UK",code:"+44",cities:["London","Manchester"],area:["74","75","77"],zip:()=>["SW1A","EC1","W1"][Math.random()*3|0]},
+{country:"Germany",code:"+49",cities:["Berlin","Munich"],area:["151","160"],zip:()=>String(10000+Math.random()*89999|0)},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam"],area:["6","20"],zip:()=>String(1000+Math.random()*8999|0)},
+{country:"Japan",code:"+81",cities:["Tokyo","Osaka"],area:["70","80"],zip:()=>String(1000000+Math.random()*8999999|0)}
 ];
 
-const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava"];
-const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark"];
+const first=["Alex","John","Emma","Noah","Liam","Mia"];
+const last=["Smith","Brown","Lee","Taylor","Wilson"];
 
 const output=document.getElementById("output");
 const loader=document.getElementById("loader");
@@ -227,7 +179,7 @@ let last=[];
 function init(){
     select.innerHTML=`<option value="all">any country</option>`;
     DATA.forEach(d=>{
-        const o=document.createElement("option");
+        let o=document.createElement("option");
         o.value=d.country;
         o.textContent=d.country;
         select.appendChild(o);
@@ -235,33 +187,30 @@ function init(){
 }
 
 /* PICK */
-function pick(a){
-    return a[Math.floor(Math.random()*a.length)];
-}
+    function pick(a){return a[Math.random()*a.length|0];}
 
 /* USER */
 function user(){
-    const d = select.value==="all"
-        ? pick(DATA)
-        : DATA.find(x=>x.country===select.value) || pick(DATA);
+    const d = select.value==="all"?pick(DATA):DATA.find(x=>x.country===select.value);
 
-    const first = pick(firstNames);
-    const last = pick(lastNames);
-    const username = (first+last+(Math.random()*999|0)).toLowerCase();
+    const fn=pick(first);
+    const ln=pick(last);
 
-    return {
+    const username=(fn+ln+(Math.random()*999|0)).toLowerCase();
+
+    return{
         username,
-        name:first+" "+last,
-        email:username+"@"+pick(["gmail.com","outlook.com","proton.me"]),
-        phone:`${d.code} ${pick(d.area)} ${Math.random()*9000000|0 + 1000000}`,
+        name:fn+" "+ln,
+        email:username+"@gmail.com",
+        phone:`${d.code} ${pick(d.area)} ${Math.random()*9000000|0+1000000}`,
         country:d.country,
         city:pick(d.cities),
         zip:d.zip()
     };
 }
 
-/* TYPE EFFECT (FIXED CENTER SAFE) */
-function typeLine(container,label,value,cb){
+/* TYPE */
+function typeLine(parent,label,value,cb){
     const row=document.createElement("div");
     row.className="line";
 
@@ -274,13 +223,13 @@ function typeLine(container,label,value,cb){
 
     row.appendChild(l);
     row.appendChild(v);
-    container.appendChild(row);
+    parent.appendChild(row);
 
     let i=0;
     function t(){
         if(i<value.length){
             v.textContent+=value[i++];
-            setTimeout(t,8);
+            setTimeout(t,6); // 🔥  быстрее и ровно
         } else cb && cb();
     }
     t();
@@ -291,19 +240,19 @@ function render(arr){
     output.innerHTML="";
 
     arr.forEach((u,i)=>{
-        const c=document.createElement("div");
-        c.className="card";
+        const card=document.createElement("div");
+        card.className="card";
 
         const copy=document.createElement("div");
         copy.className="copyBtn";
         copy.textContent="copy";
         copy.onclick=()=>navigator.clipboard.writeText(JSON.stringify(u,null,2));
 
-        c.appendChild(copy);
-        output.appendChild(c);
+        card.appendChild(copy);
+        output.appendChild(card);
 
         setTimeout(()=>{
-            const fields=[
+            const f=[
                 ["User:",u.username],
                 ["Name:",u.name],
                 ["Email:",u.email],
@@ -313,46 +262,37 @@ function render(arr){
                 ["ZIP:",u.zip]
             ];
 
-            let idx=0;
+            let i=0;
             function next(){
-                if(idx>=fields.length) return;
-                typeLine(c,fields[idx][0],fields[idx][1],()=>{
-                    idx++;
+                if(i>=f.length) return;
+                typeLine(card,f[i][0],f[i][1],()=>{
+                    i++;
                     next();
                 });
             }
             next();
 
-        }, i*40);
+        },i*30);
     });
-}
-
-/* LOADER */
-function showLoader(){
-    loader.style.display="block";
-}
-function hideLoader(){
-    loader.style.display="none";
 }
 
 /* GENERATE */
 function generate(){
-    showLoader();
+    loader.style.display="block";
 
     setTimeout(()=>{
-        const n=Math.min(50,parseInt(document.getElementById("count").value||1));
+        const n=Math.min(50,document.getElementById("count").value||1);
         last=Array.from({length:n},user);
         render(last);
-        hideLoader();
-    },200);
+        loader.style.display="none";
+    },120); // 🔥  почти мгновенно
 }
 
-/* COPY ALL */
+/* COPY */
 function copyAll(){
     navigator.clipboard.writeText(JSON.stringify(last,null,2));
 }
 
-/* START */
 init();
 window.onload=generate;
 
