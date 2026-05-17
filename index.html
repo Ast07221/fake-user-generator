@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fake User Generator</title>
+
 <style>
 body{
     margin:0;
@@ -16,6 +17,7 @@ body{
     align-items:center;
     overflow-x:hidden;
 }
+
 .wrapper{
     width:100%;
     max-width:760px;
@@ -27,6 +29,7 @@ body{
     margin:auto;
     min-height:100vh;
 }
+
 .grid{
     display:grid;
     grid-template-columns:1fr;
@@ -40,6 +43,7 @@ body{
     box-sizing:border-box;
     align-content:start;
 }
+
 .card{
     width:100%;
     background:transparent;
@@ -51,21 +55,26 @@ body{
     cursor:pointer;
     border-bottom:1px solid rgba(255,255,255,0.04);
 }
+
 .card:hover{
     opacity:.82;
 }
+
 .line{
     margin:1px 0;
     line-height:1.28;
     font-size:14px;
     letter-spacing:.1px;
 }
+
 .label{
     color:#6f6f6f;
 }
+
 .value{
     color:#fff;
 }
+
 .loader{
     position:absolute;
     top:50%;
@@ -80,6 +89,7 @@ body{
     text-transform:uppercase;
     user-select:none;
 }
+
 .topbar{
     position:fixed;
     bottom:25px;
@@ -91,6 +101,7 @@ body{
     flex-wrap:wrap;
     justify-content:center;
 }
+
 button, select{
     background:#0b0b0b;
     border:none;
@@ -100,14 +111,6 @@ button, select{
     font-weight:500;
     letter-spacing:.3px;
     padding:4px 8px;
-    appearance:none;
-    -webkit-appearance:none;
-    -moz-appearance:none;
-}
-
-select option{
-    background:#0b0b0b;
-    color:#fff;
 }
 
 button:hover{
@@ -132,16 +135,6 @@ select{
     cursor:pointer;
 }
 
-.typingCursor{
-    display:inline-block;
-    width:1px;
-    height:12px;
-    background:#888;
-    margin-left:4px;
-    vertical-align:middle;
-    animation:blink .9s infinite;
-}
-
 .notice{
     position:fixed;
     top:18px;
@@ -161,13 +154,13 @@ select{
 }
 </style>
 </head>
+
 <body>
+
 <div class="notice" id="notice">copied</div>
 
 <div class="wrapper">
-    <div class="loader" id="loader">
-        INITIALIZING<span class="typingCursor"></span>
-    </div>
+    <div class="loader" id="loader">INITIALIZING</div>
     <div id="output" class="grid"></div>
 </div>
 
@@ -183,28 +176,18 @@ select{
 </div>
 
 <script>
+
 const countries = [
 {country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
 {country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
 {country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],zips:["SW1A","M1","L1"]},
 {country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
 {country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
-{country:"Spain",code:"+34",cities:["Madrid","Barcelona","Valencia"],zips:["28001","08001","46001"]},
-{country:"Italy",code:"+39",cities:["Rome","Milan","Naples"],zips:["00100","20100","80100"]},
-    {country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
-{country:"Belgium",code:"+32",cities:["Brussels","Antwerp"],zips:["1000","2000"]},
-{country:"Switzerland",code:"+41",cities:["Zurich","Geneva"],zips:["8001","1201"]},
-{country:"Austria",code:"+43",cities:["Vienna","Salzburg"],zips:["1010","5020"]},
-{country:"Sweden",code:"+46",cities:["Stockholm","Gothenburg"],zips:["11120","41101"]},
-{country:"Norway",code:"+47",cities:["Oslo","Bergen"],zips:["0001","5003"]},
-{country:"Denmark",code:"+45",cities:["Copenhagen","Aarhus"],zips:["1000","8000"]},
-{country:"Finland",code:"+358",cities:["Helsinki","Turku"],zips:["00100","20100"]},
-{country:"India",code:"+91",cities:["Delhi","Mumbai","Bangalore"],zips:["110001","400001","560001"]},
+{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
 {country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],zips:["100-0001","530-0001","600-0001"]},
 {country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"],zips:["2000","3000","4000"]}
 ];
-
-const firstNames = ["Noah","Liam","Oliver","James","Lucas","Henry","Leo","Daniel","Jack","Ethan","Emma","Olivia","Sophia","Ava","Mia","Charlotte","Emily","Amelia","Ella","Grace"];
+    const firstNames = ["Noah","Liam","Oliver","James","Lucas","Henry","Leo","Daniel","Jack","Ethan","Emma","Olivia","Sophia","Ava","Mia","Charlotte","Emily","Amelia","Ella","Grace"];
 const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Harris","Martin","Jackson","Moore","Clark","Walker","Hall","Allen","Young","King","Wright"];
 
 const output = document.getElementById("output");
@@ -226,7 +209,7 @@ function showNotice(text){
 }
 
 function initCountries(){
-    countryFilter.innerHTML = `<option value="all">any country ▼</option>`;
+    countryFilter.innerHTML = `<option value="all">any country</option>`;
     countries.forEach(c=>{
         const opt = document.createElement("option");
         opt.value = c.country;
@@ -237,26 +220,23 @@ function initCountries(){
 
 function generateUser(){
     let selected = countryFilter.value;
-    let loc;
-
-    if(selected === "all"){
-        loc = pick(countries);
-    } else {
-        loc = countries.find(c => c.country === selected);
-    }
+    let loc = selected === "all"
+        ? pick(countries)
+        : countries.find(c => c.country === selected);
 
     const first = pick(firstNames);
     const last = pick(lastNames);
+
     const username = (first + last + Math.floor(Math.random()*999)).toLowerCase();
 
     return {
         username,
-        name:first + " " + last,
-        email:username + "@gmail.com",
-        phone:loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
-        country:loc.country,
-        city:pick(loc.cities),
-        zip:pick(loc.zips)
+        name: first + " " + last,
+        email: username + "@gmail.com",
+        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
+        country: loc.country,
+        city: pick(loc.cities),
+        zip: pick(loc.zips)
     };
 }
 
@@ -279,6 +259,7 @@ function typeHTML(el, user){
         if(rowIndex >= rows.length) return;
 
         const [label, value] = rows[rowIndex++];
+
         const line = document.createElement("div");
         line.className = "line";
 
@@ -292,22 +273,19 @@ function typeHTML(el, user){
         line.appendChild(labelSpan);
         line.appendChild(valueSpan);
 
-        const cursor = document.createElement("span");
-        cursor.className = "typingCursor";
-        line.appendChild(cursor);
-
         el.appendChild(line);
 
         let i = 0;
+
         function typeChar(){
             if(i < value.length){
                 valueSpan.textContent += value[i++];
-                setTimeout(typeChar, 12);
-                } else {
-                cursor.remove();
-                setTimeout(typeRow, 18);
+                setTimeout(typeChar, 10);
+            } else {
+                setTimeout(typeRow, 15);
             }
         }
+
         typeChar();
     }
 
@@ -317,38 +295,42 @@ function typeHTML(el, user){
 function render(list){
     output.innerHTML = "";
 
-    list.forEach((u,index)=>{
-        const card = document.createElement("div");
-        card.className = "card";
+    requestAnimationFrame(() => {
+        list.forEach((u,index)=>{
+            const card = document.createElement("div");
+            card.className = "card";
 
-        card.onclick = () => {
-            navigator.clipboard.writeText(JSON.stringify(u, null, 2));
-            showNotice("profile copied");
-        };
+            card.onclick = () => {
+                navigator.clipboard.writeText(JSON.stringify(u, null, 2));
+                showNotice("profile copied");
+            };
 
-        output.appendChild(card);
+            output.appendChild(card);
 
-        setTimeout(()=>{
-            typeHTML(card,u);
-        }, index * 120);
+            setTimeout(()=>{
+                typeHTML(card,u);
+            }, index * 80);
+        });
     });
 }
 
 function generate(){
-    loader.style.display = "flex";
+    loader.style.display = "block";
 
     setTimeout(()=>{
         const count = Math.min(parseInt(bulkInput.value || 1), 200);
-        const arr = [];
 
+        const arr = [];
         for(let i=0;i<count;i++){
             arr.push(generateUser());
         }
 
         lastData = arr;
-        render(arr);
+
         loader.style.display = "none";
-    }, 250);
+        render(arr);
+
+    }, 200);
 }
 
 function generateMore(){
@@ -357,7 +339,6 @@ function generateMore(){
     for(let i=0;i<2;i++){
         arr.push(generateUser());
     }
-
     lastData = lastData.concat(arr);
 
     arr.forEach((u,index)=>{
@@ -373,7 +354,7 @@ function generateMore(){
 
         setTimeout(()=>{
             typeHTML(card,u);
-        }, index * 120);
+        }, index * 80);
     });
 }
 
@@ -411,7 +392,8 @@ function downloadCSV(){
 }
 
 initCountries();
-window.onload = () => generate();
+window.onload = generate;
+
 </script>
 </body>
 </html>
