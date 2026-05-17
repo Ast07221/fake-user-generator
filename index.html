@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fake User Generator</title>
+<title>Enterprise Fake Data Engine</title>
 
 <style>
 body{
@@ -11,389 +11,322 @@ body{
     font-family:system-ui;
     background:#0b0b0b;
     color:#fff;
-    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
+    min-height:100vh;
     overflow-x:hidden;
 }
 
 .wrapper{
     width:100%;
-    max-width:760px;
+    max-width:900px;
+    min-height:100vh;
     display:flex;
     flex-direction:column;
-    justify-content:center;
     align-items:center;
-    position:relative;
-    margin:auto;
-    min-height:100vh;
+    justify-content:center;
 }
 
 .grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:2px;
     width:100%;
-    max-width:520px;
-    justify-items:start;
-    text-align:left;
-    max-height:420px;
+    max-width:650px;
+    max-height:600px;
     overflow-y:auto;
-    box-sizing:border-box;
-    align-content:start;
 }
 
 .card{
-    width:100%;
-    background:transparent;
-    padding:8px 0;
-    margin:0;
-    min-height:170px;
-    transform:translateZ(0);
-    will-change:transform;
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
     cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,0.04);
 }
 
 .card:hover{
-    opacity:.82;
+    opacity:.85;
 }
 
 .line{
-    margin:1px 0;
-    line-height:1.28;
-    font-size:16px;
-    letter-spacing:.1px;
+    font-size:15px;
+    line-height:1.5;
 }
 
-.label{
-    color:#8a8a8a;
-}
-
-.value{
-    color:#f2f2f2;
-}
-
-.loader{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -120px);
-    font-family:monospace;
-    font-size:11px;
-    letter-spacing:4px;
-    color:#7a7a7a;
-    opacity:.72;
-    pointer-events:none;
-    text-transform:uppercase;
-    user-select:none;
-}
+.label{ color:#8a8a8a; }
+.value{ color:#f2f2f2; }
 
 .topbar{
     position:fixed;
-    bottom:25px;
+    bottom:20px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    align-items:center;
-    gap:22px;
+    gap:12px;
     flex-wrap:wrap;
-    justify-content:center;
 }
 
-button, select{
+button, select, input{
     background:#0b0b0b;
     border:none;
     color:#fff;
-    cursor:pointer;
     font-size:14px;
-    font-weight:500;
-    letter-spacing:.3px;
-    padding:4px 8px;
+    padding:6px 10px;
 }
 
-button:hover{
-    opacity:.7;
-}
+button:hover{ opacity:.7; }
 
-input{
-    width:36px;
-    background:none;
-    border:none;
-    color:#fff;
-    text-align:center;
-    outline:none;
-    font-size:14px;
-}
-
-select{
-    outline:none;
-    padding-right:18px;
-    background:#0b0b0b;
-    color:#fff;
-    cursor:pointer;
-}
-
-.notice{
-    position:fixed;
-    top:18px;
+.loader{
+    position:absolute;
+    top:45%;
     left:50%;
-    transform:translateX(-50%);
-    font-size:12px;
-    color:#888;
-    opacity:0;
-    transition:.25s;
-    pointer-events:none;
-}
-
-@keyframes blink{
-    0%{opacity:0;}
-    50%{opacity:1;}
-    100%{opacity:0;}
+    transform:translate(-50%,-50%);
+    font-size:11px;
+    letter-spacing:4px;
+    color:#777;
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="notice" id="notice">copied</div>
+<div class="loader" id="loader">INITIALIZING ENGINE...</div>
 
 <div class="wrapper">
-    <div class="loader" id="loader">INITIALIZING</div>
     <div id="output" class="grid"></div>
 </div>
 
 <div class="topbar">
     <button onclick="generate()">generate</button>
-    <button onclick="generateMore()">more</button>
+    <button onclick="more()">more</button>
     <button onclick="clearAll()">clear</button>
-    <input id="bulkInput" type="number" value="1" min="1" max="200">
-    <select id="countryFilter"></select>
+    <input id="count" type="number" value="10" min="1" max="200">
+    <select id="country"></select>
     <button onclick="copyAll()">copy</button>
-    <button onclick="downloadJSON()">json</button>
-    <button onclick="downloadCSV()">csv</button>
 </div>
 
 <script>
 
-const countries = [
-{country:"USA",code:"+1",cities:["New York","Los Angeles","Chicago"],zips:["10001","90001","60601"]},
-{country:"Canada",code:"+1",cities:["Toronto","Vancouver","Montreal"],zips:["M5H","V5K","H2X"]},
-{country:"UK",code:"+44",cities:["London","Manchester","Liverpool"],zips:["SW1A","M1","L1"]},
-{country:"Germany",code:"+49",cities:["Berlin","Munich","Hamburg"],zips:["10115","80331","20095"]},
-{country:"France",code:"+33",cities:["Paris","Lyon","Marseille"],zips:["75001","69001","13001"]},
-{country:"Netherlands",code:"+31",cities:["Amsterdam","Rotterdam","Utrecht"],zips:["1012","3011","3511"]},
-{country:"Japan",code:"+81",cities:["Tokyo","Osaka","Kyoto"],zips:["100-0001","530-0001","600-0001"]},
-{country:"Australia",code:"+61",cities:["Sydney","Melbourne","Brisbane"],zips:["2000","3000","4000"]}
+/* =========================
+   🌍 GLOBAL DATA ENGINE
+========================= */
+
+const ENGINE = [
+{
+country:"USA", code:"+1",
+cities:["New York","Los Angeles","Chicago","Houston","Miami","Dallas"],
+streets:["Main St","Oak Ave","Pine Rd","Maple Dr","Broadway"],
+domains:["gmail.com","yahoo.com","outlook.com"],
+zip:()=>String(10000+Math.floor(Math.random()*89999)),
+area:["201","202","305","312","415","646"]
+},
+
+{
+country:"UK", code:"+44",
+cities:["London","Manchester","Birmingham","Liverpool","Leeds"],
+streets:["High St","King Rd","Queen St","Church Ln"],
+domains:["gmail.com","hotmail.co.uk","outlook.com"],
+zip:()=>["SW1A","M1","L1","B1","EC1"][Math.floor(Math.random()*5)],
+area:["74","75","77","78"]
+},
+
+{
+country:"Germany", code:"+49",
+cities:["Berlin","Munich","Hamburg","Cologne","Frankfurt"],
+streets:["Hauptstr","Bahnhofstr","Alexanderplatz","Marktweg"],
+domains:["gmail.com","web.de","gmx.de"],
+zip:()=>String(10000+Math.floor(Math.random()*89999)),
+area:["151","160","170","175"]
+},
+
+{
+country:"France", code:"+33",
+cities:["Paris","Lyon","Marseille","Nice","Toulouse"],
+streets:["Rue de Paris","Rue Victor Hugo","Avenue République"],
+domains:["gmail.com","orange.fr","laposte.net"],
+zip:()=>String(10000+Math.floor(Math.random()*89999)),
+area:["6","7"]
+},
+
+{
+country:"Netherlands", code:"+31",
+cities:["Amsterdam","Rotterdam","Utrecht","Eindhoven"],
+streets:["Damrak","Leidsestraat","Kalverstraat"],
+domains:["gmail.com","ziggo.nl","outlook.com"],
+zip:()=>String(1000+Math.floor(Math.random()*8999)),
+area:["6"]
+},
+
+{
+country:"Japan", code:"+81",
+cities:["Tokyo","Osaka","Kyoto","Nagoya"],
+streets:["Shibuya","Ginza","Akihabara","Umeda"],
+domains:["gmail.com","yahoo.co.jp","icloud.com"],
+zip:()=>String(1000000+Math.floor(Math.random()*8999999)),
+area:["70","80","90"]
+},
+
+{
+country:"Australia", code:"+61",
+cities:["Sydney","Melbourne","Brisbane","Perth"],
+streets:["George St","King St","Collins St"],
+domains:["gmail.com","outlook.com","bigpond.com"],
+zip:()=>String(2000+Math.floor(Math.random()*6000)),
+area:["4"]
+},
+
+{
+country:"Canada", code:"+1",
+cities:["Toronto","Vancouver","Montreal","Calgary"],
+    streets:["Bloor St","King St","Queen St"],
+domains:["gmail.com","hotmail.ca","outlook.com"],
+zip:()=> "M" + Math.floor(Math.random()*9),
+area:["416","437","604","778"]
+},
+
+{
+country:"Italy", code:"+39",
+cities:["Rome","Milan","Naples","Turin"],
+streets:["Via Roma","Via Milano","Corso Italia"],
+domains:["gmail.com","libero.it","outlook.com"],
+zip:()=>String(10000+Math.floor(Math.random()*89999)),
+area:["3"]
+},
+
+{
+country:"Spain", code:"+34",
+cities:["Madrid","Barcelona","Valencia","Seville"],
+streets:["Calle Mayor","Gran Via","Calle Real"],
+domains:["gmail.com","hotmail.es","outlook.com"],
+zip:()=>String(10000+Math.floor(Math.random()*89999)),
+area:["6","7"]
+},
+
+{
+country:"India", code:"+91",
+cities:["Delhi","Mumbai","Bangalore","Pune"],
+streets:["MG Road","Park Street","MG Marg"],
+domains:["gmail.com","yahoo.in","outlook.com"],
+zip:()=>String(100000+Math.floor(Math.random()*899999)),
+area:["7","8","9"]
+}
+
 ];
-    const firstNames = ["Noah","Liam","Oliver","James","Lucas","Henry","Leo","Daniel","Jack","Ethan","Emma","Olivia","Sophia","Ava","Mia","Charlotte","Emily","Amelia","Ella","Grace"];
-const lastNames = ["Smith","Johnson","Brown","Taylor","Anderson","White","Harris","Martin","Jackson","Moore","Clark","Walker","Hall","Allen","Young","King","Wright"];
 
-const output = document.getElementById("output");
-const bulkInput = document.getElementById("bulkInput");
-const loader = document.getElementById("loader");
-const notice = document.getElementById("notice");
-const countryFilter = document.getElementById("countryFilter");
+/* ========================= */
 
-let lastData = [];
+const firstNames=["Alex","John","Michael","David","James","Emma","Olivia","Sophia","Liam","Noah","Mia","Ava"];
+const lastNames=["Smith","Brown","Johnson","Taylor","Wilson","Martin","Lee","Clark","Walker","Hall"];
 
-function pick(arr){
-    return arr[Math.floor(Math.random()*arr.length)];
-}
+const output=document.getElementById("output");
+const select=document.getElementById("country");
+const loader=document.getElementById("loader");
+let last=[];
 
-function showNotice(text){
-    notice.textContent = text;
-    notice.style.opacity = 1;
-    setTimeout(()=> notice.style.opacity = 0, 1200);
-}
+function pick(a){ return a[Math.floor(Math.random()*a.length)] }
 
-function initCountries(){
-    countryFilter.innerHTML = `<option value="all">any country</option>`;
-    countries.forEach(c=>{
-        const opt = document.createElement("option");
-        opt.value = c.country;
-        opt.textContent = c.country;
-        countryFilter.appendChild(opt);
+/* init */
+function init(){
+    select.innerHTML=`<option value="all">any country</option>`;
+    ENGINE.forEach(c=>{
+        const o=document.createElement("option");
+        o.value=c.country;
+        o.textContent=c.country;
+        select.appendChild(o);
     });
 }
 
-function generateUser(){
-    let selected = countryFilter.value;
-    let loc = selected === "all"
-        ? pick(countries)
-        : countries.find(c => c.country === selected);
+/* engine core */
+function phone(d){
+    return `${d.code} ${pick(d.area)} ${Math.floor(1000000+Math.random()*8999999)}`;
+}
 
-    const first = pick(firstNames);
-    const last = pick(lastNames);
+function email(name,d){
+    return name+"@"+pick(d.domains);
+}
 
-    const username = (first + last + Math.floor(Math.random()*999)).toLowerCase();
+function user(){
+    const d = select.value==="all"
+        ? pick(ENGINE)
+        : ENGINE.find(x=>x.country===select.value);
 
-    return {
+    const safe=d||ENGINE[0];
+
+    const first=pick(firstNames);
+    const last=pick(lastNames);
+
+    const username=(first+last+Math.floor(Math.random()*999)).toLowerCase();
+
+    return{
         username,
-        name: first + " " + last,
-        email: username + "@gmail.com",
-        phone: loc.code + " " + Math.floor(100000000 + Math.random()*900000000),
-        country: loc.country,
-        city: pick(loc.cities),
-        zip: pick(loc.zips)
+        name:first+" "+last,
+        email:email(username,safe),
+        phone:phone(safe),
+        country:safe.country,
+        city:pick(safe.cities),
+        street:pick(safe.streets)+" "+Math.floor(Math.random()*200),
+        zip:safe.zip()
     };
 }
 
-function typeHTML(el, user){
-    el.innerHTML = "";
+/* render */
+function render(arr){
+    output.innerHTML="";
 
-    const rows = [
-        ["Username", user.username],
-        ["Name", user.name],
-        ["Email", user.email],
-        ["Phone", user.phone],
-        ["Country", user.country],
-        ["City", user.city],
-        ["ZIP", user.zip]
-    ];
+    arr.forEach((u,i)=>{
+        const c=document.createElement("div");
+        c.className="card";
 
-    let rowIndex = 0;
-
-    function typeRow(){
-        if(rowIndex >= rows.length) return;
-
-        const [label, value] = rows[rowIndex++];
-
-        const line = document.createElement("div");
-        line.className = "line";
-
-        const labelSpan = document.createElement("span");
-        labelSpan.className = "label";
-        labelSpan.textContent = label + ": ";
-
-        const valueSpan = document.createElement("span");
-        valueSpan.className = "value";
-
-        line.appendChild(labelSpan);
-        line.appendChild(valueSpan);
-
-        el.appendChild(line);
-
-        let i = 0;
-
-        function typeChar(){
-            if(i < value.length){
-                valueSpan.textContent += value[i++];
-                setTimeout(typeChar, 10);
-            } else {
-                setTimeout(typeRow, 15);
-            }
-        }
-
-        typeChar();
-    }
-
-    typeRow();
-}
-
-function render(list){
-    output.innerHTML = "";
-
-    requestAnimationFrame(() => {
-        list.forEach((u,index)=>{
-            const card = document.createElement("div");
-            card.className = "card";
-
-            card.onclick = () => {
-                navigator.clipboard.writeText(JSON.stringify(u, null, 2));
-                showNotice("profile copied");
-            };
-
-            output.appendChild(card);
-
-            setTimeout(()=>{
-                typeHTML(card,u);
-            }, index * 80);
-        });
-    });
-}
-
-function generate(){
-    loader.style.display = "block";
-
-    setTimeout(()=>{
-        const count = Math.min(parseInt(bulkInput.value || 1), 200);
-
-        const arr = [];
-        for(let i=0;i<count;i++){
-            arr.push(generateUser());
-        }
-
-        lastData = arr;
-
-        loader.style.display = "none";
-        render(arr);
-
-    }, 200);
-}
-
-function generateMore(){
-    const arr = [];
-
-    for(let i=0;i<2;i++){
-        arr.push(generateUser());
-    }
-    lastData = lastData.concat(arr);
-
-    arr.forEach((u,index)=>{
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.onclick = () => {
-            navigator.clipboard.writeText(JSON.stringify(u, null, 2));
-            showNotice("profile copied");
+        c.onclick=()=>{
+            navigator.clipboard.writeText(JSON.stringify(u,null,2));
         };
 
-        output.appendChild(card);
+        output.appendChild(c);
 
         setTimeout(()=>{
-            typeHTML(card,u);
-        }, index * 80);
+            c.innerHTML=`
+                <div class="line"><span class="label">User:</span> <span class="value">${u.username}</span></div>
+                <div class="line"><span class="label">Name:</span> <span class="value">${u.name}</span></div>
+                <div class="line"><span class="label">Email:</span> <span class="value">${u.email}</span></div>
+                <div class="line"><span class="label">Phone:</span> <span class="value">${u.phone}</span></div>
+                <div class="line"><span class="label">Country:</span> <span class="value">${u.country}</span></div>
+                <div class="line"><span class="label">City:</span> <span class="value">${u.city}</span></div>
+                <div class="line"><span class="label">Street:</span> <span class="value">${u.street}</span></div>
+                <div class="line"><span class="label">ZIP:</span> <span class="value">${u.zip}</span></div>
+            `;
+        },i*30);
     });
+}
+
+/* actions */
+function generate(){
+    loader.style.display="block";
+
+    setTimeout(()=>{
+        const n=Math.min(200,parseInt(document.getElementById("count").value||10));
+        last=Array.from({length:n},user);
+        loader.style.display="none";
+        render(last);
+    },200);
+}
+
+function more(){
+    const extra=Array.from({length:5},user);
+    last=last.concat(extra);
+    render(last);
 }
 
 function clearAll(){
-    output.innerHTML = "";
-    lastData = [];
-    loader.style.display = "block";
+    output.innerHTML="";
+    last=[];
 }
 
 function copyAll(){
-    navigator.clipboard.writeText(JSON.stringify(lastData,null,2));
-    showNotice("all copied");
+    navigator.clipboard.writeText(JSON.stringify(last,null,2));
 }
 
-function downloadJSON(){
-    const blob = new Blob([JSON.stringify(lastData,null,2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.json";
-    a.click();
-}
-
-function downloadCSV(){
-    const rows = ["Username,Name,Email,Phone,Country,City,ZIP"];
-
-    lastData.forEach(u=>{
-        rows.push(`${u.username},${u.name},${u.email},${u.phone},${u.country},${u.city},${u.zip}`);
-    });
-
-    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "users.csv";
-    a.click();
-}
-
-initCountries();
-window.onload = generate;
+/* start */
+init();
+window.onload=generate;
 
 </script>
+
 </body>
 </html>
